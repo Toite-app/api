@@ -18,7 +18,6 @@ import {
   ApiOperation,
 } from "@nestjs/swagger";
 import { SignInDto } from "../dto/req/sign-in.dto";
-import { AccessTokenResponse } from "../entities/access-token.entity";
 import { IncomingHttpHeaders } from "http2";
 import { Controller } from "@core/decorators/controller.decorator";
 import { SetCookies } from "../decorators/set-cookie.decorator";
@@ -47,13 +46,13 @@ export class AuthController {
   @Post("sign-in")
   @SetCookies()
   @HttpCode(HttpStatus.OK)
-  @Serializable(AccessTokenResponse)
+  @Serializable(WorkerEntity)
   @ApiOperation({
     summary: "Sign in user and create session",
   })
   @ApiOkResponse({
     description: "User has been successfully signed in",
-    type: AccessTokenResponse,
+    type: WorkerEntity,
   })
   @ApiNotFoundResponse({
     description: "User not found",
@@ -63,43 +62,23 @@ export class AuthController {
   })
   async signIn(
     @Body() dto: SignInDto,
-    @Ip() ip: string,
+    @Ip() ipAddress: string,
     @Headers() headers: IncomingHttpHeaders,
   ) {
-    const httpAgent = (headers?.["user-agent"] ||
-      headers?.["User-Agent"] ||
-      "N/A") as string;
-
-    if (!ip) ip = "N/A";
-
-    console.log("IP", ip);
-    console.log("HTTP_AGENT", httpAgent);
-
     const worker = await this.authService.signIn(dto);
-    const accessToken = await this.authService.getAccessToken(worker);
-    const refreshToken = await this.authService.getRefreshToken({
-      httpAgent,
-      ip,
+    if (!ipAddress) ipAddress = "N/A";
+
+    const session = await this.authService.obtainSession({
+      headers,
+      ipAddress,
       worker,
     });
 
     return {
-      accessToken,
-      refreshToken,
+      ...worker,
+      setSessionToken: session.token,
     };
   }
-
-  @Post("refresh")
-  @HttpCode(HttpStatus.OK)
-  @Serializable(AccessTokenResponse)
-  @ApiOperation({
-    summary: "Refresh tokens",
-  })
-  @ApiOkResponse({
-    description: "Tokens has been successfully refreshed",
-    type: AccessTokenResponse,
-  })
-  async refreshTokens() {}
 
   @Delete("sign-out")
   async signOut() {

@@ -8,7 +8,6 @@ import { Observable } from "rxjs";
 import { map } from "rxjs/operators";
 import { Response } from "@core/interfaces/response";
 import { AUTH_COOKIES } from "../auth.types";
-import { AuthTokenEntity } from "../entities/auth-token.entity";
 
 /**
  * Set cookies interceptor sets cookies parameters to response
@@ -27,12 +26,12 @@ export class SetCookiesInterceptor implements NestInterceptor {
     next: CallHandler,
   ): Observable<any> {
     return next.handle().pipe(
-      map((data: Partial<{ refreshToken?: AuthTokenEntity }>) => {
+      map((data: Partial<{ setSessionToken?: string }>) => {
         const res = context.switchToHttp().getResponse() as Response;
 
-        if (data.refreshToken) {
-          res.cookie(AUTH_COOKIES.refreshToken, data.refreshToken.value, {
-            expires: new Date(data.refreshToken.expiresAt),
+        if (data?.setSessionToken) {
+          res.cookie(AUTH_COOKIES.token, data.setSessionToken, {
+            maxAge: 1000 * 60 * 60 * 24 * 365,
             httpOnly: true,
             secure: true,
             sameSite: "none",

@@ -1,7 +1,27 @@
+import { Pool } from "pg";
 import { patchNestJsSwagger } from "nestjs-zod";
 import { NestFactory } from "@nestjs/core";
 import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
 import { AppModule } from "./app.module";
+import { drizzle } from "drizzle-orm/node-postgres";
+import { workers } from "@postgress-db/schema";
+import * as schema from "src/drizzle/schema";
+import { hash } from "argon2";
+
+const createUserIfDbEmpty = async () => {
+  const db = drizzle(
+    new Pool({ connectionString: process.env.POSTGRESQL_URL }),
+    { schema },
+  );
+
+  if ((await db.query.workers.findMany()).length === 0) {
+    await db.insert(workers).values({
+      login: "admin",
+      passwordHash: await hash(process.env.INITIAL_ADMIN_PASSWORD),
+      role: schema.ZodWorkerRole.Enum.SYSTEM_ADMIN,
+    });
+  }
+};
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -24,5 +44,6 @@ async function bootstrap() {
   await app.listen(3000);
 }
 
+createUserIfDbEmpty();
 patchNestJsSwagger();
 bootstrap();

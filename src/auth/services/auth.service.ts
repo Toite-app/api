@@ -1,22 +1,17 @@
+import * as argon2 from "argon2";
 import { Injectable } from "@nestjs/common";
 import { WorkersService } from "src/workers/workers.service";
 import { SignInDto } from "../dto/req/sign-in.dto";
-import argon2 from "argon2";
 import { WorkerEntity } from "src/workers/entities/worker.entity";
-import { JwtService } from "@nestjs/jwt";
-import { ServerErrorException } from "src/@core/errors/exceptions/server-error.exception";
-import { AuthTokenEntity } from "../entities/auth-token.entity";
 import { SessionsService } from "src/sessions/sessions.service";
-import { handleError } from "@core/errors/handleError";
-import { BadRequestException } from "@core/errors/exceptions/bad-request.exception";
 import { NotFoundException } from "@core/errors/exceptions/not-found.exception";
 import { ForbiddenException } from "@core/errors/exceptions/forbidden.exception";
+import { IncomingHttpHeaders } from "http";
 
 @Injectable()
 export class AuthService {
   constructor(
     private workersService: WorkersService,
-    private readonly jwtService: JwtService,
     private readonly sessionsService: SessionsService,
   ) {}
 
@@ -37,109 +32,41 @@ export class AuthService {
     return worker;
   }
 
-  public async getAccessToken(worker: WorkerEntity): Promise<AuthTokenEntity> {
-    const payload = {
-      id: worker.id,
-      login: worker.login,
-      role: worker.role,
-      name: worker.name,
-    };
+  public async obtainSession(data: {
+    token?: string;
+    worker: WorkerEntity;
+    headers: IncomingHttpHeaders;
+    ipAddress: string;
+  }) {
+    const { token, worker, headers, ipAddress } = data;
 
-    const expiresIn = process.env.JWT_EXPIRES_IN;
-
-    if (!expiresIn) {
-      throw new ServerErrorException("JWT_EXPIRES_IN not found");
-    }
-
-    const accessToken = this.jwtService.sign(payload, {
-      secret: process.env.JWT_SECRET,
-      expiresIn,
-    });
-
-    const expiresAt = new Date(
-      new Date().getTime() + parseInt(expiresIn) * 1000,
+    const httpAgent = String(
+      headers["user-agent"] || headers["User-Agent"] || "N/A",
     );
 
-    return {
-      value: accessToken,
-      expiresAt,
-    };
-  }
-
-  public async getRefreshToken(data: {
-    sessionId?: string;
-    worker: WorkerEntity;
-    httpAgent: string;
-    ip: string;
-  }): Promise<AuthTokenEntity> {
-    try {
-      const { sessionId, worker, httpAgent, ip } = data;
-
-      const payload = {
-        id: worker.id,
-        role: worker.role,
+    if (!token) {
+      const created = await this.sessionsService.create({
+        workerId: worker.id,
         httpAgent,
-        ip,
-      };
-
-      const token = this.jwtService.sign(payload, {
-        secret: process.env.JWT_SECRET,
-        expiresIn: "30d",
+        ipAddress,
       });
-
-      const expiresAt = new Date(
-        new Date().getTime() + 30 * 24 * 60 * 60 * 1000,
-      );
-
-      if (!sessionId) {
-        await this.sessionsService.create({
-          workerId: worker.id,
-          httpAgent,
-          ipAddress: ip,
-          refreshToken: token,
-        });
-      }
-
-      return {
-        value: token,
-        expiresAt,
-      };
-    } catch (err) {
-      handleError(err);
+      return await this.sessionsService.findByToken(created.token);
     }
-  }
 
-  public async verifyRefreshToken(
-    token: string,
-    ipAddress: string,
-    userAgent: string,
-  ) {
-    try {
-      const session = await this.sessionsService.findByRefreshToken(token);
+    const session = await this.sessionsService.findByToken(token);
 
-      if (!session) {
-        throw new NotFoundException();
-      }
+    const isCompromated =
+      session.workerId !== worker.id ||
+      session.ipAddress !== ipAddress ||
+      session.httpAgent !== httpAgent;
 
-      const { id, httpAgent, ip } = await this.jwtService.verify<{
-        id: string;
-        httpAgent: string;
-        ip: string;
-      }>(token, {
-        secret: process.env.JWT_SECRET,
-      });
+    if (isCompromated) {
+      // TODO: Implement logic for compromated sessions
+      throw new ForbiddenException();
+    }
 
-      if (!id || !httpAgent || !ip) {
-        throw new BadRequestException();
-      }
+    await this.sessionsService.refresh(token);
 
-      const isCompromented = httpAgent !== userAgent || ip !== ipAddress;
-
-      if (isCompromented) {
-        throw new BadRequestException();
-      }
-
-      return {};
-    } catch (err) {}
+    return await this.sessionsService.findByToken(token);
   }
 }

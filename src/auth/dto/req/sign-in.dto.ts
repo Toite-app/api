@@ -1,4 +1,6 @@
-import { createZodDto } from "nestjs-zod";
+import { ApiProperty } from "@nestjs/swagger";
+import { Expose } from "class-transformer";
+import { IsString } from "class-validator";
 import { z } from "zod";
 
 export const signInSchema = z.object({
@@ -6,4 +8,20 @@ export const signInSchema = z.object({
   password: z.string(),
 });
 
-export class SignInDto extends createZodDto(signInSchema) {}
+export class SignInDto implements z.infer<typeof signInSchema> {
+  @IsString()
+  @Expose()
+  @ApiProperty({
+    description: "Login of the worker",
+    example: "dana.keller",
+  })
+  login: string;
+
+  @IsString()
+  @Expose()
+  @ApiProperty({
+    description: "Password of the worker",
+    example: "123456",
+  })
+  password: string;
+}

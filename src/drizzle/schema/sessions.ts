@@ -1,5 +1,6 @@
 import { pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
 import { workers } from "./workers";
+import { sql } from "drizzle-orm";
 
 export const sessions = pgTable("sessions", {
   id: serial("id").primaryKey().unique().$type(),
@@ -8,7 +9,12 @@ export const sessions = pgTable("sessions", {
     .references(() => workers.id),
   httpAgent: text("httpAgent"),
   ipAddress: text("ipAddress"),
-  refreshToken: text("refreshToken").notNull(),
-  createdAt: timestamp("createdAt").notNull(),
-  updatedAt: timestamp("updatedAt").notNull(),
+  token: text("token").notNull().unique(),
+  refreshedAt: timestamp("refreshedAt"),
+  createdAt: timestamp("createdAt")
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: timestamp("updatedAt")
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP`),
 });

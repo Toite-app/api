@@ -4,6 +4,5 @@ export enum AUTH_STRATEGY {
 }
 
 export enum AUTH_COOKIES {
-  accessToken = "toite-access",
-  refreshToken = "toite-refresh",
+  token = "toite-auth-token",
 }
