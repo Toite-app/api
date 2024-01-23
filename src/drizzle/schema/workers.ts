@@ -1,4 +1,4 @@
-import { sql } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 import {
   boolean,
   pgEnum,
@@ -8,6 +8,7 @@ import {
   timestamp,
 } from "drizzle-orm/pg-core";
 import { z } from "zod";
+import { sessions } from "./sessions";
 
 export const workerRoleEnum = pgEnum("workerRoleEnum", [
   "SYSTEM_ADMIN" as const,
@@ -39,3 +40,9 @@ export const workers = pgTable("workers", {
     .notNull()
     .default(sql`CURRENT_TIMESTAMP`),
 });
+
+export const workerRelations = relations(workers, ({ many }) => ({
+  sessions: many(sessions, {
+    relationName: "sessions",
+  }),
+}));

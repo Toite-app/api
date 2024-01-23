@@ -1,0 +1,20 @@
+{
+  "version": "5",
+  "dialect": "pg",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1706005346765,
+      "tag": "0000_superb_molecule_man",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1706005699341,
+      "tag": "0001_smiling_squirrel_girl",
+      "breakpoints": true
+    }
+  ]
+}

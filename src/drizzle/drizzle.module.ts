@@ -14,7 +14,7 @@ import { ConfigService } from "@nestjs/config";
         const connectionString = configService.get<string>("POSTGRESQL_URL");
         const pool = new Pool({
           connectionString,
-          ssl: true,
+          ssl: process.env.NODE_ENV === "production" ? true : false,
         });
 
         return drizzle(pool, { schema });

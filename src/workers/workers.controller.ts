@@ -1,4 +1,5 @@
-import { Controller, Get, Post, Put } from "@nestjs/common";
+import { Controller } from "@core/decorators/controller.decorator";
+import { Get, Post, Put } from "@nestjs/common";
 import { ApiOkResponse, ApiOperation } from "@nestjs/swagger";
 
 @Controller("workers")

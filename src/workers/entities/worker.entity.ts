@@ -12,7 +12,7 @@ import {
 
 export type Worker = typeof workers.$inferSelect;
 
-export class WorkerEntity implements Partial<Worker> {
+export class WorkerEntity implements Worker {
   @IsNumberString({ no_symbols: true })
   @Expose()
   @ApiProperty({
