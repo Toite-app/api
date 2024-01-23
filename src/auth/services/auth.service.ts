@@ -32,41 +32,23 @@ export class AuthService {
     return worker;
   }
 
-  public async obtainSession(data: {
-    token?: string;
+  public async createSession(data: {
     worker: WorkerEntity;
     headers: IncomingHttpHeaders;
     ipAddress: string;
   }) {
-    const { token, worker, headers, ipAddress } = data;
+    const { worker, headers, ipAddress } = data;
 
     const httpAgent = String(
       headers["user-agent"] || headers["User-Agent"] || "N/A",
     );
 
-    if (!token) {
-      const created = await this.sessionsService.create({
-        workerId: worker.id,
-        httpAgent,
-        ipAddress,
-      });
-      return await this.sessionsService.findByToken(created.token);
-    }
+    const created = await this.sessionsService.create({
+      workerId: worker.id,
+      httpAgent,
+      ipAddress,
+    });
 
-    const session = await this.sessionsService.findByToken(token);
-
-    const isCompromated =
-      session.workerId !== worker.id ||
-      session.ipAddress !== ipAddress ||
-      session.httpAgent !== httpAgent;
-
-    if (isCompromated) {
-      // TODO: Implement logic for compromated sessions
-      throw new ForbiddenException();
-    }
-
-    await this.sessionsService.refresh(token);
-
-    return await this.sessionsService.findByToken(token);
+    return await this.sessionsService.findByToken(created.token);
   }
 }

@@ -7,6 +7,7 @@ import {
   HttpStatus,
   Ip,
   Post,
+  UseGuards,
 } from "@nestjs/common";
 import { AuthService } from "../services/auth.service";
 import { Serializable } from "src/@core/decorators/serializable.decorator";
@@ -21,11 +22,13 @@ import { SignInDto } from "../dto/req/sign-in.dto";
 import { IncomingHttpHeaders } from "http2";
 import { Controller } from "@core/decorators/controller.decorator";
 import { SetCookies } from "../decorators/set-cookie.decorator";
+import { SessionAuthGuard } from "../guards/session-auth.guard";
 
 @Controller("auth")
 export class AuthController {
   constructor(private authService: AuthService) {}
 
+  @UseGuards(SessionAuthGuard)
   @Get("user")
   @HttpCode(HttpStatus.OK)
   @Serializable(WorkerEntity)
@@ -68,7 +71,7 @@ export class AuthController {
     const worker = await this.authService.signIn(dto);
     if (!ipAddress) ipAddress = "N/A";
 
-    const session = await this.authService.obtainSession({
+    const session = await this.authService.createSession({
       headers,
       ipAddress,
       worker,

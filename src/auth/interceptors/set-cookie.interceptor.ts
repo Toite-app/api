@@ -4,6 +4,7 @@ import {
   Injectable,
   NestInterceptor,
 } from "@nestjs/common";
+import * as ms from "@lukeed/ms";
 import { Observable } from "rxjs";
 import { map } from "rxjs/operators";
 import { Response } from "@core/interfaces/response";
@@ -31,7 +32,7 @@ export class SetCookiesInterceptor implements NestInterceptor {
 
         if (data?.setSessionToken) {
           res.cookie(AUTH_COOKIES.token, data.setSessionToken, {
-            maxAge: 1000 * 60 * 60 * 24 * 365,
+            maxAge: ms.parse("1y"),
             httpOnly: true,
             secure: true,
             sameSite: "none",

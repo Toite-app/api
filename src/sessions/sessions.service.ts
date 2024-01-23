@@ -64,7 +64,7 @@ export class SessionsService {
 
       const newToken = this.generateToken();
 
-      const session = await this.pg
+      await this.pg
         .update(schema.sessions)
         .set({
           token: newToken,
@@ -72,7 +72,7 @@ export class SessionsService {
         })
         .where(eq(schema.sessions.token, token));
 
-      return session;
+      return newToken;
     } catch (err) {
       handleError(err);
     }
