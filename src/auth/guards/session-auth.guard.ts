@@ -5,10 +5,14 @@ import { SessionsService } from "src/sessions/sessions.service";
 import { Response } from "@core/interfaces/response";
 import { AUTH_COOKIES } from "../auth.types";
 import { UnauthorizedException } from "@core/errors/exceptions/unauthorized.exception";
+import { WorkersService } from "src/workers/workers.service";
 
 @Injectable()
 export class SessionAuthGuard implements CanActivate {
-  constructor(private readonly sessionsService: SessionsService) {}
+  constructor(
+    private readonly sessionsService: SessionsService,
+    private readonly workersService: WorkersService,
+  ) {}
 
   async canActivate(context: ExecutionContext) {
     const req = context.switchToHttp().getRequest() as Request;
@@ -51,6 +55,11 @@ export class SessionAuthGuard implements CanActivate {
         sameSite: "none",
       });
     }
+
+    const worker = await this.workersService.findById(session.workerId);
+
+    req.session = session;
+    req.worker = { ...worker, passwordHash: undefined };
 
     return true;
   }

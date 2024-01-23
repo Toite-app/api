@@ -17,12 +17,15 @@ import {
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiUnauthorizedResponse,
 } from "@nestjs/swagger";
 import { SignInDto } from "../dto/req/sign-in.dto";
 import { IncomingHttpHeaders } from "http2";
 import { Controller } from "@core/decorators/controller.decorator";
 import { SetCookies } from "../decorators/set-cookie.decorator";
 import { SessionAuthGuard } from "../guards/session-auth.guard";
+import { Worker } from "@core/decorators/worker.decorator";
+import { IWorker } from "@postgress-db/schema";
 
 @Controller("auth")
 export class AuthController {
@@ -42,8 +45,11 @@ export class AuthController {
   @ApiNotFoundResponse({
     description: "User not found (you unauthorized)",
   })
-  async getUser() {
-    return "This action returns user";
+  @ApiUnauthorizedResponse({
+    description: "You unauthorized",
+  })
+  async getUser(@Worker() worker: IWorker) {
+    return worker;
   }
 
   @Post("sign-in")
@@ -83,7 +89,18 @@ export class AuthController {
     };
   }
 
+  @UseGuards(SessionAuthGuard)
   @Delete("sign-out")
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: "Sign out user and destroy session",
+  })
+  @ApiOkResponse({
+    description: "User has been successfully signed out",
+  })
+  @ApiUnauthorizedResponse({
+    description: "You unauthorized",
+  })
   async signOut() {
     return "This action signs out user";
   }

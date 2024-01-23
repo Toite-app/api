@@ -15,6 +15,12 @@ export class WorkersService {
 
   async findAll() {}
 
+  async findById(id: number): Promise<schema.IWorker> {
+    return await this.pg.query.workers.findFirst({
+      where: eq(schema.workers.id, id),
+    });
+  }
+
   /**
    * Find one worker by login
    * @param value string login

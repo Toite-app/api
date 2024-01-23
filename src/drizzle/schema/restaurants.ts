@@ -32,9 +32,7 @@ export const restaurants = pgTable("restaurants", {
     .notNull()
     .default(sql`CURRENT_TIMESTAMP`),
 
-  updatedAt: timestamp("updatedAt")
-    .notNull()
-    .default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: timestamp("updatedAt").notNull().defaultNow(),
 });
 
 export const restaurantHours = pgTable("restaurantHours", {
@@ -54,13 +52,9 @@ export const restaurantHours = pgTable("restaurantHours", {
   closingTime: time("closingTime").notNull(),
 
   // Timestamps //
-  createdAt: timestamp("createdAt")
-    .notNull()
-    .default(sql`CURRENT_TIMESTAMP`),
+  createdAt: timestamp("createdAt").notNull().defaultNow(),
 
-  updatedAt: timestamp("updatedAt")
-    .notNull()
-    .default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: timestamp("updatedAt").notNull().defaultNow(),
 });
 
 export const restaurantHourRelations = relations(

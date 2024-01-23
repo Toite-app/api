@@ -18,7 +18,7 @@ export class SessionsService {
     return `v1-${uuidv4()}-${uuidv4()}-${uuidv4()}-${uuidv4()}`;
   }
 
-  public async findByToken(token: string) {
+  public async findByToken(token: string): Promise<schema.ISession> {
     try {
       const result = await this.pg.query.sessions.findFirst({
         where: eq(schema.sessions.token, token),
@@ -30,7 +30,9 @@ export class SessionsService {
     }
   }
 
-  public async create(dto: SessionPayloadDto) {
+  public async create(
+    dto: SessionPayloadDto,
+  ): Promise<Pick<schema.ISession, "id" | "token">> {
     try {
       const { workerId, httpAgent, ipAddress } = dto;
       const token = this.generateToken();
@@ -56,7 +58,7 @@ export class SessionsService {
     }
   }
 
-  public async refresh(token: string) {
+  public async refresh(token: string): Promise<string> {
     try {
       if (!(await this.isSessionValid(token))) {
         throw new UnauthorizedException("Session is expired");
@@ -78,7 +80,7 @@ export class SessionsService {
     }
   }
 
-  public async isSessionValid(token: string) {
+  public async isSessionValid(token: string): Promise<boolean> {
     try {
       const session = await this.findByToken(token);
 
