@@ -90,8 +90,10 @@ export class AuthController {
   }
 
   @UseGuards(SessionAuthGuard)
+  @SetCookies()
   @Delete("sign-out")
   @HttpCode(HttpStatus.OK)
+  @Serializable(class Empty {})
   @ApiOperation({
     summary: "Sign out user and destroy session",
   })
@@ -102,6 +104,8 @@ export class AuthController {
     description: "You unauthorized",
   })
   async signOut() {
-    return "This action signs out user";
+    return {
+      setSessionToken: null,
+    };
   }
 }

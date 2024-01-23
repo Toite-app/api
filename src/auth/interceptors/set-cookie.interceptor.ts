@@ -30,13 +30,17 @@ export class SetCookiesInterceptor implements NestInterceptor {
       map((data: Partial<{ setSessionToken?: string }>) => {
         const res = context.switchToHttp().getResponse() as Response;
 
-        if (data?.setSessionToken) {
+        if (typeof data?.setSessionToken === "string") {
           res.cookie(AUTH_COOKIES.token, data.setSessionToken, {
             maxAge: ms.parse("1y"),
             httpOnly: true,
             secure: true,
             sameSite: "none",
           });
+        }
+
+        if (data?.setSessionToken === null) {
+          res.clearCookie(AUTH_COOKIES.token);
         }
 
         return data;

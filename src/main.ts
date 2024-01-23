@@ -8,6 +8,7 @@ import { workers } from "@postgress-db/schema";
 import * as schema from "src/drizzle/schema";
 import { hash } from "argon2";
 import * as cookieParser from "cookie-parser";
+import { AUTH_COOKIES } from "./auth/auth.types";
 
 const createUserIfDbEmpty = async () => {
   const db = drizzle(
@@ -42,6 +43,10 @@ async function bootstrap() {
     .setTitle("Toite API")
     .setDescription("The API part of the Toite project")
     .setVersion("1.0.0 (just started)")
+    .addCookieAuth(AUTH_COOKIES.token, {
+      type: "apiKey",
+    })
+    .setContact("Yefrosynii", "https://www.yefro.dev/", "contact@yefro.dev")
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
