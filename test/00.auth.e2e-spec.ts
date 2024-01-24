@@ -1,10 +1,9 @@
 import * as request from "supertest";
 import { HttpStatus, INestApplication } from "@nestjs/common";
 import { getTestApp } from "./helpers/app";
-import { ConfigService } from "@nestjs/config";
 import { migrate } from "./helpers/migrate-db";
 import { createAdmin } from "./helpers/create-admin";
-import { TEST_USER_AGENT } from "./helpers/consts";
+import { TEST_PASSWORD, TEST_USER_AGENT } from "./helpers/consts";
 import { AUTH_COOKIES } from "src/auth/auth.types";
 import { delay } from "./helpers/delay";
 import * as ms from "@lukeed/ms";
@@ -12,7 +11,6 @@ import { clearDatabase } from "./helpers/clear-db";
 
 describe("Auth Controller (e2e)", () => {
   let app: INestApplication;
-  let adminPassword: string;
   let cookie: string = "";
 
   beforeAll(async () => {
@@ -22,10 +20,6 @@ describe("Auth Controller (e2e)", () => {
     app = await getTestApp();
 
     await app.init();
-
-    const configService = app.get(ConfigService);
-
-    adminPassword = configService.get("INITIAL_ADMIN_PASSWORD");
   });
 
   afterAll(async () => {
@@ -60,7 +54,7 @@ describe("Auth Controller (e2e)", () => {
       .set("user-agent", TEST_USER_AGENT)
       .send({
         login: "admin",
-        password: adminPassword,
+        password: TEST_PASSWORD,
       })
       .then((response) => {
         cookie = response.headers["set-cookie"][0];
@@ -107,7 +101,6 @@ describe("Auth Controller (e2e)", () => {
       .set("user-agent", TEST_USER_AGENT)
       .set("Cookie", cookie)
       .then((response) => {
-        console.log(response.headers);
         expect(response.status).toBe(HttpStatus.OK);
         expect(response.headers["set-cookie"]).toBeDefined();
 

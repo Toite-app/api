@@ -1,14 +1,7 @@
-import { Pool } from "pg";
-import { drizzle } from "drizzle-orm/node-postgres";
-import * as schema from "src/drizzle/schema";
+import { db } from "./db";
 import { sql } from "drizzle-orm";
 
 export const clearDatabase = async () => {
-  const db = drizzle(
-    new Pool({ connectionString: process.env.POSTGRESQL_URL }),
-    { schema },
-  );
-
   // truncate all tables
   const tables = await db
     .execute(

@@ -44,7 +44,6 @@ export class SessionAuthGuard implements CanActivate {
       throw new UnauthorizedException("Session is compromated");
     }
 
-    // Refresh session every 30 minutes
     const isTimeToRefresh =
       new Date(session.refreshedAt).getTime() +
         ms.parse(process.env?.SESSION_EXPIRES_IN || "30m") <

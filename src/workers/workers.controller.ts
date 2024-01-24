@@ -3,7 +3,7 @@ import {
   IPagination,
   PaginationParams,
 } from "@core/decorators/pagination.decorator";
-import { Get, Post, Put, UseGuards } from "@nestjs/common";
+import { Body, Get, Post, Put, UseGuards } from "@nestjs/common";
 import {
   ApiOkResponse,
   ApiOperation,
@@ -13,6 +13,7 @@ import { SessionAuthGuard } from "src/auth/guards/session-auth.guard";
 import { Serializable } from "@core/decorators/serializable.decorator";
 import { WorkersPaginatedDto } from "./dto/res/workers-paginated.dto";
 import { WorkersService } from "./workers.service";
+import { PutWorkerDto } from "./dto/req/put-worker.dto";
 
 @UseGuards(SessionAuthGuard)
 @ApiUnauthorizedResponse({ description: "Unauthorized" })
@@ -45,7 +46,7 @@ export class WorkersController {
   @Post()
   @ApiOperation({ summary: "Creates a new worker" })
   @ApiOkResponse({ description: "Worker has been successfully created" })
-  async create() {
+  async create(@Body() data: PutWorkerDto) {
     return "This action adds a new worker";
   }
 
