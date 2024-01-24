@@ -39,6 +39,8 @@ async function bootstrap() {
       type: "apiKey",
     })
     .setContact("Yefrosynii", "https://www.yefro.dev/", "contact@yefro.dev")
+    .addTag("workers", "Get data about workers and manage them")
+    .addTag("auth", "Part of authentification for workers part of the system")
     .build();
 
   const document = SwaggerModule.createDocument(app, config);

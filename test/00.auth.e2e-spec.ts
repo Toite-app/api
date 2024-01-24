@@ -8,6 +8,7 @@ import { TEST_USER_AGENT } from "./helpers/consts";
 import { AUTH_COOKIES } from "src/auth/auth.types";
 import { delay } from "./helpers/delay";
 import * as ms from "@lukeed/ms";
+import { clearDatabase } from "./helpers/clear-db";
 
 describe("Auth Controller (e2e)", () => {
   let app: INestApplication;
@@ -15,6 +16,7 @@ describe("Auth Controller (e2e)", () => {
   let cookie: string = "";
 
   beforeAll(async () => {
+    await clearDatabase();
     await migrate();
     await createAdmin();
     app = await getTestApp();

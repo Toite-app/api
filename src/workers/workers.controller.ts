@@ -1,15 +1,45 @@
 import { Controller } from "@core/decorators/controller.decorator";
-import { Get, Post, Put } from "@nestjs/common";
-import { ApiOkResponse, ApiOperation } from "@nestjs/swagger";
+import {
+  IPagination,
+  PaginationParams,
+} from "@core/decorators/pagination.decorator";
+import { Get, Post, Put, UseGuards } from "@nestjs/common";
+import {
+  ApiOkResponse,
+  ApiOperation,
+  ApiUnauthorizedResponse,
+} from "@nestjs/swagger";
+import { SessionAuthGuard } from "src/auth/guards/session-auth.guard";
+import { Serializable } from "@core/decorators/serializable.decorator";
+import { WorkersPaginatedDto } from "./dto/res/workers-paginated.dto";
+import { WorkersService } from "./workers.service";
 
+@UseGuards(SessionAuthGuard)
+@ApiUnauthorizedResponse({ description: "Unauthorized" })
 @Controller("workers")
 export class WorkersController {
-  constructor() {}
+  constructor(private readonly workersService: WorkersService) {}
 
   @Get()
   @ApiOperation({ summary: "Gets all workers that created in system" })
-  async findAll() {
-    return "This action returns all workers";
+  @Serializable(WorkersPaginatedDto)
+  @ApiOkResponse({
+    description: "Workers have been successfully fetched",
+    type: WorkersPaginatedDto,
+  })
+  async findAll(
+    @PaginationParams() pagination: IPagination,
+  ): Promise<WorkersPaginatedDto> {
+    const total = await this.workersService.getTotalCount();
+    const data = await this.workersService.findMany({ pagination });
+
+    return {
+      data,
+      meta: {
+        ...pagination,
+        total,
+      },
+    };
   }
 
   @Post()

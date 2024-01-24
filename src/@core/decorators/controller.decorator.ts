@@ -22,7 +22,7 @@ interface IControllerOptions {
    * If it's false, fields which aren't marked with expose decorator will be omited
    * @default false
    */
-  noOmit: boolean;
+  noOmit?: boolean;
 }
 
 /**

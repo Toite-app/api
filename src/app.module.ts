@@ -7,6 +7,7 @@ import { AuthModule } from "./auth/auth.module";
 import { APP_PIPE } from "@nestjs/core";
 import { ZodValidationPipe } from "nestjs-zod";
 import { ThrottlerModule } from "@nestjs/throttler";
+import { SessionsService } from "./sessions/sessions.service";
 
 @Module({
   imports: [
