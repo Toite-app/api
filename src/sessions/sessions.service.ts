@@ -95,4 +95,16 @@ export class SessionsService {
       handleError(err);
     }
   }
+
+  public async destroy(token: string): Promise<boolean> {
+    try {
+      await this.pg
+        .delete(schema.sessions)
+        .where(eq(schema.sessions.token, token));
+
+      return true;
+    } catch (err) {
+      handleError(err);
+    }
+  }
 }

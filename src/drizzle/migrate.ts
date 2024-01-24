@@ -5,13 +5,13 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const pool = new Pool({
-  connectionString: process.env.POSTGRESQL_URL,
-});
+export async function startMigration() {
+  const pool = new Pool({
+    connectionString: process.env.POSTGRESQL_URL,
+  });
 
-const db = drizzle(pool);
+  const db = drizzle(pool);
 
-async function main() {
   console.log("Migrating database...");
   await migrate(db, {
     migrationsFolder: "./src/drizzle/migrations",
@@ -22,7 +22,7 @@ async function main() {
   process.exit(0);
 }
 
-main().catch((err) => {
+startMigration().catch((err) => {
   console.error(err);
   process.exit(1);
 });

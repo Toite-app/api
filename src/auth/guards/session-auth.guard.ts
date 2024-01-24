@@ -24,11 +24,15 @@ export class SessionAuthGuard implements CanActivate {
       req.headers["user-agent"] || req.headers["User-Agent"] || "N/A",
     );
 
-    if (!token) return false;
+    if (!token) {
+      throw new UnauthorizedException();
+    }
 
     const isValid = await this.sessionsService.isSessionValid(token);
 
-    if (!isValid) return false;
+    if (!isValid) {
+      throw new UnauthorizedException();
+    }
 
     const session = await this.sessionsService.findByToken(token);
 
@@ -42,7 +46,8 @@ export class SessionAuthGuard implements CanActivate {
 
     // Refresh session every 30 minutes
     const isTimeToRefresh =
-      new Date(session.refreshedAt).getTime() + ms.parse("30m") <
+      new Date(session.refreshedAt).getTime() +
+        ms.parse(process.env?.SESSION_EXPIRES_IN || "30m") <
       new Date().getTime();
 
     if (isTimeToRefresh) {

@@ -29,6 +29,8 @@ export class ValidationPipe implements PipeTransform {
    */
   public async transform(value: unknown, { metatype }: ArgumentMetadata) {
     try {
+      if (metatype === String) return String(value);
+
       if (!value || typeof value !== "object") {
         throw new BadRequestException("body is not an object");
       }

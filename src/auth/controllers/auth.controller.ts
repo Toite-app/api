@@ -14,7 +14,6 @@ import { Serializable } from "src/@core/decorators/serializable.decorator";
 import { WorkerEntity } from "src/workers/entities/worker.entity";
 import {
   ApiForbiddenResponse,
-  ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
   ApiUnauthorizedResponse,
@@ -26,6 +25,8 @@ import { SetCookies } from "../decorators/set-cookie.decorator";
 import { SessionAuthGuard } from "../guards/session-auth.guard";
 import { Worker } from "@core/decorators/worker.decorator";
 import { IWorker } from "@postgress-db/schema";
+import { Cookies } from "@core/decorators/cookies.decorator";
+import { AUTH_COOKIES } from "../auth.types";
 
 @Controller("auth")
 export class AuthController {
@@ -41,9 +42,6 @@ export class AuthController {
   @ApiOkResponse({
     description: "User has been successfully found",
     type: WorkerEntity,
-  })
-  @ApiNotFoundResponse({
-    description: "User not found (you unauthorized)",
   })
   @ApiUnauthorizedResponse({
     description: "You unauthorized",
@@ -62,9 +60,6 @@ export class AuthController {
   @ApiOkResponse({
     description: "User has been successfully signed in",
     type: WorkerEntity,
-  })
-  @ApiNotFoundResponse({
-    description: "User not found",
   })
   @ApiForbiddenResponse({
     description: "Wrong password",
@@ -103,7 +98,9 @@ export class AuthController {
   @ApiUnauthorizedResponse({
     description: "You unauthorized",
   })
-  async signOut() {
+  async signOut(@Cookies(AUTH_COOKIES.token) token: string) {
+    await this.authService.destroySession(token);
+
     return {
       setSessionToken: null,
     };

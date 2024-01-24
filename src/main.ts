@@ -7,10 +7,11 @@ import { drizzle } from "drizzle-orm/node-postgres";
 import { workers } from "@postgress-db/schema";
 import * as schema from "src/drizzle/schema";
 import { hash } from "argon2";
-import * as cookieParser from "cookie-parser";
-import { AUTH_COOKIES } from "./auth/auth.types";
 
-const createUserIfDbEmpty = async () => {
+import { AUTH_COOKIES } from "./auth/auth.types";
+import { configApp } from "@core/config/app";
+
+export const createUserIfDbEmpty = async () => {
   const db = drizzle(
     new Pool({ connectionString: process.env.POSTGRESQL_URL }),
     { schema },
@@ -28,16 +29,7 @@ const createUserIfDbEmpty = async () => {
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  app.use(cookieParser());
-
-  app.enableCors({
-    origin: "*",
-    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-    preflightContinue: false,
-    optionsSuccessStatus: 204,
-    credentials: true,
-    allowedHeaders: ["Accept", "Content-Type", "Authorization"],
-  });
+  configApp(app);
 
   const config = new DocumentBuilder()
     .setTitle("Toite API")

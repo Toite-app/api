@@ -4,9 +4,8 @@ import { WorkersService } from "src/workers/workers.service";
 import { SignInDto } from "../dto/req/sign-in.dto";
 import { WorkerEntity } from "src/workers/entities/worker.entity";
 import { SessionsService } from "src/sessions/sessions.service";
-import { NotFoundException } from "@core/errors/exceptions/not-found.exception";
-import { ForbiddenException } from "@core/errors/exceptions/forbidden.exception";
 import { IncomingHttpHeaders } from "http";
+import { UnauthorizedException } from "@core/errors/exceptions/unauthorized.exception";
 
 @Injectable()
 export class AuthService {
@@ -21,12 +20,12 @@ export class AuthService {
     const worker = await this.workersService.findOneByLogin(login);
 
     if (!worker) {
-      throw new NotFoundException("User not found");
+      throw new UnauthorizedException("User not found");
     }
 
     // TODO: Implement logic for timeout in case of wrong password
     if (!(await argon2.verify(worker.passwordHash, password))) {
-      throw new ForbiddenException("Wrong password");
+      throw new UnauthorizedException("Wrong password");
     }
 
     return worker;
@@ -50,5 +49,9 @@ export class AuthService {
     });
 
     return await this.sessionsService.findByToken(created.token);
+  }
+
+  public async destroySession(token: string) {
+    return await this.sessionsService.destroy(token);
   }
 }
