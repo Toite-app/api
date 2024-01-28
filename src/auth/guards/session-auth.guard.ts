@@ -6,15 +6,25 @@ import { Response } from "@core/interfaces/response";
 import { AUTH_COOKIES } from "../auth.types";
 import { UnauthorizedException } from "@core/errors/exceptions/unauthorized.exception";
 import { WorkersService } from "src/workers/workers.service";
+import { Reflector } from "@nestjs/core";
+import { REQUIRE_SESSION_AUTH_KEY } from "../decorators/session-auth.decorator";
 
 @Injectable()
 export class SessionAuthGuard implements CanActivate {
   constructor(
     private readonly sessionsService: SessionsService,
     private readonly workersService: WorkersService,
+    private readonly reflector: Reflector,
   ) {}
 
   async canActivate(context: ExecutionContext) {
+    const isSessionRequired = this.reflector.getAllAndOverride<boolean>(
+      REQUIRE_SESSION_AUTH_KEY,
+      [context.getHandler(), context.getClass()],
+    );
+
+    if (!isSessionRequired) return true;
+
     const req = context.switchToHttp().getRequest() as Request;
     const res = context.switchToHttp().getResponse() as Response;
 

@@ -31,26 +31,32 @@ export class ValidationPipe implements PipeTransform {
     try {
       if (metatype === String) return String(value);
 
-      if (!value || typeof value !== "object") {
+      if (typeof value !== "object" && metatype === Object) {
         throw new BadRequestException("body is not an object");
       }
+
       if (!metatype || !this.toValidate(metatype)) {
         return value;
       }
+
       const object = plainToClass(metatype, value, {
         excludeExtraneousValues: true,
       });
+
       const errors = await validate(object, {
         whitelist: true,
         forbidNonWhitelisted: true,
       });
+
       if (errors.length > 0) {
-        const reason = errors
-          .map(({ property }) => property)
-          .filter((property, i, arr) => arr.indexOf(property) === i)
-          .map((property) => `${property} field is not valid`);
+        const reason = errors.map(({ constraints }) => {
+          const [key] = Object.keys(constraints);
+          return `${constraints[key]}`;
+        });
+
         throw new BadRequestException(...reason);
       }
+
       return object;
     } catch (e) {
       throw handleError(e);

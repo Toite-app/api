@@ -1,7 +1,6 @@
 import * as request from "supertest";
 import { eq } from "drizzle-orm";
 import { db, schema } from "./db";
-import { faker } from "@faker-js/faker";
 import { TEST_IP_ADDRESS, TEST_PASSWORD, TEST_USER_AGENT } from "./consts";
 import { HttpStatus, INestApplication } from "@nestjs/common";
 
@@ -19,6 +18,7 @@ export const signIn = async (login: string, app: INestApplication) => {
     })
     .then((response) => {
       if (response.status !== HttpStatus.OK) {
+        console.error(response);
         throw new Error("Failed to sign in");
       }
     });
@@ -27,16 +27,12 @@ export const signIn = async (login: string, app: INestApplication) => {
     where: eq(schema.sessions.workerId, worker.id),
   });
 
-  const refreshedAt = faker.date.future({
-    years: 10,
-  });
-
   await db.insert(schema.sessions).values({
     token: login,
     workerId: worker.id,
     httpAgent: TEST_USER_AGENT,
     ipAddress: session.ipAddress || TEST_IP_ADDRESS,
-    refreshedAt,
+    refreshedAt: new Date(),
   });
 
   return login;

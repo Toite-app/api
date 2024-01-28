@@ -14,6 +14,11 @@ describe("Auth Controller (e2e)", () => {
   let cookie: string = "";
 
   beforeAll(async () => {
+    process.env = {
+      ...process.env,
+      SESSION_EXPIRES_IN: "1s",
+    };
+
     await clearDatabase();
     await migrate();
     await createAdmin();

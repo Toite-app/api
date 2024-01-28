@@ -26,7 +26,7 @@ export const ZodWorkerRole = z.enum(workerRoleEnum.enumValues);
 export const workers = pgTable("workers", {
   id: serial("id").primaryKey().unique(),
   name: text("name"),
-  login: text("login").notNull(),
+  login: text("login").unique().notNull(),
   role: workerRoleEnum("role").notNull(),
   passwordHash: text("passwordHash").notNull(),
   isBlocked: boolean("isBlocked").default(false),
@@ -44,3 +44,15 @@ export const workerRelations = relations(workers, ({ many }) => ({
 }));
 
 export type IWorker = typeof workers.$inferSelect;
+export type WorkerRole = typeof ZodWorkerRole._type;
+
+export const workerRoleRank: Record<WorkerRole, number> = {
+  KITCHENER: 0,
+  WAITER: 0,
+  CASHIER: 0,
+  DISPATCHER: 0,
+  COURIER: 0,
+  ADMIN: 1,
+  CHIEF_ADMIN: 2,
+  SYSTEM_ADMIN: 3,
+};

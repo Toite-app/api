@@ -1,0 +1,1 @@
+ALTER TABLE "workers" ADD CONSTRAINT "workers_login_unique" UNIQUE("login");

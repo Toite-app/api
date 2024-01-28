@@ -7,7 +7,6 @@ import {
   HttpStatus,
   Ip,
   Post,
-  UseGuards,
 } from "@nestjs/common";
 import { AuthService } from "../services/auth.service";
 import { Serializable } from "src/@core/decorators/serializable.decorator";
@@ -22,17 +21,17 @@ import { SignInDto } from "../dto/req/sign-in.dto";
 import { IncomingHttpHeaders } from "http2";
 import { Controller } from "@core/decorators/controller.decorator";
 import { SetCookies } from "../decorators/set-cookie.decorator";
-import { SessionAuthGuard } from "../guards/session-auth.guard";
 import { Worker } from "@core/decorators/worker.decorator";
 import { IWorker } from "@postgress-db/schema";
 import { Cookies } from "@core/decorators/cookies.decorator";
 import { AUTH_COOKIES } from "../auth.types";
+import { RequireSessionAuth } from "../decorators/session-auth.decorator";
 
 @Controller("auth")
 export class AuthController {
   constructor(private authService: AuthService) {}
 
-  @UseGuards(SessionAuthGuard)
+  @RequireSessionAuth()
   @Get("user")
   @HttpCode(HttpStatus.OK)
   @Serializable(WorkerEntity)
@@ -84,7 +83,7 @@ export class AuthController {
     };
   }
 
-  @UseGuards(SessionAuthGuard)
+  @RequireSessionAuth()
   @SetCookies()
   @Delete("sign-out")
   @HttpCode(HttpStatus.OK)

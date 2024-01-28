@@ -5,14 +5,14 @@ import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { count, eq } from "drizzle-orm";
 import { WorkerEntity } from "./entities/worker.entity";
 import { IPagination } from "@core/decorators/pagination.decorator";
+import { CreateWorkerDto } from "./dto/req/put-worker.dto";
+import * as argon2 from "argon2";
 
 @Injectable()
 export class WorkersService {
   constructor(
     @Inject(PG_CONNECTION) private readonly pg: NodePgDatabase<typeof schema>,
   ) {}
-
-  async create() {}
 
   public async getTotalCount(): Promise<number> {
     return await this.pg
@@ -50,6 +50,23 @@ export class WorkersService {
     return await this.pg.query.workers.findFirst({
       where: eq(schema.workers.login, value),
     });
+  }
+
+  /**
+   * Create a new worker
+   * @param dto
+   * @returns
+   */
+  async create(dto: CreateWorkerDto): Promise<WorkerEntity> {
+    const { password, role, ...rest } = dto;
+
+    const worker = await this.pg.insert(schema.workers).values({
+      ...rest,
+      role,
+      passwordHash: await argon2.hash(password),
+    });
+
+    return await this.findOneByLogin(worker.login);
   }
 
   async update() {}
