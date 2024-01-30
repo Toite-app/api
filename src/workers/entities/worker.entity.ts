@@ -15,7 +15,7 @@ export class WorkerEntity implements IWorker {
   @Expose()
   @ApiProperty({
     description: "Unique identifier of the worker",
-    example: "13",
+    example: "1",
   })
   id: number;
 

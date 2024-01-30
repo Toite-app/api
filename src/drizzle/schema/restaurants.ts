@@ -66,3 +66,5 @@ export const restaurantHourRelations = relations(
     }),
   }),
 );
+
+export type IRestaurant = typeof restaurants.$inferSelect;

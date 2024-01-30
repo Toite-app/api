@@ -36,7 +36,7 @@ export class WorkersController {
   constructor(private readonly workersService: WorkersService) {}
 
   @Get()
-  @ApiOperation({ summary: "Gets all workers that created in system" })
+  @ApiOperation({ summary: "Gets workers that created in system" })
   @Serializable(WorkersPaginatedDto)
   @ApiOkResponse({
     description: "Workers have been successfully fetched",

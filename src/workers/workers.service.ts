@@ -58,7 +58,7 @@ export class WorkersService {
    * @param dto
    * @returns
    */
-  async create(dto: CreateWorkerDto): Promise<WorkerEntity> {
+  public async create(dto: CreateWorkerDto): Promise<WorkerEntity> {
     const { password, role, ...rest } = dto;
 
     const worker = await this.pg.insert(schema.workers).values({
@@ -76,7 +76,7 @@ export class WorkersService {
    * @param dto
    * @returns
    */
-  async update(id: number, dto: UpdateWorkerDto): Promise<WorkerEntity> {
+  public async update(id: number, dto: UpdateWorkerDto): Promise<WorkerEntity> {
     const { password, ...payload } = dto;
 
     if (Object.keys(dto).length === 0) {
@@ -100,5 +100,5 @@ export class WorkersService {
     return await this.findById(id);
   }
 
-  async remove() {}
+  public async remove() {}
 }

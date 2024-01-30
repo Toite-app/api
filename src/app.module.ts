@@ -10,6 +10,7 @@ import { ThrottlerModule } from "@nestjs/throttler";
 import { RolesGuard } from "@core/guards/roles.guard";
 import { SessionAuthGuard } from "./auth/guards/session-auth.guard";
 import { SessionsService } from "./sessions/sessions.service";
+import { RestaurantsModule } from "./restaurants/restaurants.module";
 
 @Module({
   imports: [
@@ -23,8 +24,9 @@ import { SessionsService } from "./sessions/sessions.service";
       ],
     }),
     DrizzleModule,
-    WorkersModule,
     AuthModule,
+    WorkersModule,
+    RestaurantsModule,
   ],
   providers: [
     SessionsService,
