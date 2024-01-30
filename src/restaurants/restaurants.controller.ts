@@ -3,12 +3,13 @@ import { RestaurantsService } from "./restaurants.service";
 import {
   ApiCreatedResponse,
   ApiForbiddenResponse,
+  ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
   ApiUnauthorizedResponse,
 } from "@nestjs/swagger";
 import { Controller } from "@core/decorators/controller.decorator";
-import { Body, Get, Post } from "@nestjs/common";
+import { Body, Get, Param, Post } from "@nestjs/common";
 import { Serializable } from "@core/decorators/serializable.decorator";
 import { RestaurantsPaginatedDto } from "./dto/views/get-restaurants.view";
 import {
@@ -63,5 +64,21 @@ export class RestaurantsController {
   })
   async create(@Body() dto: CreateRestaurantDto): Promise<RestaurantDto> {
     return await this.restaurantsService.create(dto);
+  }
+
+  @Get(":id")
+  @Serializable(RestaurantDto)
+  @ApiOperation({
+    summary: "Gets restaurant by id",
+  })
+  @ApiOkResponse({
+    description: "Restaurant has been successfully fetched",
+    type: RestaurantDto,
+  })
+  @ApiNotFoundResponse({
+    description: "Restaurant with this id not found",
+  })
+  async findOne(@Param("id") id: number): Promise<RestaurantDto> {
+    return await this.restaurantsService.findById(id);
   }
 }

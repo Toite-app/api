@@ -6,6 +6,7 @@ import { count, eq } from "drizzle-orm";
 import { RestaurantDto } from "./dto/restaurant.dto";
 import { IPagination } from "@core/decorators/pagination.decorator";
 import { CreateRestaurantDto } from "./dto/create-restaurant.dto";
+import { NotFoundException } from "@core/errors/exceptions/not-found.exception";
 
 @Injectable()
 export class RestaurantsService {
@@ -44,9 +45,15 @@ export class RestaurantsService {
    * @returns
    */
   public async findById(id: number): Promise<RestaurantDto> {
-    return await this.pg.query.restaurants.findFirst({
+    const data = await this.pg.query.restaurants.findFirst({
       where: eq(schema.restaurants.id, id),
     });
+
+    if (!data) {
+      throw new NotFoundException(`Restaurant with id ${id} not found`);
+    }
+
+    return data;
   }
 
   /**

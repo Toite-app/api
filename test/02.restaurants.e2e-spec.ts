@@ -96,6 +96,8 @@ describe("Restaurants Controller (e2e)", () => {
       });
   });
 
+  let restId = 0;
+
   it("/restaurants (GET) - should return 200 OK (paginated)", async () => {
     await request(app.getHttpServer())
       .get("/restaurants")
@@ -109,6 +111,22 @@ describe("Restaurants Controller (e2e)", () => {
         expect(
           response.body.data.some(({ name }) => name === restName),
         ).toEqual(true);
+
+        restId = response.body.data.find(({ name }) => name === restName).id;
+      });
+  });
+
+  it("/restaurants/:id (GET) - should return 200 OK", async () => {
+    await request(app.getHttpServer())
+      .get(`/restaurants/${restId}`)
+      .set("Cookie", [sysAdminToken])
+      .set("user-agent", TEST_USER_AGENT)
+      .then((response) => {
+        expect(response.status).toBe(HttpStatus.OK);
+        expect(response.body).toBeDefined();
+        expect(response.body.id).toBeDefined();
+        expect(response.body.name).toBeDefined();
+        expect(response.body.address).toBeDefined();
       });
   });
 });
