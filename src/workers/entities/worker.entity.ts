@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { ZodWorkerRole, workers } from "@postgress-db/schema";
+import { IWorker, ZodWorkerRole } from "@postgress-db/schema";
 import { Exclude, Expose } from "class-transformer";
 import {
   IsBoolean,
@@ -10,9 +10,7 @@ import {
   IsString,
 } from "class-validator";
 
-export type Worker = typeof workers.$inferSelect;
-
-export class WorkerEntity implements Worker {
+export class WorkerEntity implements IWorker {
   @IsNumberString({ no_symbols: true })
   @Expose()
   @ApiProperty({

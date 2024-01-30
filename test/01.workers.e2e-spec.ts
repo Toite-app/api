@@ -136,6 +136,8 @@ describe("Workers Controller (e2e)", () => {
       });
   });
 
+  let dispatcherId: number = 0;
+
   it("/workers (POST) - should return 201 Created", async () => {
     await request(app.getHttpServer())
       .post("/workers")
@@ -158,6 +160,41 @@ describe("Workers Controller (e2e)", () => {
         login: "testdispatcher",
         password: TEST_PASSWORD,
       })
+      .then((response) => {
+        expect(response.status).toBe(HttpStatus.OK);
+        expect(response.body).toBeDefined();
+        expect(response.body.id).toBeDefined();
+        expect(response.body.login).toBeDefined();
+        expect(response.body.role).toBeDefined();
+        expect(response.body.login).toEqual("testdispatcher");
+        expect(response.body.role).toEqual("DISPATCHER");
+        dispatcherId = response.body.id;
+      });
+  });
+
+  it("/workers/:id (GET) - should return 401 Unauthorized", async () => {
+    await request(app.getHttpServer())
+      .get(`/workers/${dispatcherId}`)
+      .then((response) => {
+        expect(response.status).toBe(HttpStatus.UNAUTHORIZED);
+      });
+  });
+
+  it("/workers/:id (GET) - should return 404 Not found", async () => {
+    await request(app.getHttpServer())
+      .get(`/workers/999999`)
+      .set("Cookie", [sysAdminToken])
+      .set("user-agent", TEST_USER_AGENT)
+      .then((response) => {
+        expect(response.status).toBe(HttpStatus.NOT_FOUND);
+      });
+  });
+
+  it("/workers/:id (GET) - shoult return 200 OK", async () => {
+    await request(app.getHttpServer())
+      .get(`/workers/${dispatcherId}`)
+      .set("Cookie", [sysAdminToken])
+      .set("user-agent", TEST_USER_AGENT)
       .then((response) => {
         expect(response.status).toBe(HttpStatus.OK);
         expect(response.body).toBeDefined();

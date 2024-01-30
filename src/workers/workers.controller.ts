@@ -3,11 +3,13 @@ import {
   IPagination,
   PaginationParams,
 } from "@core/decorators/pagination.decorator";
-import { Body, Get, Post, Put } from "@nestjs/common";
+import { Body, Get, Param, Post, Put } from "@nestjs/common";
 import {
+  ApiBadRequestResponse,
   ApiConflictResponse,
   ApiCreatedResponse,
   ApiForbiddenResponse,
+  ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
   ApiUnauthorizedResponse,
@@ -24,6 +26,7 @@ import { ForbiddenException } from "@core/errors/exceptions/forbidden.exception"
 import { RequireSessionAuth } from "src/auth/decorators/session-auth.decorator";
 import { WorkerEntity } from "./entities/worker.entity";
 import { BadRequestException } from "@core/errors/exceptions/bad-request.exception";
+import { NotFoundException } from "@core/errors/exceptions/not-found.exception";
 
 @RequireSessionAuth()
 @Controller("workers")
@@ -83,9 +86,30 @@ export class WorkersController {
   }
 
   @Get(":id")
+  @Serializable(WorkerEntity)
   @ApiOperation({ summary: "Gets a worker by id" })
-  async findOne() {
-    return "This action returns a worker by id";
+  @ApiOkResponse({
+    description: "Worker has been successfully fetched",
+    type: WorkerEntity,
+  })
+  @ApiNotFoundResponse({
+    description: "Worker with this id doesn't exist",
+  })
+  @ApiBadRequestResponse({
+    description: "Id must be a number and provided",
+  })
+  async findOne(@Param("id") id?: number) {
+    if (!id) {
+      throw new BadRequestException("Id must be a number and provided");
+    }
+
+    const worker = await this.workersService.findById(id);
+
+    if (!worker) {
+      throw new NotFoundException("Worker with this id doesn't exist");
+    }
+
+    return worker;
   }
 
   @Put(":id")
