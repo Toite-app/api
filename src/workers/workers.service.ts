@@ -5,8 +5,9 @@ import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { count, eq } from "drizzle-orm";
 import { WorkerEntity } from "./entities/worker.entity";
 import { IPagination } from "@core/decorators/pagination.decorator";
-import { CreateWorkerDto } from "./dto/req/put-worker.dto";
+import { CreateWorkerDto, UpdateWorkerDto } from "./dto/req/put-worker.dto";
 import * as argon2 from "argon2";
+import { BadRequestException } from "@core/errors/exceptions/bad-request.exception";
 
 @Injectable()
 export class WorkersService {
@@ -69,7 +70,35 @@ export class WorkersService {
     return await this.findOneByLogin(worker.login);
   }
 
-  async update() {}
+  /**
+   * Update worker by id
+   * @param id Id of the worker
+   * @param dto
+   * @returns
+   */
+  async update(id: number, dto: UpdateWorkerDto): Promise<WorkerEntity> {
+    const { password, ...payload } = dto;
+
+    if (Object.keys(dto).length === 0) {
+      throw new BadRequestException(
+        "You should provide at least one field to update",
+      );
+    }
+
+    await this.pg
+      .update(schema.workers)
+      .set({
+        ...payload,
+        ...(password
+          ? {
+              passwordHash: await argon2.hash(password),
+            }
+          : {}),
+      })
+      .where(eq(schema.workers.id, id));
+
+    return await this.findById(id);
+  }
 
   async remove() {}
 }

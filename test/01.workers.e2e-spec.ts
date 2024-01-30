@@ -234,4 +234,26 @@ describe("Workers Controller (e2e)", () => {
         expect(response.body.data.some((w) => w.login === "testdispatcher"));
       });
   });
+
+  it("/workers (PUT) - should update dispatcher and return 200 OK", async () => {
+    await request(app.getHttpServer())
+      .put(`/workers/${dispatcherId}`)
+      .set("Cookie", [sysAdminToken])
+      .set("user-agent", TEST_USER_AGENT)
+      .send({
+        login: "newdispatcherlogin",
+        password: TEST_PASSWORD,
+        role: "ADMIN",
+      })
+      .then((response) => {
+        expect(response.status).toBe(HttpStatus.OK);
+        expect(response.body).toBeDefined();
+        expect(response.body.id).toBeDefined();
+        expect(response.body.login).toBeDefined();
+        expect(response.body.role).toBeDefined();
+        expect(response.body.login).toEqual("newdispatcherlogin");
+        expect(response.body.role).toEqual("ADMIN");
+        expect(response.body.id).toEqual(dispatcherId);
+      });
+  });
 });

@@ -26,4 +26,4 @@ export class CreateWorkerDto extends IntersectionType(
   password: string;
 }
 
-export class PutWorkerDto extends PartialType(CreateWorkerDto) {}
+export class UpdateWorkerDto extends PartialType(CreateWorkerDto) {}

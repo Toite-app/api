@@ -17,7 +17,7 @@ import {
 import { Serializable } from "@core/decorators/serializable.decorator";
 import { WorkersPaginatedDto } from "./dto/res/workers-paginated.dto";
 import { WorkersService } from "./workers.service";
-import { CreateWorkerDto } from "./dto/req/put-worker.dto";
+import { CreateWorkerDto, UpdateWorkerDto } from "./dto/req/put-worker.dto";
 import { Roles } from "@core/decorators/roles.decorator";
 import { ConflictException } from "@core/errors/exceptions/conflict.exception";
 import { Worker } from "@core/decorators/worker.decorator";
@@ -98,7 +98,7 @@ export class WorkersController {
   @ApiBadRequestResponse({
     description: "Id must be a number and provided",
   })
-  async findOne(@Param("id") id?: number) {
+  async findOne(@Param("id") id?: number): Promise<WorkerEntity> {
     if (!id) {
       throw new BadRequestException("Id must be a number and provided");
     }
@@ -112,9 +112,49 @@ export class WorkersController {
     return worker;
   }
 
+  // TODO: add validation of ADMIN restaurant id
   @Put(":id")
+  @Roles("SYSTEM_ADMIN", "CHIEF_ADMIN", "ADMIN")
+  @Serializable(WorkerEntity)
   @ApiOperation({ summary: "Updates a worker by id" })
-  async update() {
-    return "This action updates a worker by id";
+  @ApiOkResponse({
+    description: "Worker has been successfully updated",
+    type: WorkerEntity,
+  })
+  @ApiNotFoundResponse({
+    description: "Worker with this id doesn't exist",
+  })
+  @ApiBadRequestResponse({
+    description: "Id must be a number and provided",
+  })
+  async update(
+    @Param("id") id: number,
+    @Body() data: UpdateWorkerDto,
+    @Worker() worker: IWorker,
+  ): Promise<WorkerEntity> {
+    if (!id) {
+      throw new BadRequestException("Id must be a number and provided");
+    }
+
+    const { role } = data;
+
+    const roleRank = workerRoleRank?.[role];
+    const requesterRoleRank = workerRoleRank[worker.role];
+
+    if (role) {
+      if (role === "SYSTEM_ADMIN") {
+        throw new BadRequestException("You can't create system admin");
+      }
+
+      if (requesterRoleRank <= roleRank) {
+        throw new ForbiddenException("You can't create worker with this role");
+      }
+    }
+
+    if (await this.workersService.findOneByLogin(data.login)) {
+      throw new ConflictException("Worker with this login already exists");
+    }
+
+    return await this.workersService.update(id, data);
   }
 }
