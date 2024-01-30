@@ -1,19 +1,23 @@
 import { RequireSessionAuth } from "src/auth/decorators/session-auth.decorator";
 import { RestaurantsService } from "./restaurants.service";
 import {
+  ApiCreatedResponse,
   ApiForbiddenResponse,
   ApiOkResponse,
   ApiOperation,
   ApiUnauthorizedResponse,
 } from "@nestjs/swagger";
 import { Controller } from "@core/decorators/controller.decorator";
-import { Get } from "@nestjs/common";
+import { Body, Get, Post } from "@nestjs/common";
 import { Serializable } from "@core/decorators/serializable.decorator";
 import { RestaurantsPaginatedDto } from "./dto/views/get-restaurants.view";
 import {
   IPagination,
   PaginationParams,
 } from "@core/decorators/pagination.decorator";
+import { Roles } from "@core/decorators/roles.decorator";
+import { RestaurantDto } from "./dto/restaurant.dto";
+import { CreateRestaurantDto } from "./dto/create-restaurant.dto";
 
 @RequireSessionAuth()
 @Controller("restaurants")
@@ -42,5 +46,22 @@ export class RestaurantsController {
         total,
       },
     };
+  }
+
+  @Post()
+  @Roles("SYSTEM_ADMIN", "CHIEF_ADMIN")
+  @Serializable(RestaurantDto)
+  @ApiOperation({
+    summary: "Creates a new restaurant",
+  })
+  @ApiCreatedResponse({
+    description: "Restaurant has been successfully created",
+    type: RestaurantDto,
+  })
+  @ApiForbiddenResponse({
+    description: "Action available only for SYSTEM_ADMIN, CHIEF_ADMIN",
+  })
+  async create(@Body() dto: CreateRestaurantDto): Promise<RestaurantDto> {
+    return await this.restaurantsService.create(dto);
   }
 }

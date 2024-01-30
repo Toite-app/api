@@ -64,6 +64,10 @@ export class WorkersController {
   @ApiOperation({ summary: "Creates a new worker" })
   @ApiCreatedResponse({ description: "Worker has been successfully created" })
   @ApiConflictResponse({ description: "Worker with this login already exists" })
+  @ApiForbiddenResponse({
+    description:
+      "Available only for SYSTEM_ADMIN, CHIEF_ADMIN, ADMIN (restaurant scope)",
+  })
   async create(@Body() data: CreateWorkerDto, @Worker() worker: IWorker) {
     const { role } = data;
 
