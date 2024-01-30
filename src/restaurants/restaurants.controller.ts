@@ -3,13 +3,14 @@ import { RestaurantsService } from "./restaurants.service";
 import {
   ApiCreatedResponse,
   ApiForbiddenResponse,
+  ApiNoContentResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
   ApiUnauthorizedResponse,
 } from "@nestjs/swagger";
 import { Controller } from "@core/decorators/controller.decorator";
-import { Body, Get, Param, Post, Put } from "@nestjs/common";
+import { Body, Delete, Get, Param, Post, Put } from "@nestjs/common";
 import { Serializable } from "@core/decorators/serializable.decorator";
 import { RestaurantsPaginatedDto } from "./dto/views/get-restaurants.view";
 import {
@@ -104,5 +105,23 @@ export class RestaurantsController {
     @Body() dto: UpdateRestaurantDto,
   ): Promise<RestaurantDto> {
     return await this.restaurantsService.update(id, dto);
+  }
+
+  @Delete(":id")
+  @Roles("SYSTEM_ADMIN")
+  @ApiOperation({
+    summary: "Deletes restaurant by id",
+  })
+  @ApiNoContentResponse({
+    description: "Restaurant has been successfully deleted",
+  })
+  @ApiNotFoundResponse({
+    description: "Restaurant with this id not found",
+  })
+  @ApiForbiddenResponse({
+    description: "Action available only for SYSTEM_ADMIN",
+  })
+  async delete(@Param("id") id: number): Promise<void> {
+    return await this.restaurantsService.delete(id);
   }
 }

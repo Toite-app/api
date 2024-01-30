@@ -90,4 +90,16 @@ export class RestaurantsService {
 
     return await this.findById(id);
   }
+
+  /**
+   * Delete a restaurant
+   * @param id
+   * @returns
+   */
+
+  public async delete(id: number): Promise<void> {
+    await this.pg
+      .delete(schema.restaurants)
+      .where(eq(schema.restaurants.id, id));
+  }
 }
