@@ -9,7 +9,7 @@ import {
   ApiUnauthorizedResponse,
 } from "@nestjs/swagger";
 import { Controller } from "@core/decorators/controller.decorator";
-import { Body, Get, Param, Post } from "@nestjs/common";
+import { Body, Get, Param, Post, Put } from "@nestjs/common";
 import { Serializable } from "@core/decorators/serializable.decorator";
 import { RestaurantsPaginatedDto } from "./dto/views/get-restaurants.view";
 import {
@@ -19,6 +19,7 @@ import {
 import { Roles } from "@core/decorators/roles.decorator";
 import { RestaurantDto } from "./dto/restaurant.dto";
 import { CreateRestaurantDto } from "./dto/create-restaurant.dto";
+import { UpdateRestaurantDto } from "./dto/update-restaurant.dto";
 
 @RequireSessionAuth()
 @Controller("restaurants")
@@ -80,5 +81,28 @@ export class RestaurantsController {
   })
   async findOne(@Param("id") id: number): Promise<RestaurantDto> {
     return await this.restaurantsService.findById(id);
+  }
+
+  @Put(":id")
+  @Roles("SYSTEM_ADMIN", "CHIEF_ADMIN")
+  @Serializable(RestaurantDto)
+  @ApiOperation({
+    summary: "Updates restaurant by id",
+  })
+  @ApiOkResponse({
+    description: "Restaurant has been successfully updated",
+    type: RestaurantDto,
+  })
+  @ApiNotFoundResponse({
+    description: "Restaurant with this id not found",
+  })
+  @ApiForbiddenResponse({
+    description: "Action available only for SYSTEM_ADMIN, CHIEF_ADMIN",
+  })
+  async update(
+    @Param("id") id: number,
+    @Body() dto: UpdateRestaurantDto,
+  ): Promise<RestaurantDto> {
+    return await this.restaurantsService.update(id, dto);
   }
 }

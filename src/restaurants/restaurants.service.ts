@@ -7,6 +7,7 @@ import { RestaurantDto } from "./dto/restaurant.dto";
 import { IPagination } from "@core/decorators/pagination.decorator";
 import { CreateRestaurantDto } from "./dto/create-restaurant.dto";
 import { NotFoundException } from "@core/errors/exceptions/not-found.exception";
+import { UpdateRestaurantDto } from "./dto/update-restaurant.dto";
 
 @Injectable()
 export class RestaurantsService {
@@ -80,7 +81,7 @@ export class RestaurantsService {
    */
   public async update(
     id: number,
-    dto: CreateRestaurantDto,
+    dto: UpdateRestaurantDto,
   ): Promise<RestaurantDto> {
     await this.pg
       .update(schema.restaurants)
