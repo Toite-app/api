@@ -8,6 +8,7 @@ import {
   timestamp,
   time,
 } from "drizzle-orm/pg-core";
+import { workers } from "./workers";
 
 export const restaurants = pgTable("restaurants", {
   // Primary key //
@@ -64,6 +65,9 @@ export const restaurantHours = pgTable("restaurantHours", {
 export const restaurantRelations = relations(restaurants, ({ many }) => ({
   restaurantHours: many(restaurantHours, {
     relationName: "restaurant-to-hours",
+  }),
+  workers: many(workers, {
+    relationName: "restaurant-to-workers",
   }),
 }));
 

@@ -1,6 +1,7 @@
 import { relations } from "drizzle-orm";
 import {
   boolean,
+  integer,
   pgEnum,
   pgTable,
   serial,
@@ -9,6 +10,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { z } from "zod";
 import { sessions } from "./sessions";
+import { restaurants } from "./restaurants";
 
 export const workerRoleEnum = pgEnum("workerRoleEnum", [
   "SYSTEM_ADMIN" as const,
@@ -26,6 +28,7 @@ export const ZodWorkerRole = z.enum(workerRoleEnum.enumValues);
 export const workers = pgTable("workers", {
   id: serial("id").primaryKey().unique(),
   name: text("name"),
+  restaurantId: integer("restaurantId"),
   login: text("login").unique().notNull(),
   role: workerRoleEnum("role").notNull(),
   passwordHash: text("passwordHash").notNull(),
@@ -37,7 +40,11 @@ export const workers = pgTable("workers", {
   updatedAt: timestamp("updatedAt").notNull().defaultNow(),
 });
 
-export const workerRelations = relations(workers, ({ many }) => ({
+export const workerRelations = relations(workers, ({ one, many }) => ({
+  restaurant: one(restaurants, {
+    fields: [workers.restaurantId],
+    references: [restaurants.id],
+  }),
   sessions: many(sessions, {
     relationName: "sessions",
   }),

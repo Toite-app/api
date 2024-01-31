@@ -13,8 +13,12 @@ export async function startMigration() {
   const db = drizzle(pool);
 
   console.log("Migrating database...");
+
   await migrate(db, {
     migrationsFolder: "./src/drizzle/migrations",
+  }).catch((err) => {
+    console.error(err);
+    process.exit(1);
   });
 
   console.log("Done!");

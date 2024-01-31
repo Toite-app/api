@@ -5,50 +5,8 @@
     {
       "idx": 0,
       "version": "5",
-      "when": 1706005346765,
-      "tag": "0000_superb_molecule_man",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "5",
-      "when": 1706005699341,
-      "tag": "0001_smiling_squirrel_girl",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "5",
-      "when": 1706023611795,
-      "tag": "0002_motionless_deathstrike",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "5",
-      "when": 1706030269793,
-      "tag": "0003_foamy_jetstream",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "5",
-      "when": 1706438419309,
-      "tag": "0004_cool_apocalypse",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "5",
-      "when": 1706705368780,
-      "tag": "0005_tired_darkstar",
-      "breakpoints": true
-    },
-    {
-      "idx": 6,
-      "version": "5",
-      "when": 1706707178191,
-      "tag": "0006_groovy_fat_cobra",
+      "when": 1706711034216,
+      "tag": "0000_pink_stranger",
       "breakpoints": true
     }
   ]

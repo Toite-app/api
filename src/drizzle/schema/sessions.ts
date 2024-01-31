@@ -5,7 +5,10 @@ export const sessions = pgTable("sessions", {
   id: serial("id").primaryKey().unique().$type(),
   workerId: serial("workerId")
     .notNull()
-    .references(() => workers.id),
+    .references(() => workers.id, {
+      onDelete: "cascade",
+      onUpdate: "cascade",
+    }),
   httpAgent: text("httpAgent"),
   ipAddress: text("ipAddress"),
   token: text("token").notNull().unique(),

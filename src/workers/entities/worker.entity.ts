@@ -28,6 +28,15 @@ export class WorkerEntity implements IWorker {
   })
   name: string;
 
+  @IsOptional()
+  @IsNumberString({ no_symbols: true })
+  @Expose()
+  @ApiProperty({
+    description: "Unique identifier of the restaurant",
+    example: null,
+  })
+  restaurantId: number | null;
+
   @IsString()
   @Expose()
   @ApiProperty({

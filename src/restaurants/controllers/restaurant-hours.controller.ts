@@ -88,10 +88,8 @@ export class RestaurantHoursController {
     description: "Forbidden, allowed only for SYSTEM_ADMIN and CHIEF_ADMIN",
   })
   async delete(@Param("id") id: number, @Param("hoursId") hoursId: number) {
-    console.log("🚀 ~ RestaurantHoursController ~ delete ~ hoursId:", hoursId);
-    console.log("🚀 ~ RestaurantHoursController ~ delete ~ id:", id);
-    const result = await this.restaurantHoursService.delete(hoursId, id);
-    console.log(result);
+    await this.restaurantHoursService.delete(hoursId, id);
+
     return;
   }
 }

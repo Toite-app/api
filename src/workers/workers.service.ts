@@ -15,6 +15,14 @@ export class WorkersService {
     @Inject(PG_CONNECTION) private readonly pg: NodePgDatabase<typeof schema>,
   ) {}
 
+  private checkRestaurantRoleAssignment(role?: schema.IWorker["role"]) {
+    if (role === "SYSTEM_ADMIN" || role === "CHIEF_ADMIN") {
+      throw new BadRequestException("You can't assign restaurant to this role");
+    }
+
+    return true;
+  }
+
   public async getTotalCount(): Promise<number> {
     return await this.pg
       .select({ value: count() })
@@ -61,6 +69,8 @@ export class WorkersService {
   public async create(dto: CreateWorkerDto): Promise<WorkerEntity> {
     const { password, role, ...rest } = dto;
 
+    this.checkRestaurantRoleAssignment(role);
+
     const worker = await this.pg.insert(schema.workers).values({
       ...rest,
       role,
@@ -77,7 +87,9 @@ export class WorkersService {
    * @returns
    */
   public async update(id: number, dto: UpdateWorkerDto): Promise<WorkerEntity> {
-    const { password, ...payload } = dto;
+    const { password, role, restaurantId, ...payload } = dto;
+
+    this.checkRestaurantRoleAssignment(role);
 
     if (Object.keys(dto).length === 0) {
       throw new BadRequestException(
@@ -89,6 +101,10 @@ export class WorkersService {
       .update(schema.workers)
       .set({
         ...payload,
+        role,
+        ...(role === "SYSTEM_ADMIN" || role === "CHIEF_ADMIN"
+          ? { restaurantId: null }
+          : { restaurantId }),
         ...(password
           ? {
               passwordHash: await argon2.hash(password),
