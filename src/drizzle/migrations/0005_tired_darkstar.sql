@@ -1,0 +1,1 @@
+ALTER TABLE "restaurantHours" ADD COLUMN "isEnabled" boolean DEFAULT true;

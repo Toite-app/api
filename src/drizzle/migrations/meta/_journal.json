@@ -36,6 +36,20 @@
       "when": 1706438419309,
       "tag": "0004_cool_apocalypse",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "5",
+      "when": 1706705368780,
+      "tag": "0005_tired_darkstar",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1706707178191,
+      "tag": "0006_groovy_fat_cobra",
+      "breakpoints": true
     }
   ]
 }

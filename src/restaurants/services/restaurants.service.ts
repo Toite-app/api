@@ -3,11 +3,11 @@ import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { PG_CONNECTION } from "src/constants";
 import * as schema from "@postgress-db/schema";
 import { count, eq } from "drizzle-orm";
-import { RestaurantDto } from "./dto/restaurant.dto";
+import { RestaurantDto } from "../dto/restaurant.dto";
 import { IPagination } from "@core/decorators/pagination.decorator";
-import { CreateRestaurantDto } from "./dto/create-restaurant.dto";
+import { CreateRestaurantDto } from "../dto/create-restaurant.dto";
 import { NotFoundException } from "@core/errors/exceptions/not-found.exception";
-import { UpdateRestaurantDto } from "./dto/update-restaurant.dto";
+import { UpdateRestaurantDto } from "../dto/update-restaurant.dto";
 
 @Injectable()
 export class RestaurantsService {
@@ -101,5 +101,11 @@ export class RestaurantsService {
     await this.pg
       .delete(schema.restaurants)
       .where(eq(schema.restaurants.id, id));
+  }
+
+  public async isExists(id: number): Promise<boolean> {
+    return !!(await this.pg.query.restaurants.findFirst({
+      where: eq(schema.restaurants.id, id),
+    }));
   }
 }

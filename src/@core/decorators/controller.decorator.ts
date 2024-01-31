@@ -23,6 +23,7 @@ interface IControllerOptions {
    * @default false
    */
   noOmit?: boolean;
+  tags?: string[];
 }
 
 /**
@@ -32,7 +33,7 @@ interface IControllerOptions {
  */
 export function Controller(
   path: string,
-  { noOmit }: IControllerOptions = { noOmit: false },
+  { noOmit, tags }: IControllerOptions = { noOmit: false },
 ) {
   const Validator = noOmit ? NoOmitValidationPipe : ValidationPipe;
 
@@ -42,7 +43,7 @@ export function Controller(
     }),
     UsePipes(Validator),
     UseGuards(ThrottlerGuard),
-    ApiTags(path),
+    ApiTags(...(!tags ? [path] : tags)),
     ApiBadRequestResponse({
       description: errorsDescriptions.badRequest,
     }),

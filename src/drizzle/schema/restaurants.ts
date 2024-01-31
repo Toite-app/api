@@ -42,7 +42,10 @@ export const restaurantHours = pgTable("restaurantHours", {
   // Restaurant //
   restaurantId: serial("restaurantId")
     .notNull()
-    .references(() => restaurants.id),
+    .references(() => restaurants.id, {
+      onDelete: "cascade",
+      onUpdate: "cascade",
+    }),
 
   // Day of the week //
   dayOfWeek: text("dayOfWeek").notNull(),
@@ -51,11 +54,18 @@ export const restaurantHours = pgTable("restaurantHours", {
   openingTime: time("openingTime").notNull(),
   closingTime: time("closingTime").notNull(),
 
+  isEnabled: boolean("isEnabled").default(true),
+
   // Timestamps //
   createdAt: timestamp("createdAt").notNull().defaultNow(),
-
   updatedAt: timestamp("updatedAt").notNull().defaultNow(),
 });
+
+export const restaurantRelations = relations(restaurants, ({ many }) => ({
+  restaurantHours: many(restaurantHours, {
+    relationName: "restaurant-to-hours",
+  }),
+}));
 
 export const restaurantHourRelations = relations(
   restaurantHours,
@@ -68,3 +78,4 @@ export const restaurantHourRelations = relations(
 );
 
 export type IRestaurant = typeof restaurants.$inferSelect;
+export type IRestaurantHours = typeof restaurantHours.$inferSelect;
