@@ -63,14 +63,25 @@ export class SessionAuthGuard implements CanActivate {
       const newToken = await this.sessionsService.refresh(token);
 
       res.cookie(AUTH_COOKIES.token, newToken, {
-        maxAge: 1000 * 60 * 60 * 24 * 365,
+        maxAge: ms.parse("1y"),
         httpOnly: true,
-        secure: true,
-        sameSite: "none",
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
       });
     }
 
     const worker = await this.workersService.findById(session.workerId);
+
+    const isTimeToUpdateOnline =
+      !worker.onlineAt ||
+      new Date(worker.onlineAt).getTime() + ms.parse("5m") <
+        new Date().getTime();
+
+    if (isTimeToUpdateOnline) {
+      await this.workersService.update(worker.id, {
+        onlineAt: new Date(),
+      });
+    }
 
     req.session = session;
     req.worker = { ...worker, passwordHash: undefined };

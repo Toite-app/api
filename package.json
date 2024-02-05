@@ -24,7 +24,8 @@
     "db:migrate": "node -r esbuild-register src/drizzle/migrate.ts",
     "db:clear": "node -r esbuild-register src/drizzle/clear.ts",
     "db:clear:test": "cross-env NODE_ENV=test node -r esbuild-register src/drizzle/clear.ts",
-    "db:migrate drop": "drizzle-kit drop"
+    "db:migrate drop": "drizzle-kit drop",
+    "db:seed": "node -r esbuild-register src/drizzle/seed.ts"
   },
   "dependencies": {
     "@lukeed/ms": "^2.0.2",
