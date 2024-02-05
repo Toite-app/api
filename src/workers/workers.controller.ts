@@ -102,9 +102,9 @@ export class WorkersController {
   @ApiBadRequestResponse({
     description: "Id must be a number and provided",
   })
-  async findOne(@Param("id") id?: number): Promise<WorkerEntity> {
+  async findOne(@Param("id") id?: string): Promise<WorkerEntity> {
     if (!id) {
-      throw new BadRequestException("Id must be a number and provided");
+      throw new BadRequestException("Id must be a string and provided");
     }
 
     const worker = await this.workersService.findById(id);
@@ -132,7 +132,7 @@ export class WorkersController {
     description: "Id must be a number and provided",
   })
   async update(
-    @Param("id") id: number,
+    @Param("id") id: string,
     @Body() data: UpdateWorkerDto,
     @Worker() worker: IWorker,
   ): Promise<WorkerEntity> {

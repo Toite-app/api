@@ -1,5 +1,5 @@
 {
-  "id": "b790c5d5-4007-46fc-acce-9547cbc24f86",
+  "id": "13695bad-8e56-4c47-a933-914b2035a08c",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "5",
   "dialect": "pg",
@@ -10,13 +10,14 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "serial",
-          "primaryKey": true,
-          "notNull": true
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "gen_random_uuid()"
         },
         "restaurantId": {
           "name": "restaurantId",
-          "type": "serial",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
@@ -61,31 +62,9 @@
         }
       },
       "indexes": {},
-      "foreignKeys": {
-        "restaurantHours_restaurantId_restaurants_id_fk": {
-          "name": "restaurantHours_restaurantId_restaurants_id_fk",
-          "tableFrom": "restaurantHours",
-          "tableTo": "restaurants",
-          "columnsFrom": [
-            "restaurantId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
-        }
-      },
+      "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "restaurantHours_id_unique": {
-          "name": "restaurantHours_id_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "id"
-          ]
-        }
-      }
+      "uniqueConstraints": {}
     },
     "restaurants": {
       "name": "restaurants",
@@ -93,9 +72,10 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "serial",
-          "primaryKey": true,
-          "notNull": true
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "gen_random_uuid()"
         },
         "name": {
           "name": "name",
@@ -152,15 +132,7 @@
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "restaurants_id_unique": {
-          "name": "restaurants_id_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "id"
-          ]
-        }
-      }
+      "uniqueConstraints": {}
     },
     "workers": {
       "name": "workers",
@@ -168,9 +140,10 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "serial",
-          "primaryKey": true,
-          "notNull": true
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "gen_random_uuid()"
         },
         "name": {
           "name": "name",
@@ -180,7 +153,7 @@
         },
         "restaurantId": {
           "name": "restaurantId",
-          "type": "integer",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         },
@@ -246,13 +219,6 @@
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "workers_id_unique": {
-          "name": "workers_id_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "id"
-          ]
-        },
         "workers_login_unique": {
           "name": "workers_login_unique",
           "nullsNotDistinct": false,
@@ -268,13 +234,14 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "serial",
-          "primaryKey": true,
-          "notNull": true
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "gen_random_uuid()"
         },
         "workerId": {
           "name": "workerId",
-          "type": "serial",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
@@ -318,30 +285,9 @@
         }
       },
       "indexes": {},
-      "foreignKeys": {
-        "sessions_workerId_workers_id_fk": {
-          "name": "sessions_workerId_workers_id_fk",
-          "tableFrom": "sessions",
-          "tableTo": "workers",
-          "columnsFrom": [
-            "workerId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
-        }
-      },
+      "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "sessions_id_unique": {
-          "name": "sessions_id_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "id"
-          ]
-        },
         "sessions_token_unique": {
           "name": "sessions_token_unique",
           "nullsNotDistinct": false,

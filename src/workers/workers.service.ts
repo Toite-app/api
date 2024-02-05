@@ -44,7 +44,7 @@ export class WorkersService {
    * @param id number id of worker
    * @returns
    */
-  public async findById(id: number): Promise<schema.IWorker> {
+  public async findById(id: string): Promise<schema.IWorker> {
     return await this.pg.query.workers.findFirst({
       where: eq(schema.workers.id, id),
     });
@@ -67,12 +67,15 @@ export class WorkersService {
    * @returns
    */
   public async create(dto: CreateWorkerDto): Promise<WorkerEntity> {
-    const { password, role, ...rest } = dto;
+    const { password, role, restaurantId, ...rest } = dto;
 
-    this.checkRestaurantRoleAssignment(role);
+    if (restaurantId) {
+      this.checkRestaurantRoleAssignment(role);
+    }
 
     const worker = await this.pg.insert(schema.workers).values({
       ...rest,
+      restaurantId,
       role,
       passwordHash: await argon2.hash(password),
     });
@@ -86,7 +89,7 @@ export class WorkersService {
    * @param dto
    * @returns
    */
-  public async update(id: number, dto: UpdateWorkerDto): Promise<WorkerEntity> {
+  public async update(id: string, dto: UpdateWorkerDto): Promise<WorkerEntity> {
     const { password, role, restaurantId, ...payload } = dto;
 
     this.checkRestaurantRoleAssignment(role);

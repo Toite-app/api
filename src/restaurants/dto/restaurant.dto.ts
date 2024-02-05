@@ -5,19 +5,19 @@ import {
   IsBoolean,
   IsISO8601,
   IsLatitude,
-  IsNumberString,
   IsOptional,
   IsString,
+  IsUUID,
 } from "class-validator";
 
 export class RestaurantDto implements IRestaurant {
-  @IsNumberString()
+  @IsUUID()
   @Expose()
   @ApiProperty({
     description: "Unique identifier of the restaurant",
-    example: "1",
+    example: "d290f1ee-6c54-4b01-90e6-d701748f0851",
   })
-  id: number;
+  id: string;
 
   @IsString()
   @Expose()

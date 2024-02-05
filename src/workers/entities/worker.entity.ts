@@ -5,19 +5,19 @@ import {
   IsBoolean,
   IsEnum,
   IsISO8601,
-  IsNumberString,
   IsOptional,
   IsString,
+  IsUUID,
 } from "class-validator";
 
 export class WorkerEntity implements IWorker {
-  @IsNumberString({ no_symbols: true })
+  @IsUUID()
   @Expose()
   @ApiProperty({
     description: "Unique identifier of the worker",
-    example: "1",
+    example: "d290f1ee-6c54-4b01-90e6-d701748f0851",
   })
-  id: number;
+  id: string;
 
   @IsOptional()
   @IsString()
@@ -29,13 +29,13 @@ export class WorkerEntity implements IWorker {
   name: string;
 
   @IsOptional()
-  @IsNumberString({ no_symbols: true })
+  @IsUUID()
   @Expose()
   @ApiProperty({
     description: "Unique identifier of the restaurant",
     example: null,
   })
-  restaurantId: number | null;
+  restaurantId: string | null;
 
   @IsString()
   @Expose()

@@ -29,6 +29,10 @@ export class ValidationPipe implements PipeTransform {
    */
   public async transform(value: unknown, { metatype }: ArgumentMetadata) {
     try {
+      if (typeof value === "string" && metatype === Date) {
+        return new Date(value);
+      }
+
       if (metatype === String) return String(value);
 
       if (typeof value !== "object" && metatype === Object) {
@@ -49,12 +53,19 @@ export class ValidationPipe implements PipeTransform {
       });
 
       if (errors.length > 0) {
-        const reason = errors.map(({ constraints }) => {
-          const [key] = Object.keys(constraints);
-          return `${constraints[key]}`;
+        // const reason = errors.map(({ constraints }) => {
+        //   const [key] = Object.keys(constraints);
+        //   return `${constraints[key]}`;
+        // });
+
+        const errorData = errors.map(({ property, constraints }) => {
+          return {
+            property,
+            constraints,
+          };
         });
 
-        throw new BadRequestException(...reason);
+        throw new BadRequestException(errorData);
       }
 
       return object;

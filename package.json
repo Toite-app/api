@@ -20,7 +20,11 @@
     "test:e2e": "jest --runInBand",
     "db:generate": "drizzle-kit generate:pg",
     "db:push": "drizzle-kit push:pg ",
-    "db:migrate": "node -r esbuild-register src/drizzle/migrate.ts"
+    "db:push:test": "cross-env NODE_ENV=test drizzle-kit push:pg",
+    "db:migrate": "node -r esbuild-register src/drizzle/migrate.ts",
+    "db:clear": "node -r esbuild-register src/drizzle/clear.ts",
+    "db:clear:test": "cross-env NODE_ENV=test node -r esbuild-register src/drizzle/clear.ts",
+    "db:migrate drop": "drizzle-kit drop"
   },
   "dependencies": {
     "@lukeed/ms": "^2.0.2",
@@ -60,6 +64,7 @@
     "@types/supertest": "^6.0.0",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
+    "cross-env": "^7.0.3",
     "drizzle-kit": "^0.20.13",
     "eslint": "^8.42.0",
     "eslint-config-prettier": "^9.0.0",

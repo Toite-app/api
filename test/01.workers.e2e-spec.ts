@@ -9,6 +9,7 @@ import { seedDatabase } from "./helpers/seed";
 
 import { TEST_PASSWORD, TEST_USER_AGENT } from "./helpers/consts";
 import { createRoleWorker } from "./helpers/create-role-worker";
+import { migrate } from "./helpers/migrate-db";
 
 describe("Workers Controller (e2e)", () => {
   let app: INestApplication;
@@ -18,6 +19,7 @@ describe("Workers Controller (e2e)", () => {
 
   beforeAll(async () => {
     await clearDatabase();
+    await migrate();
     await createAdmin();
     await seedDatabase();
 

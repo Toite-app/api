@@ -45,7 +45,7 @@ export class RestaurantsService {
    * @param id
    * @returns
    */
-  public async findById(id: number): Promise<RestaurantDto> {
+  public async findById(id: string): Promise<RestaurantDto> {
     const data = await this.pg.query.restaurants.findFirst({
       where: eq(schema.restaurants.id, id),
     });
@@ -80,7 +80,7 @@ export class RestaurantsService {
    * @returns
    */
   public async update(
-    id: number,
+    id: string,
     dto: UpdateRestaurantDto,
   ): Promise<RestaurantDto> {
     await this.pg
@@ -97,13 +97,13 @@ export class RestaurantsService {
    * @returns
    */
 
-  public async delete(id: number): Promise<void> {
+  public async delete(id: string): Promise<void> {
     await this.pg
       .delete(schema.restaurants)
       .where(eq(schema.restaurants.id, id));
   }
 
-  public async isExists(id: number): Promise<boolean> {
+  public async isExists(id: string): Promise<boolean> {
     return !!(await this.pg.query.restaurants.findFirst({
       where: eq(schema.restaurants.id, id),
     }));

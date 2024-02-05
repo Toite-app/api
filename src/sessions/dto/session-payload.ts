@@ -1,6 +1,6 @@
 import { sessions } from "@postgress-db/schema";
 import { Expose } from "class-transformer";
-import { IsNumber } from "class-validator";
+import { IsUUID } from "class-validator";
 import { createInsertSchema } from "drizzle-zod";
 import { createZodDto } from "nestjs-zod";
 
@@ -12,7 +12,7 @@ const insertSessionSchema = createInsertSchema(sessions).pick({
 });
 
 export class SessionPayloadDto extends createZodDto(insertSessionSchema) {
-  @IsNumber()
+  @IsUUID()
   @Expose()
-  workerId!: number;
+  workerId!: string;
 }

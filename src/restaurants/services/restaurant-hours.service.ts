@@ -18,7 +18,7 @@ export class RestaurantHoursService {
     private readonly restaurantsService: RestaurantsService,
   ) {}
 
-  public async isExists(id: number, restaurantId?: number): Promise<boolean> {
+  public async isExists(id: string, restaurantId?: string): Promise<boolean> {
     return !!(await this.pg.query.restaurantHours.findFirst({
       where: !restaurantId
         ? eq(schema.restaurantHours.id, id)
@@ -34,7 +34,7 @@ export class RestaurantHoursService {
    * @param restaurantId
    * @returns
    */
-  public async findMany(restaurantId: number): Promise<RestaurantHoursDto[]> {
+  public async findMany(restaurantId: string): Promise<RestaurantHoursDto[]> {
     if (!(await this.restaurantsService.isExists(restaurantId))) {
       throw new BadRequestException(
         `Restaurant with id ${restaurantId} not found`,
@@ -51,7 +51,7 @@ export class RestaurantHoursService {
    * @param id
    * @returns
    */
-  public async findOne(id: number): Promise<RestaurantHoursDto> {
+  public async findOne(id: string): Promise<RestaurantHoursDto> {
     return await this.pg.query.restaurantHours.findFirst({
       where: eq(schema.restaurantHours.id, id),
     });
@@ -88,7 +88,7 @@ export class RestaurantHoursService {
    * @returns
    */
   public async update(
-    id: number,
+    id: string,
     dto: UpdateRestaurantHoursDto,
   ): Promise<RestaurantHoursDto> {
     if (!(await this.restaurantsService.isExists(id))) {
@@ -109,8 +109,8 @@ export class RestaurantHoursService {
    * @returns
    */
   public async delete(
-    id: number,
-    restaurantId?: number,
+    id: string,
+    restaurantId?: string,
   ): Promise<{ id: string }> {
     if (!(await this.isExists(id, restaurantId))) {
       throw new BadRequestException(`Restaurant hours with id ${id} not found`);

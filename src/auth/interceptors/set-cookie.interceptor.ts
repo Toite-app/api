@@ -34,8 +34,8 @@ export class SetCookiesInterceptor implements NestInterceptor {
           res.cookie(AUTH_COOKIES.token, data.setSessionToken, {
             maxAge: ms.parse("1y"),
             httpOnly: true,
-            secure: true,
-            sameSite: "none",
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "strict",
           });
         }
 

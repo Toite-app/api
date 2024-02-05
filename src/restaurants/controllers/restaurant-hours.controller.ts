@@ -38,7 +38,7 @@ export class RestaurantHoursController {
     description: "Restaurant hours have been successfully fetched",
     type: [RestaurantHoursDto],
   })
-  async findAll(@Param("id") id: number) {
+  async findAll(@Param("id") id: string) {
     return await this.restaurantHoursService.findMany(id);
   }
 
@@ -52,7 +52,7 @@ export class RestaurantHoursController {
     description: "Forbidden, allowed only for SYSTEM_ADMIN and CHIEF_ADMIN",
   })
   async create(
-    @Param("id") restaurantId: number,
+    @Param("id") restaurantId: string,
     @Body() dto: CreateRestaurantHoursPayloadDto,
   ) {
     return await this.restaurantHoursService.create({
@@ -72,7 +72,7 @@ export class RestaurantHoursController {
     description: "Forbidden, allowed only for SYSTEM_ADMIN and CHIEF_ADMIN",
   })
   async update(
-    @Param("hoursId") id: number,
+    @Param("hoursId") id: string,
     @Body() dto: UpdateRestaurantHoursDto,
   ) {
     return await this.restaurantHoursService.update(id, dto);
@@ -87,7 +87,7 @@ export class RestaurantHoursController {
   @ApiForbiddenResponse({
     description: "Forbidden, allowed only for SYSTEM_ADMIN and CHIEF_ADMIN",
   })
-  async delete(@Param("id") id: number, @Param("hoursId") hoursId: number) {
+  async delete(@Param("id") id: string, @Param("hoursId") hoursId: string) {
     await this.restaurantHoursService.delete(hoursId, id);
 
     return;

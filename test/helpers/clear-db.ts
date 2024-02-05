@@ -6,11 +6,11 @@ export const clearDatabase = async () => {
   const tables = await db
     .execute(
       sql`   
-    SELECT table_name
-    FROM information_schema.tables
-    WHERE table_schema = 'public'
-    AND table_type = 'BASE TABLE';
-    `,
+        SELECT table_name
+        FROM information_schema.tables
+        WHERE table_schema = 'public'
+        AND table_type = 'BASE TABLE';
+      `,
     )
     .then((res) => res.rows.map((row) => row.table_name));
 

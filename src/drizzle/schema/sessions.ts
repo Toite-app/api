@@ -1,14 +1,10 @@
-import { pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { workers } from "./workers";
+import { relations } from "drizzle-orm";
 
 export const sessions = pgTable("sessions", {
-  id: serial("id").primaryKey().unique().$type(),
-  workerId: serial("workerId")
-    .notNull()
-    .references(() => workers.id, {
-      onDelete: "cascade",
-      onUpdate: "cascade",
-    }),
+  id: uuid("id").defaultRandom(),
+  workerId: uuid("workerId").notNull(),
   httpAgent: text("httpAgent"),
   ipAddress: text("ipAddress"),
   token: text("token").notNull().unique(),
@@ -16,5 +12,12 @@ export const sessions = pgTable("sessions", {
   createdAt: timestamp("createdAt").notNull().defaultNow(),
   updatedAt: timestamp("updatedAt").notNull().defaultNow(),
 });
+
+export const sessionRelations = relations(sessions, ({ one }) => ({
+  worker: one(workers, {
+    fields: [sessions.workerId],
+    references: [workers.id],
+  }),
+}));
 
 export type ISession = typeof sessions.$inferSelect;

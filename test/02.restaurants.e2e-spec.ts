@@ -9,6 +9,7 @@ import { createRoleWorker } from "./helpers/create-role-worker";
 import { HttpStatus, INestApplication } from "@nestjs/common";
 import { TEST_USER_AGENT } from "./helpers/consts";
 import { CreateRestaurantDto } from "src/restaurants/dto/create-restaurant.dto";
+import { migrate } from "./helpers/migrate-db";
 
 describe("Restaurants Controller (e2e)", () => {
   let app: INestApplication;
@@ -17,6 +18,7 @@ describe("Restaurants Controller (e2e)", () => {
 
   beforeAll(async () => {
     await clearDatabase();
+    await migrate();
     await createAdmin();
     await seedDatabase();
 

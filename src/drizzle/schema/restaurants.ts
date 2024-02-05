@@ -2,17 +2,17 @@ import { relations, sql } from "drizzle-orm";
 import {
   boolean,
   pgTable,
-  serial,
   text,
   numeric,
   timestamp,
   time,
+  uuid,
 } from "drizzle-orm/pg-core";
 import { workers } from "./workers";
 
 export const restaurants = pgTable("restaurants", {
-  // Primary key //
-  id: serial("id").primaryKey().unique(),
+  // Primary key
+  id: uuid("id").defaultRandom(),
 
   // Name of the restaurant //
   name: text("name").notNull(),
@@ -38,15 +38,10 @@ export const restaurants = pgTable("restaurants", {
 
 export const restaurantHours = pgTable("restaurantHours", {
   // Primary key //
-  id: serial("id").primaryKey().unique(),
+  id: uuid("id").defaultRandom(),
 
   // Restaurant //
-  restaurantId: serial("restaurantId")
-    .notNull()
-    .references(() => restaurants.id, {
-      onDelete: "cascade",
-      onUpdate: "cascade",
-    }),
+  restaurantId: uuid("restaurantId").notNull(),
 
   // Day of the week //
   dayOfWeek: text("dayOfWeek").notNull(),
@@ -63,12 +58,8 @@ export const restaurantHours = pgTable("restaurantHours", {
 });
 
 export const restaurantRelations = relations(restaurants, ({ many }) => ({
-  restaurantHours: many(restaurantHours, {
-    relationName: "restaurant-to-hours",
-  }),
-  workers: many(workers, {
-    relationName: "restaurant-to-workers",
-  }),
+  restaurantHours: many(restaurantHours),
+  workers: many(workers),
 }));
 
 export const restaurantHourRelations = relations(

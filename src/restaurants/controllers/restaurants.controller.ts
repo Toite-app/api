@@ -80,7 +80,7 @@ export class RestaurantsController {
   @ApiNotFoundResponse({
     description: "Restaurant with this id not found",
   })
-  async findOne(@Param("id") id: number): Promise<RestaurantDto> {
+  async findOne(@Param("id") id: string): Promise<RestaurantDto> {
     return await this.restaurantsService.findById(id);
   }
 
@@ -101,7 +101,7 @@ export class RestaurantsController {
     description: "Action available only for SYSTEM_ADMIN, CHIEF_ADMIN",
   })
   async update(
-    @Param("id") id: number,
+    @Param("id") id: string,
     @Body() dto: UpdateRestaurantDto,
   ): Promise<RestaurantDto> {
     return await this.restaurantsService.update(id, dto);
@@ -121,7 +121,7 @@ export class RestaurantsController {
   @ApiForbiddenResponse({
     description: "Action available only for SYSTEM_ADMIN",
   })
-  async delete(@Param("id") id: number): Promise<void> {
+  async delete(@Param("id") id: string): Promise<void> {
     return await this.restaurantsService.delete(id);
   }
 }
