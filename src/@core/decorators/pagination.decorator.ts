@@ -1,8 +1,8 @@
 import { BadRequestException } from "@core/errors/exceptions/bad-request.exception";
 import { Request } from "@core/interfaces/request";
+import { addMetadata } from "@core/utils/addMetadata";
 import { createParamDecorator } from "@nestjs/common";
 import { ExecutionContextHost } from "@nestjs/core/helpers/execution-context-host";
-import { DECORATORS } from "@nestjs/swagger/dist/constants";
 
 export const PAGINATION_DEFAULT_PAGE = 1;
 export const PAGINATION_DEFAULT_LIMIT = 50;
@@ -54,29 +54,23 @@ export const PaginationParams = createParamDecorator(
     };
   },
   [
-    (target, key) => {
-      Reflect.defineMetadata(
-        DECORATORS.API_PARAMETERS,
-        [
-          {
-            in: "query",
-            name: "page",
-            type: "integer",
-            description: "Pagination page (starts from 1)",
-            required: false,
-            example: 1,
-          },
-          {
-            in: "query",
-            name: "size",
-            type: "integer",
-            description: "Pagination size (max 100)",
-            required: false,
-            example: 50,
-          },
-        ],
-        target[key],
-      );
-    },
+    addMetadata([
+      {
+        in: "query",
+        name: "page",
+        type: "integer",
+        description: "Pagination page (starts from 1)",
+        required: false,
+        example: 1,
+      },
+      {
+        in: "query",
+        name: "size",
+        type: "integer",
+        description: "Pagination size (max 100)",
+        required: false,
+        example: 50,
+      },
+    ]),
   ],
 );

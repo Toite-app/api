@@ -27,6 +27,7 @@ import { RequireSessionAuth } from "src/auth/decorators/session-auth.decorator";
 import { WorkerEntity } from "./entities/worker.entity";
 import { BadRequestException } from "@core/errors/exceptions/bad-request.exception";
 import { NotFoundException } from "@core/errors/exceptions/not-found.exception";
+import { ISorting, SortingParams } from "@core/decorators/sorting.decorator";
 
 @RequireSessionAuth()
 @Controller("workers")
@@ -43,10 +44,25 @@ export class WorkersController {
     type: WorkersPaginatedDto,
   })
   async findAll(
+    @SortingParams({
+      fields: [
+        "id",
+        "name",
+        "login",
+        "role",
+        "onlineAt",
+        "updatedAt",
+        "createdAt",
+      ],
+    })
+    sorting: ISorting,
     @PaginationParams() pagination: IPagination,
   ): Promise<WorkersPaginatedDto> {
     const total = await this.workersService.getTotalCount();
-    const data = await this.workersService.findMany({ pagination });
+    const data = await this.workersService.findMany({
+      pagination,
+      sorting,
+    });
 
     return {
       data,
@@ -153,10 +169,6 @@ export class WorkersController {
       if (requesterRoleRank <= roleRank) {
         throw new ForbiddenException("You can't create worker with this role");
       }
-    }
-
-    if (await this.workersService.findOneByLogin(data.login)) {
-      throw new ConflictException("Worker with this login already exists");
     }
 
     return await this.workersService.update(id, data);

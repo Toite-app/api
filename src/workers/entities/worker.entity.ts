@@ -8,6 +8,7 @@ import {
   IsOptional,
   IsString,
   IsUUID,
+  MinLength,
 } from "class-validator";
 
 export class WorkerEntity implements IWorker {
@@ -38,6 +39,7 @@ export class WorkerEntity implements IWorker {
   restaurantId: string | null;
 
   @IsString()
+  @MinLength(4)
   @Expose()
   @ApiProperty({
     description: "Login of the worker",

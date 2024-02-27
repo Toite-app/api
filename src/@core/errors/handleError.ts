@@ -20,7 +20,6 @@ import { UnauthorizedException } from "./exceptions/unauthorized.exception";
  * @returns Error
  */
 export function handleError(e: unknown) {
-  console.error(e);
   const isCustomErr =
     e instanceof BadRequestException ||
     e instanceof ConflictException ||

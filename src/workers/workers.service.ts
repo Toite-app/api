@@ -2,12 +2,14 @@ import { Inject, Injectable } from "@nestjs/common";
 import { PG_CONNECTION } from "src/constants";
 import * as schema from "@postgress-db/schema";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
-import { count, eq } from "drizzle-orm";
+import { asc, count, desc, eq, sql } from "drizzle-orm";
 import { WorkerEntity } from "./entities/worker.entity";
 import { IPagination } from "@core/decorators/pagination.decorator";
 import { CreateWorkerDto, UpdateWorkerDto } from "./dto/req/put-worker.dto";
 import * as argon2 from "argon2";
 import { BadRequestException } from "@core/errors/exceptions/bad-request.exception";
+import { ConflictException } from "@core/errors/exceptions/conflict.exception";
+import { ISorting } from "@core/decorators/sorting.decorator";
 
 @Injectable()
 export class WorkersService {
@@ -31,11 +33,28 @@ export class WorkersService {
   }
 
   public async findMany(options: {
-    pagination: IPagination;
+    pagination?: IPagination;
+    sorting?: ISorting;
   }): Promise<WorkerEntity[]> {
+    const { pagination, sorting } = options;
+
     return await this.pg.query.workers.findMany({
-      limit: options.pagination.size,
-      offset: options.pagination.offset,
+      // Sorting
+      ...(sorting
+        ? {
+            orderBy:
+              sorting.sortOrder === "asc"
+                ? asc(sql.identifier(sorting.sortBy))
+                : desc(sql.identifier(sorting.sortBy)),
+          }
+        : {}),
+      // Pagination
+      ...(pagination
+        ? {
+            limit: pagination.size,
+            offset: pagination.offset,
+          }
+        : {}),
     });
   }
 
@@ -90,9 +109,21 @@ export class WorkersService {
    * @returns
    */
   public async update(id: string, dto: UpdateWorkerDto): Promise<WorkerEntity> {
-    const { password, role, restaurantId, ...payload } = dto;
+    const { password, role, login, restaurantId, ...payload } = dto;
 
-    this.checkRestaurantRoleAssignment(role);
+    const exist = await this.findOneByLogin(login);
+
+    if (
+      exist &&
+      exist.id !== id &&
+      exist.login.toLowerCase() === login.toLowerCase()
+    ) {
+      throw new ConflictException("Worker with this login already exists");
+    }
+
+    if (restaurantId) {
+      this.checkRestaurantRoleAssignment(role);
+    }
 
     if (Object.keys(dto).length === 0) {
       throw new BadRequestException(
@@ -104,6 +135,7 @@ export class WorkersService {
       .update(schema.workers)
       .set({
         ...payload,
+        login,
         role,
         ...(role === "SYSTEM_ADMIN" || role === "CHIEF_ADMIN"
           ? { restaurantId: null }
