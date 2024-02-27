@@ -71,6 +71,7 @@ export class SessionsService {
         .set({
           token: newToken,
           refreshedAt: new Date(),
+          updatedAt: new Date(),
         })
         .where(eq(schema.sessions.token, token));
 
