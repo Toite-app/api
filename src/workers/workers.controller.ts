@@ -171,6 +171,9 @@ export class WorkersController {
       }
     }
 
-    return await this.workersService.update(id, data);
+    return await this.workersService.update(id, {
+      ...data,
+      updatedAt: new Date(),
+    });
   }
 }

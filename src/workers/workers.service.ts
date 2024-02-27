@@ -137,7 +137,6 @@ export class WorkersService {
         ...payload,
         login,
         role,
-        updatedAt: new Date(),
         ...(role === "SYSTEM_ADMIN" || role === "CHIEF_ADMIN"
           ? { restaurantId: null }
           : { restaurantId }),

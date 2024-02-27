@@ -85,10 +85,7 @@ export class RestaurantsService {
   ): Promise<RestaurantDto> {
     await this.pg
       .update(schema.restaurants)
-      .set({
-        ...dto,
-        updatedAt: new Date(),
-      })
+      .set(dto)
       .where(eq(schema.restaurants.id, id));
 
     return await this.findById(id);
