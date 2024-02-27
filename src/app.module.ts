@@ -1,6 +1,6 @@
 import { Module } from "@nestjs/common";
-
-import { ConfigModule } from "@nestjs/config";
+import { MongooseModule } from "@nestjs/mongoose";
+import { ConfigModule, ConfigService } from "@nestjs/config";
 import { DrizzleModule } from "./drizzle/drizzle.module";
 import { WorkersModule } from "./workers/workers.module";
 import { AuthModule } from "./auth/auth.module";
@@ -25,6 +25,13 @@ import { AllExceptionsFilter } from "@core/errors/filter";
       ],
     }),
     DrizzleModule,
+    MongooseModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        uri: configService.get<string>("MONGO_URL"),
+      }),
+    }),
     AuthModule,
     WorkersModule,
     RestaurantsModule,
