@@ -91,15 +91,24 @@ export class WorkersController {
     const requesterRoleRank = workerRoleRank[worker.role];
 
     if (role === "SYSTEM_ADMIN") {
-      throw new BadRequestException("You can't create system admin");
+      throw new ForbiddenException({
+        title: "System Admin Role",
+        description: "You can't create system admin",
+      });
     }
 
     if (requesterRoleRank <= roleRank) {
-      throw new ForbiddenException("You can't create worker with this role");
+      throw new ForbiddenException({
+        title: "Not enough rights",
+        description: "You can't create worker with this role",
+      });
     }
 
     if (await this.workersService.findOneByLogin(data.login)) {
-      throw new ConflictException("Worker with this login already exists");
+      throw new ConflictException({
+        title: "Login conflict",
+        description: "Worker with this login already exists",
+      });
     }
 
     return await this.workersService.create(data);
@@ -163,11 +172,17 @@ export class WorkersController {
 
     if (role) {
       if (role === "SYSTEM_ADMIN") {
-        throw new BadRequestException("You can't create system admin");
+        throw new ForbiddenException({
+          title: "System Admin Role",
+          description: "You can't create system admin",
+        });
       }
 
       if (requesterRoleRank <= roleRank) {
-        throw new ForbiddenException("You can't create worker with this role");
+        throw new ForbiddenException({
+          title: "Not enough rights",
+          description: "You can't create worker with this role",
+        });
       }
     }
 

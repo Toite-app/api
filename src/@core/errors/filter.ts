@@ -5,16 +5,14 @@ import {
   HttpStatus,
 } from "@nestjs/common";
 import { HttpAdapterHost } from "@nestjs/core";
-import slugify from "slugify";
 import { ErrorInstance } from "./index.types";
+import { slugify } from "@core/utils/slugify";
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
   constructor(private readonly httpAdapterHost: HttpAdapterHost) {}
 
   catch(exception: unknown, host: ArgumentsHost): void {
-    // In certain situations `httpAdapter` might not be available in the
-    // constructor method, thus we should resolve it here.
     const { httpAdapter } = this.httpAdapterHost;
 
     const ctx = host.switchToHttp();
@@ -24,25 +22,19 @@ export class AllExceptionsFilter implements ExceptionFilter {
     const url = httpAdapter.getRequestUrl(ctx.getRequest());
     const uri = new URL("http://localhost" + url);
 
+    const errorCategory = slugify(uri.pathname.split("/")?.[1]).toUpperCase();
+
     httpAdapter.reply(
       ctx.getResponse(),
       {
         statusCode,
+        errorCode: response.errorCode,
+        errorCategory,
+        errorSubCode: null,
         ...(typeof response?.message === "object" &&
         "title" in response?.message
           ? {
-              errorCode: response.errorCode,
-              errorSubCode: slugify(response.message.title, {
-                lower: true,
-                remove: /[*+~.()'"!:@]/g,
-              }),
-              errorFullCode: `${response.errorCode}.${slugify(
-                response.message.title,
-                {
-                  lower: true,
-                  remove: /[*+~.()'"!:@]/g,
-                },
-              )}`,
+              errorSubCode: slugify(response.message.title),
             }
           : {}),
         ...response,
