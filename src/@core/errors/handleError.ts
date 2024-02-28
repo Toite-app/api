@@ -1,6 +1,7 @@
 import { BadRequestException } from "./exceptions/bad-request.exception";
 import { ConflictException } from "./exceptions/conflict.exception";
 import { ForbiddenException } from "./exceptions/forbidden.exception";
+import { FormException } from "./exceptions/form.exception";
 import { NotFoundException } from "./exceptions/not-found.exception";
 import { ServerErrorException } from "./exceptions/server-error.exception";
 import { UnauthorizedException } from "./exceptions/unauthorized.exception";
@@ -26,7 +27,8 @@ export function handleError(e: unknown) {
     e instanceof ForbiddenException ||
     e instanceof NotFoundException ||
     e instanceof UnauthorizedException ||
-    e instanceof ServerErrorException;
+    e instanceof ServerErrorException ||
+    e instanceof FormException;
 
   if (isCustomErr) {
     return e;

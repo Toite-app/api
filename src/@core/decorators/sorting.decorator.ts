@@ -33,25 +33,36 @@ export const SortingParams = createParamDecorator(
     }
 
     if (typeof sortBy !== "string") {
-      throw new BadRequestException(
-        "sortBy should be a string, but got " + typeof sortBy,
-      );
+      throw new BadRequestException({
+        title: "Invalid sortBy",
+        description: `sortBy should be a string, but got ${typeof sortBy}`,
+      });
     }
 
     if (typeof sortOrder !== "string") {
-      throw new BadRequestException(
-        "sortOrder should be a string, but got " + typeof sortOrder,
-      );
+      throw new BadRequestException({
+        title: "Invalid sortOrder",
+        description:
+          "sortOrder should be a string, but got " + typeof sortOrder,
+      });
     }
 
     if (!fields.includes(sortBy)) {
       throw new BadRequestException(
-        "Allowed fields for sortBy: " + fields.join(", "),
+        // "Allowed fields for sortBy: " + fields.join(", "),
+        {
+          title: "Invalid sortBy field",
+          description: "Allowed fields for sortBy: " + fields.join(", "),
+          details: fields,
+        },
       );
     }
 
     if (sortOrder !== SortOrder.ASC && sortOrder !== SortOrder.DESC) {
-      throw new BadRequestException("Invalid sortOrder");
+      throw new BadRequestException({
+        title: "Invalid sortOrder value",
+        description: `sortOrder should be either "asc" or "desc", but got "${sortOrder}"`,
+      });
     }
 
     return {

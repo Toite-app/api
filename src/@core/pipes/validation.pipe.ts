@@ -4,6 +4,7 @@ import { validate } from "class-validator";
 import { plainToClass } from "class-transformer";
 import { handleError } from "@core/errors/handleError";
 import { BadRequestException } from "../errors/exceptions/bad-request.exception";
+import { FormException } from "@core/errors/exceptions/form.exception";
 
 /**
  * Validates input data by class validator decorators
@@ -36,7 +37,10 @@ export class ValidationPipe implements PipeTransform {
       if (metatype === String) return String(value);
 
       if (typeof value !== "object" && metatype === Object) {
-        throw new BadRequestException("body is not an object");
+        throw new BadRequestException({
+          title: "Body error",
+          description: "Body should be an object",
+        });
       }
 
       if (!metatype || !this.toValidate(metatype)) {
@@ -53,19 +57,20 @@ export class ValidationPipe implements PipeTransform {
       });
 
       if (errors.length > 0) {
-        // const reason = errors.map(({ constraints }) => {
-        //   const [key] = Object.keys(constraints);
-        //   return `${constraints[key]}`;
-        // });
-
-        const errorData = errors.map(({ property, constraints }) => {
-          return {
-            property,
-            constraints,
-          };
+        const messages = errors.map(({ constraints }) => {
+          const [key] = Object.keys(constraints);
+          return `${constraints[key]}`;
         });
 
-        throw new BadRequestException(errorData);
+        throw new FormException({
+          title: "Validation error",
+          description: messages.join(", "),
+          details: errors.map(({ property, constraints }) => ({
+            property,
+            message: messages.join("; "),
+            constraints,
+          })),
+        });
       }
 
       return object;
