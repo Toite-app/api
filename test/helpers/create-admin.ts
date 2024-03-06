@@ -1,7 +1,8 @@
-import * as schema from "src/drizzle/schema";
 import { hash } from "argon2";
-import { db } from "./db";
+import * as schema from "src/drizzle/schema";
+
 import { TEST_PASSWORD } from "./consts";
+import { db } from "./db";
 
 export const createAdmin = async () => {
   if ((await db.query.workers.findMany()).length === 0) {

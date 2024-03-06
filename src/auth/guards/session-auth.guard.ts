@@ -1,12 +1,13 @@
-import * as ms from "@lukeed/ms";
-import { Request } from "@core/interfaces/request";
-import { CanActivate, ExecutionContext, Injectable } from "@nestjs/common";
-import { SessionsService } from "src/sessions/sessions.service";
-import { Response } from "@core/interfaces/response";
-import { AUTH_COOKIES } from "../auth.types";
 import { UnauthorizedException } from "@core/errors/exceptions/unauthorized.exception";
-import { WorkersService } from "src/workers/workers.service";
+import { Request } from "@core/interfaces/request";
+import { Response } from "@core/interfaces/response";
+import * as ms from "@lukeed/ms";
+import { CanActivate, ExecutionContext, Injectable } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
+import { SessionsService } from "src/sessions/sessions.service";
+import { WorkersService } from "src/workers/workers.service";
+
+import { AUTH_COOKIES } from "../auth.types";
 import { REQUIRE_SESSION_AUTH_KEY } from "../decorators/session-auth.decorator";
 
 @Injectable()

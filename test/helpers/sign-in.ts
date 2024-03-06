@@ -1,8 +1,9 @@
-import * as request from "supertest";
-import { eq } from "drizzle-orm";
-import { db, schema } from "./db";
-import { TEST_IP_ADDRESS, TEST_PASSWORD, TEST_USER_AGENT } from "./consts";
 import { HttpStatus, INestApplication } from "@nestjs/common";
+import { eq } from "drizzle-orm";
+import * as request from "supertest";
+
+import { TEST_IP_ADDRESS, TEST_PASSWORD, TEST_USER_AGENT } from "./consts";
+import { db, schema } from "./db";
 
 export const signIn = async (login: string, app: INestApplication) => {
   const worker = await db.query.workers.findFirst({

@@ -1,7 +1,8 @@
 import { Module } from "@nestjs/common";
+import { DrizzleModule } from "@postgress-db/drizzle.module";
+
 import { WorkersController } from "./workers.controller";
 import { WorkersService } from "./workers.service";
-import { DrizzleModule } from "@postgress-db/drizzle.module";
 
 @Module({
   imports: [DrizzleModule],

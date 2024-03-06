@@ -8,8 +8,9 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 import { z } from "zod";
-import { sessions } from "./sessions";
+
 import { restaurants } from "./restaurants";
+import { sessions } from "./sessions";
 
 export const workerRoleEnum = pgEnum("workerRoleEnum", [
   "SYSTEM_ADMIN" as const,

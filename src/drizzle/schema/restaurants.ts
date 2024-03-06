@@ -1,13 +1,14 @@
 import { relations, sql } from "drizzle-orm";
 import {
   boolean,
+  numeric,
   pgTable,
   text,
-  numeric,
-  timestamp,
   time,
+  timestamp,
   uuid,
 } from "drizzle-orm/pg-core";
+
 import { workers } from "./workers";
 
 export const restaurants = pgTable("restaurants", {

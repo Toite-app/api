@@ -4,13 +4,13 @@ import {
   Injectable,
   NestInterceptor,
 } from "@nestjs/common";
+import {
+  ClassConstructor,
+  ClassTransformOptions,
+  plainToInstance,
+} from "class-transformer";
 import { Observable } from "rxjs";
 import { map } from "rxjs/operators";
-import {
-  plainToInstance,
-  ClassTransformOptions,
-  ClassConstructor,
-} from "class-transformer";
 
 /**
  * Serialization interceptor transforms response by filtering only exposed properties

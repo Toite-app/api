@@ -1,5 +1,5 @@
-import * as cookieParser from "cookie-parser";
 import { INestApplication } from "@nestjs/common";
+import * as cookieParser from "cookie-parser";
 
 export const configApp = (app: INestApplication) => {
   // Parse cookies

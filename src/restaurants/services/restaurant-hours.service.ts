@@ -1,15 +1,17 @@
-import * as schema from "@postgress-db/schema";
+import { BadRequestException } from "@core/errors/exceptions/bad-request.exception";
 import { Inject, Injectable } from "@nestjs/common";
-import { PG_CONNECTION } from "src/constants";
-import { NodePgDatabase } from "drizzle-orm/node-postgres";
+import * as schema from "@postgress-db/schema";
 import { and, eq } from "drizzle-orm";
+import { NodePgDatabase } from "drizzle-orm/node-postgres";
+import { PG_CONNECTION } from "src/constants";
+
 import {
   CreateRestaurantHoursDto,
   RestaurantHoursDto,
   UpdateRestaurantHoursDto,
 } from "../dto/restaurant-hours.dto";
+
 import { RestaurantsService } from "./restaurants.service";
-import { BadRequestException } from "@core/errors/exceptions/bad-request.exception";
 
 @Injectable()
 export class RestaurantHoursService {

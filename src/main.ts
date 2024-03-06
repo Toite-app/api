@@ -1,15 +1,15 @@
-import { Pool } from "pg";
-import { patchNestJsSwagger } from "nestjs-zod";
-import { NestFactory } from "@nestjs/core";
-import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
-import { AppModule } from "./app.module";
-import { drizzle } from "drizzle-orm/node-postgres";
-import { workers } from "@postgress-db/schema";
-import * as schema from "src/drizzle/schema";
-import { hash } from "argon2";
-
-import { AUTH_COOKIES } from "./auth/auth.types";
 import { configApp } from "@core/config/app";
+import { NestFactory } from "@nestjs/core";
+import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
+import { workers } from "@postgress-db/schema";
+import { hash } from "argon2";
+import { drizzle } from "drizzle-orm/node-postgres";
+import { patchNestJsSwagger } from "nestjs-zod";
+import { Pool } from "pg";
+import * as schema from "src/drizzle/schema";
+
+import { AppModule } from "./app.module";
+import { AUTH_COOKIES } from "./auth/auth.types";
 
 export const createUserIfDbEmpty = async () => {
   const db = drizzle(

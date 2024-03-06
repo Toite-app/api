@@ -3,6 +3,14 @@ import {
   IPagination,
   PaginationParams,
 } from "@core/decorators/pagination.decorator";
+import { Roles } from "@core/decorators/roles.decorator";
+import { Serializable } from "@core/decorators/serializable.decorator";
+import { ISorting, SortingParams } from "@core/decorators/sorting.decorator";
+import { Worker } from "@core/decorators/worker.decorator";
+import { BadRequestException } from "@core/errors/exceptions/bad-request.exception";
+import { ConflictException } from "@core/errors/exceptions/conflict.exception";
+import { ForbiddenException } from "@core/errors/exceptions/forbidden.exception";
+import { NotFoundException } from "@core/errors/exceptions/not-found.exception";
 import { Body, Get, Param, Post, Put } from "@nestjs/common";
 import {
   ApiBadRequestResponse,
@@ -14,20 +22,13 @@ import {
   ApiOperation,
   ApiUnauthorizedResponse,
 } from "@nestjs/swagger";
-import { Serializable } from "@core/decorators/serializable.decorator";
-import { WorkersPaginatedDto } from "./dto/res/workers-paginated.dto";
-import { WorkersService } from "./workers.service";
-import { CreateWorkerDto, UpdateWorkerDto } from "./dto/req/put-worker.dto";
-import { Roles } from "@core/decorators/roles.decorator";
-import { ConflictException } from "@core/errors/exceptions/conflict.exception";
-import { Worker } from "@core/decorators/worker.decorator";
 import { IWorker, workerRoleRank } from "@postgress-db/schema";
-import { ForbiddenException } from "@core/errors/exceptions/forbidden.exception";
 import { RequireSessionAuth } from "src/auth/decorators/session-auth.decorator";
+
+import { CreateWorkerDto, UpdateWorkerDto } from "./dto/req/put-worker.dto";
+import { WorkersPaginatedDto } from "./dto/res/workers-paginated.dto";
 import { WorkerEntity } from "./entities/worker.entity";
-import { BadRequestException } from "@core/errors/exceptions/bad-request.exception";
-import { NotFoundException } from "@core/errors/exceptions/not-found.exception";
-import { ISorting, SortingParams } from "@core/decorators/sorting.decorator";
+import { WorkersService } from "./workers.service";
 
 @RequireSessionAuth()
 @Controller("workers")

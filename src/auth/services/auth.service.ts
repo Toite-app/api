@@ -1,11 +1,13 @@
-import * as argon2 from "argon2";
-import { Injectable } from "@nestjs/common";
-import { WorkersService } from "src/workers/workers.service";
-import { SignInDto } from "../dto/req/sign-in.dto";
-import { WorkerEntity } from "src/workers/entities/worker.entity";
-import { SessionsService } from "src/sessions/sessions.service";
 import { IncomingHttpHeaders } from "http";
+
 import { UnauthorizedException } from "@core/errors/exceptions/unauthorized.exception";
+import { Injectable } from "@nestjs/common";
+import * as argon2 from "argon2";
+import { SessionsService } from "src/sessions/sessions.service";
+import { WorkerEntity } from "src/workers/entities/worker.entity";
+import { WorkersService } from "src/workers/workers.service";
+
+import { SignInDto } from "../dto/req/sign-in.dto";
 
 @Injectable()
 export class AuthService {

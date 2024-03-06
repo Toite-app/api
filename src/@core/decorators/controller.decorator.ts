@@ -1,18 +1,18 @@
+import { errorsDescriptions } from "@core/enums/errors-descriptions.enum";
+import { NoOmitValidationPipe } from "@core/pipes/no-omit-validation.pipe";
+import { ValidationPipe } from "@core/pipes/validation.pipe";
 import {
-  Controller as BaseController,
   applyDecorators,
+  Controller as BaseController,
   UseGuards,
   UsePipes,
 } from "@nestjs/common";
 import {
-  ApiTags,
   ApiBadRequestResponse,
   ApiInternalServerErrorResponse,
+  ApiTags,
 } from "@nestjs/swagger";
 import { ThrottlerGuard } from "@nestjs/throttler";
-import { errorsDescriptions } from "@core/enums/errors-descriptions.enum";
-import { ValidationPipe } from "@core/pipes/validation.pipe";
-import { NoOmitValidationPipe } from "@core/pipes/no-omit-validation.pipe";
 
 /**
  * Interface of controller options

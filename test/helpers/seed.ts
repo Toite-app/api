@@ -1,8 +1,9 @@
 import * as argon2 from "argon2";
+import { NodePgDatabase } from "drizzle-orm/node-postgres";
+
+import { TEST_PASSWORD } from "./consts";
 import { db as defaultDb, schema } from "./db";
 import { mockWorkers } from "./mock/workers";
-import { TEST_PASSWORD } from "./consts";
-import { NodePgDatabase } from "drizzle-orm/node-postgres";
 
 export const seedWorkers = async (
   db: NodePgDatabase<typeof schema>,

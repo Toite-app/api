@@ -1,8 +1,9 @@
-import * as schema from "src/drizzle/schema";
-import { hash } from "argon2";
-import { db } from "./db";
-import { TEST_PASSWORD } from "./consts";
 import { faker } from "@faker-js/faker";
+import { hash } from "argon2";
+import * as schema from "src/drizzle/schema";
+
+import { TEST_PASSWORD } from "./consts";
+import { db } from "./db";
 
 export const createRoleWorker = async (
   role: schema.WorkerRole,

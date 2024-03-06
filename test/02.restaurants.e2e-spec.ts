@@ -1,15 +1,16 @@
-import * as request from "supertest";
+import { HttpStatus, INestApplication } from "@nestjs/common";
 import { AUTH_COOKIES } from "src/auth/auth.types";
+import { CreateRestaurantDto } from "src/restaurants/dto/create-restaurant.dto";
+import * as request from "supertest";
+
 import { getTestApp } from "./helpers/app";
 import { clearDatabase } from "./helpers/clear-db";
+import { TEST_USER_AGENT } from "./helpers/consts";
 import { createAdmin } from "./helpers/create-admin";
+import { createRoleWorker } from "./helpers/create-role-worker";
+import { migrate } from "./helpers/migrate-db";
 import { seedDatabase } from "./helpers/seed";
 import { signIn } from "./helpers/sign-in";
-import { createRoleWorker } from "./helpers/create-role-worker";
-import { HttpStatus, INestApplication } from "@nestjs/common";
-import { TEST_USER_AGENT } from "./helpers/consts";
-import { CreateRestaurantDto } from "src/restaurants/dto/create-restaurant.dto";
-import { migrate } from "./helpers/migrate-db";
 
 describe("Restaurants Controller (e2e)", () => {
   let app: INestApplication;

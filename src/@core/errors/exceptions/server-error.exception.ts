@@ -1,4 +1,5 @@
 import { InternalServerErrorException as Exception } from "@nestjs/common";
+
 import { ErrorInstance, ErrorMessage } from "../index.types";
 
 /**

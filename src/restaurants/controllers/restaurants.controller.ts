@@ -1,5 +1,11 @@
-import { RequireSessionAuth } from "src/auth/decorators/session-auth.decorator";
-import { RestaurantsService } from "../services/restaurants.service";
+import { Controller } from "@core/decorators/controller.decorator";
+import {
+  IPagination,
+  PaginationParams,
+} from "@core/decorators/pagination.decorator";
+import { Roles } from "@core/decorators/roles.decorator";
+import { Serializable } from "@core/decorators/serializable.decorator";
+import { Body, Delete, Get, Param, Post, Put } from "@nestjs/common";
 import {
   ApiCreatedResponse,
   ApiForbiddenResponse,
@@ -9,18 +15,13 @@ import {
   ApiOperation,
   ApiUnauthorizedResponse,
 } from "@nestjs/swagger";
-import { Controller } from "@core/decorators/controller.decorator";
-import { Body, Delete, Get, Param, Post, Put } from "@nestjs/common";
-import { Serializable } from "@core/decorators/serializable.decorator";
-import { RestaurantsPaginatedDto } from "../dto/views/get-restaurants.view";
-import {
-  IPagination,
-  PaginationParams,
-} from "@core/decorators/pagination.decorator";
-import { Roles } from "@core/decorators/roles.decorator";
-import { RestaurantDto } from "../dto/restaurant.dto";
+import { RequireSessionAuth } from "src/auth/decorators/session-auth.decorator";
+
 import { CreateRestaurantDto } from "../dto/create-restaurant.dto";
+import { RestaurantDto } from "../dto/restaurant.dto";
 import { UpdateRestaurantDto } from "../dto/update-restaurant.dto";
+import { RestaurantsPaginatedDto } from "../dto/views/get-restaurants.view";
+import { RestaurantsService } from "../services/restaurants.service";
 
 @RequireSessionAuth()
 @Controller("restaurants")

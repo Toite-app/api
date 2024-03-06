@@ -1,7 +1,7 @@
-import { Pool } from "pg";
-import { drizzle } from "drizzle-orm/node-postgres";
 import dotenv from "dotenv";
 import { sql } from "drizzle-orm";
+import { drizzle } from "drizzle-orm/node-postgres";
+import { Pool } from "pg";
 
 dotenv.config({
   path: process.env.NODE_ENV === "test" ? "./.env.test" : "./.env",

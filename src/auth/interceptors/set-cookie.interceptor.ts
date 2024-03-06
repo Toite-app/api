@@ -1,13 +1,14 @@
+import { Response } from "@core/interfaces/response";
+import * as ms from "@lukeed/ms";
 import {
   CallHandler,
   ExecutionContext,
   Injectable,
   NestInterceptor,
 } from "@nestjs/common";
-import * as ms from "@lukeed/ms";
 import { Observable } from "rxjs";
 import { map } from "rxjs/operators";
-import { Response } from "@core/interfaces/response";
+
 import { AUTH_COOKIES } from "../auth.types";
 
 /**

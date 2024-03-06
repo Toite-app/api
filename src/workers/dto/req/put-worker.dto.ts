@@ -1,8 +1,8 @@
 import {
   ApiProperty,
+  IntersectionType,
   PartialType,
   PickType,
-  IntersectionType,
 } from "@nestjs/swagger";
 import { Expose } from "class-transformer";
 import { IsStrongPassword } from "class-validator";

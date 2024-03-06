@@ -1,6 +1,7 @@
-import { pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
-import { workers } from "./workers";
 import { relations } from "drizzle-orm";
+import { pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+
+import { workers } from "./workers";
 
 export const sessions = pgTable("sessions", {
   id: uuid("id").defaultRandom(),

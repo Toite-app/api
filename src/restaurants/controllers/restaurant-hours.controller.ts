@@ -1,12 +1,7 @@
 import { Controller } from "@core/decorators/controller.decorator";
+import { Roles } from "@core/decorators/roles.decorator";
 import { Serializable } from "@core/decorators/serializable.decorator";
 import { Body, Delete, Get, Param, Post, Put } from "@nestjs/common";
-import { RequireSessionAuth } from "src/auth/decorators/session-auth.decorator";
-import {
-  CreateRestaurantHoursDto,
-  RestaurantHoursDto,
-  UpdateRestaurantHoursDto,
-} from "../dto/restaurant-hours.dto";
 import {
   ApiCreatedResponse,
   ApiForbiddenResponse,
@@ -14,8 +9,14 @@ import {
   ApiOperation,
   OmitType,
 } from "@nestjs/swagger";
+import { RequireSessionAuth } from "src/auth/decorators/session-auth.decorator";
+
+import {
+  CreateRestaurantHoursDto,
+  RestaurantHoursDto,
+  UpdateRestaurantHoursDto,
+} from "../dto/restaurant-hours.dto";
 import { RestaurantHoursService } from "../services/restaurant-hours.service";
-import { Roles } from "@core/decorators/roles.decorator";
 
 export class CreateRestaurantHoursPayloadDto extends OmitType(
   CreateRestaurantHoursDto,

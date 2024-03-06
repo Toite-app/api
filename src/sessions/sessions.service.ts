@@ -1,12 +1,13 @@
+import { UnauthorizedException } from "@core/errors/exceptions/unauthorized.exception";
+import { handleError } from "@core/errors/handleError";
 import { Inject, Injectable } from "@nestjs/common";
+import * as schema from "@postgress-db/schema";
+import { eq } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { PG_CONNECTION } from "src/constants";
-import * as schema from "@postgress-db/schema";
-import { SessionPayloadDto } from "./dto/session-payload";
-import { handleError } from "@core/errors/handleError";
-import { eq } from "drizzle-orm";
 import { v4 as uuidv4 } from "uuid";
-import { UnauthorizedException } from "@core/errors/exceptions/unauthorized.exception";
+
+import { SessionPayloadDto } from "./dto/session-payload";
 
 @Injectable()
 export class SessionsService {

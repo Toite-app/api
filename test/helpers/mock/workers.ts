@@ -1,7 +1,8 @@
 import { faker } from "@faker-js/faker";
 import { CreateWorkerDto } from "src/workers/dto/req/put-worker.dto";
-import { schema } from "../db";
+
 import { TEST_PASSWORD } from "../consts";
+import { schema } from "../db";
 
 export const mockWorkers = (length: number = 20): CreateWorkerDto[] => {
   return Array.from({ length }, () => {

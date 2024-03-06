@@ -1,10 +1,11 @@
 /* eslint-disable @typescript-eslint/ban-types */
-import { PipeTransform, Injectable, ArgumentMetadata } from "@nestjs/common";
-import { validate } from "class-validator";
-import { plainToClass } from "class-transformer";
-import { handleError } from "@core/errors/handleError";
-import { BadRequestException } from "../errors/exceptions/bad-request.exception";
 import { FormException } from "@core/errors/exceptions/form.exception";
+import { handleError } from "@core/errors/handleError";
+import { ArgumentMetadata, Injectable, PipeTransform } from "@nestjs/common";
+import { plainToClass } from "class-transformer";
+import { validate } from "class-validator";
+
+import { BadRequestException } from "../errors/exceptions/bad-request.exception";
 
 /**
  * Validates input data by class validator decorators

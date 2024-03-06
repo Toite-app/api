@@ -1,8 +1,9 @@
 import dotenv from "dotenv";
-import { Pool } from "pg";
-import * as schema from "./schema";
 import { drizzle } from "drizzle-orm/node-postgres";
+import { Pool } from "pg";
 import { seedDatabase } from "test/helpers/seed";
+
+import * as schema from "./schema";
 
 dotenv.config();
 

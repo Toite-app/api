@@ -1,13 +1,14 @@
-import * as request from "supertest";
-import { HttpStatus, INestApplication } from "@nestjs/common";
-import { getTestApp } from "./helpers/app";
-import { migrate } from "./helpers/migrate-db";
-import { createAdmin } from "./helpers/create-admin";
-import { TEST_PASSWORD, TEST_USER_AGENT } from "./helpers/consts";
-import { AUTH_COOKIES } from "src/auth/auth.types";
-import { delay } from "./helpers/delay";
 import * as ms from "@lukeed/ms";
+import { HttpStatus, INestApplication } from "@nestjs/common";
+import { AUTH_COOKIES } from "src/auth/auth.types";
+import * as request from "supertest";
+
+import { getTestApp } from "./helpers/app";
 import { clearDatabase } from "./helpers/clear-db";
+import { TEST_PASSWORD, TEST_USER_AGENT } from "./helpers/consts";
+import { createAdmin } from "./helpers/create-admin";
+import { delay } from "./helpers/delay";
+import { migrate } from "./helpers/migrate-db";
 
 describe("Auth Controller (e2e)", () => {
   let app: INestApplication;

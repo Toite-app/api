@@ -1,12 +1,13 @@
+import { slugify } from "@core/utils/slugify";
 import {
-  ExceptionFilter,
-  Catch,
   ArgumentsHost,
+  Catch,
+  ExceptionFilter,
   HttpStatus,
 } from "@nestjs/common";
 import { HttpAdapterHost } from "@nestjs/core";
+
 import { ErrorInstance } from "./index.types";
-import { slugify } from "@core/utils/slugify";
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {

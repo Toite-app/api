@@ -1,15 +1,15 @@
-import * as request from "supertest";
 import { HttpStatus, INestApplication } from "@nestjs/common";
-import { clearDatabase } from "./helpers/clear-db";
-import { createAdmin } from "./helpers/create-admin";
-import { getTestApp } from "./helpers/app";
-import { signIn } from "./helpers/sign-in";
 import { AUTH_COOKIES } from "src/auth/auth.types";
-import { seedDatabase } from "./helpers/seed";
+import * as request from "supertest";
 
+import { getTestApp } from "./helpers/app";
+import { clearDatabase } from "./helpers/clear-db";
 import { TEST_PASSWORD, TEST_USER_AGENT } from "./helpers/consts";
+import { createAdmin } from "./helpers/create-admin";
 import { createRoleWorker } from "./helpers/create-role-worker";
 import { migrate } from "./helpers/migrate-db";
+import { seedDatabase } from "./helpers/seed";
+import { signIn } from "./helpers/sign-in";
 
 describe("Workers Controller (e2e)", () => {
   let app: INestApplication;
