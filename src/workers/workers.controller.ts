@@ -1,4 +1,5 @@
 import { Controller } from "@core/decorators/controller.decorator";
+import { FilterParams, IFilters } from "@core/decorators/filter.decorator";
 import {
   IPagination,
   PaginationParams,
@@ -58,11 +59,13 @@ export class WorkersController {
     })
     sorting: ISorting,
     @PaginationParams() pagination: IPagination,
+    @FilterParams() filters?: IFilters,
   ): Promise<WorkersPaginatedDto> {
-    const total = await this.workersService.getTotalCount();
+    const total = await this.workersService.getTotalCount(filters);
     const data = await this.workersService.findMany({
       pagination,
       sorting,
+      filters,
     });
 
     return {

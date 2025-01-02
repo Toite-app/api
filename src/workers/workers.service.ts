@@ -1,3 +1,4 @@
+import { IFilters } from "@core/decorators/filter.decorator";
 import { IPagination } from "@core/decorators/pagination.decorator";
 import { ISorting } from "@core/decorators/sorting.decorator";
 import { BadRequestException } from "@core/errors/exceptions/bad-request.exception";
@@ -8,6 +9,7 @@ import * as argon2 from "argon2";
 import { asc, count, desc, eq, sql } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { PG_CONNECTION } from "src/constants";
+import { DrizzleUtils } from "src/drizzle/drizzle-utils";
 
 import { CreateWorkerDto, UpdateWorkerDto } from "./dto/req/put-worker.dto";
 import { WorkerEntity } from "./entities/worker.entity";
@@ -26,37 +28,38 @@ export class WorkersService {
     return true;
   }
 
-  public async getTotalCount(): Promise<number> {
-    return await this.pg
-      .select({ value: count() })
-      .from(schema.workers)
-      .then((res) => res[0].value);
+  public async getTotalCount(filters?: IFilters): Promise<number> {
+    const query = this.pg.select({ value: count() }).from(schema.workers);
+
+    if (filters) {
+      query.where(DrizzleUtils.buildFilterConditions(schema.workers, filters));
+    }
+
+    return await query.then((res) => res[0].value);
   }
 
   public async findMany(options: {
-    pagination?: IPagination;
-    sorting?: ISorting;
+    pagination: IPagination;
+    sorting: ISorting;
+    filters?: IFilters;
   }): Promise<WorkerEntity[]> {
-    const { pagination, sorting } = options;
+    const { pagination, sorting, filters } = options;
 
-    return await this.pg.query.workers.findMany({
-      // Sorting
-      ...(sorting
-        ? {
-            orderBy:
-              sorting.sortOrder === "asc"
-                ? asc(sql.identifier(sorting.sortBy))
-                : desc(sql.identifier(sorting.sortBy)),
-          }
-        : {}),
-      // Pagination
-      ...(pagination
-        ? {
-            limit: pagination.size,
-            offset: pagination.offset,
-          }
-        : {}),
-    });
+    const query = this.pg.select().from(schema.workers);
+
+    if (filters) {
+      query.where(DrizzleUtils.buildFilterConditions(schema.workers, filters));
+    }
+
+    if (sorting) {
+      query.orderBy(
+        sorting.sortOrder === "asc"
+          ? asc(sql.identifier(sorting.sortBy))
+          : desc(sql.identifier(sorting.sortBy)),
+      );
+    }
+
+    return await query.limit(pagination.size).offset(pagination.offset);
   }
 
   /**
