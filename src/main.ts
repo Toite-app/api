@@ -53,7 +53,7 @@ async function bootstrap() {
     swaggerOptions: {},
   });
 
-  await app.listen(3000);
+  await app.listen(process.env?.PORT ?? 6701);
 }
 
 createUserIfDbEmpty();
