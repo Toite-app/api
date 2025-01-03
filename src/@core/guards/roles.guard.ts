@@ -3,7 +3,7 @@ import { ForbiddenException } from "@core/errors/exceptions/forbidden.exception"
 import { Request } from "@core/interfaces/request";
 import { CanActivate, ExecutionContext, Injectable } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
-import { WorkerRole } from "@postgress-db/schema";
+import { WorkerRole } from "@postgress-db/schema/workers";
 
 @Injectable()
 export class RolesGuard implements CanActivate {

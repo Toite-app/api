@@ -23,7 +23,11 @@ import {
   ApiOperation,
   ApiUnauthorizedResponse,
 } from "@nestjs/swagger";
-import { IWorker, workerRoleRank } from "@postgress-db/schema";
+import {
+  IWorker,
+  WorkerRole,
+  workerRoleRank,
+} from "@postgress-db/schema/workers";
 import { RequireSessionAuth } from "src/auth/decorators/session-auth.decorator";
 
 import { CreateWorkerDto, UpdateWorkerDto } from "./dto/req/put-worker.dto";
@@ -171,7 +175,7 @@ export class WorkersController {
 
     const { role } = data;
 
-    const roleRank = workerRoleRank?.[role];
+    const roleRank = workerRoleRank?.[role as WorkerRole];
     const requesterRoleRank = workerRoleRank[worker.role];
 
     if (role) {
@@ -190,9 +194,15 @@ export class WorkersController {
       }
     }
 
-    return await this.workersService.update(id, {
+    const updatedWorker = await this.workersService.update(id, {
       ...data,
       updatedAt: new Date(),
     });
+
+    if (!updatedWorker) {
+      throw new NotFoundException("Worker with this id doesn't exist");
+    }
+
+    return updatedWorker;
   }
 }

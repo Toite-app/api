@@ -23,12 +23,8 @@ export interface IPagination {
 
 export const PaginationParams = createParamDecorator(
   (options: PaginationParams, ctx: ExecutionContextHost): IPagination => {
-    const {
-      default: {
-        page: defaultPage = PAGINATION_DEFAULT_PAGE,
-        limit: defaultLimit = PAGINATION_DEFAULT_LIMIT,
-      },
-    } = options || { default: {} };
+    const defaultPage = options?.default?.page ?? PAGINATION_DEFAULT_PAGE;
+    const defaultLimit = options?.default?.limit ?? PAGINATION_DEFAULT_LIMIT;
 
     const req = ctx.switchToHttp().getRequest() as Request;
 

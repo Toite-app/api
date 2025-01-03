@@ -3,8 +3,10 @@ import { IPagination } from "@core/decorators/pagination.decorator";
 import { ISorting } from "@core/decorators/sorting.decorator";
 import { BadRequestException } from "@core/errors/exceptions/bad-request.exception";
 import { ConflictException } from "@core/errors/exceptions/conflict.exception";
+import { ServerErrorException } from "@core/errors/exceptions/server-error.exception";
 import { Inject, Injectable } from "@nestjs/common";
-import * as schema from "@postgress-db/schema";
+import { schema } from "@postgress-db/drizzle.module";
+import { IWorker } from "@postgress-db/schema/workers";
 import * as argon2 from "argon2";
 import { asc, count, desc, eq, sql } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
@@ -20,7 +22,7 @@ export class WorkersService {
     @Inject(PG_CONNECTION) private readonly pg: NodePgDatabase<typeof schema>,
   ) {}
 
-  private checkRestaurantRoleAssignment(role?: schema.IWorker["role"]) {
+  private checkRestaurantRoleAssignment(role?: IWorker["role"]) {
     if (role === "SYSTEM_ADMIN" || role === "CHIEF_ADMIN") {
       throw new BadRequestException("You can't assign restaurant to this role");
     }
@@ -67,7 +69,7 @@ export class WorkersService {
    * @param id number id of worker
    * @returns
    */
-  public async findById(id: string): Promise<schema.IWorker> {
+  public async findById(id: string): Promise<IWorker | undefined> {
     return await this.pg.query.workers.findFirst({
       where: eq(schema.workers.id, id),
     });
@@ -78,7 +80,7 @@ export class WorkersService {
    * @param value string login
    * @returns
    */
-  public async findOneByLogin(value: string): Promise<WorkerEntity> {
+  public async findOneByLogin(value: string): Promise<IWorker | undefined> {
     return await this.pg.query.workers.findFirst({
       where: eq(schema.workers.login, value),
     });
@@ -89,19 +91,27 @@ export class WorkersService {
    * @param dto
    * @returns
    */
-  public async create(dto: CreateWorkerDto): Promise<WorkerEntity> {
+  public async create(dto: CreateWorkerDto): Promise<WorkerEntity | undefined> {
     const { password, role, restaurantId, ...rest } = dto;
 
     if (restaurantId) {
       this.checkRestaurantRoleAssignment(role);
     }
 
-    const worker = await this.pg.insert(schema.workers).values({
-      ...rest,
-      restaurantId,
-      role,
-      passwordHash: await argon2.hash(password),
-    });
+    const workers = await this.pg
+      .insert(schema.workers)
+      .values({
+        ...rest,
+        // restaurantId,
+        role,
+        passwordHash: await argon2.hash(password),
+      })
+      .returning();
+
+    const worker = workers[0];
+    if (!worker || !worker.login) {
+      throw new ServerErrorException("Failed to create worker");
+    }
 
     return await this.findOneByLogin(worker.login);
   }
@@ -112,17 +122,22 @@ export class WorkersService {
    * @param dto
    * @returns
    */
-  public async update(id: string, dto: UpdateWorkerDto): Promise<WorkerEntity> {
+  public async update(
+    id: string,
+    dto: UpdateWorkerDto,
+  ): Promise<WorkerEntity | undefined> {
     const { password, role, login, restaurantId, ...payload } = dto;
 
-    const exist = await this.findOneByLogin(login);
+    if (login) {
+      const exist = await this.findOneByLogin(login);
 
-    if (
-      exist &&
-      exist.id !== id &&
-      exist.login.toLowerCase() === login.toLowerCase()
-    ) {
-      throw new ConflictException("Worker with this login already exists");
+      if (
+        exist &&
+        exist.id !== id &&
+        exist.login.toLowerCase() === login.toLowerCase()
+      ) {
+        throw new ConflictException("Worker with this login already exists");
+      }
     }
 
     if (restaurantId) {

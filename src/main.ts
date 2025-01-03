@@ -1,12 +1,12 @@
 import { configApp } from "@core/config/app";
 import { NestFactory } from "@nestjs/core";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
-import { workers } from "@postgress-db/schema";
+import { schema } from "@postgress-db/drizzle.module";
+import { workers } from "@postgress-db/schema/workers";
 import { hash } from "argon2";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { patchNestJsSwagger } from "nestjs-zod";
 import { Pool } from "pg";
-import * as schema from "src/drizzle/schema";
 
 import { AppModule } from "./app.module";
 import { AUTH_COOKIES } from "./auth/auth.types";
@@ -20,7 +20,7 @@ export const createUserIfDbEmpty = async () => {
   if ((await db.query.workers.findMany()).length === 0) {
     await db.insert(workers).values({
       login: "admin",
-      passwordHash: await hash(process.env.INITIAL_ADMIN_PASSWORD),
+      passwordHash: await hash(process.env.INITIAL_ADMIN_PASSWORD ?? "123456"),
       role: schema.ZodWorkerRole.Enum.SYSTEM_ADMIN,
     });
   }

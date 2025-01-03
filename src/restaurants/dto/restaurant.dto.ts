@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IRestaurant } from "@postgress-db/schema";
+import { IRestaurant } from "@postgress-db/schema/restaurants";
 import { Expose } from "class-transformer";
 import {
   IsBoolean,

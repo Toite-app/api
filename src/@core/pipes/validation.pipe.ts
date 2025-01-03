@@ -59,8 +59,8 @@ export class ValidationPipe implements PipeTransform {
 
       if (errors.length > 0) {
         const messages = errors.map(({ constraints }) => {
-          const [key] = Object.keys(constraints);
-          return `${constraints[key]}`;
+          const [key] = Object.keys(constraints ?? {});
+          return `${constraints?.[key]}`;
         });
 
         throw new FormException({

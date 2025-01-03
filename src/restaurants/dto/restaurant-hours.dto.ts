@@ -1,5 +1,5 @@
 import { ApiProperty, OmitType, PartialType, PickType } from "@nestjs/swagger";
-import { IRestaurantHours } from "@postgress-db/schema";
+import { IRestaurantHours } from "@postgress-db/schema/restaurants";
 import { Expose } from "class-transformer";
 import { IsBoolean, IsISO8601, IsString, IsUUID } from "class-validator";
 

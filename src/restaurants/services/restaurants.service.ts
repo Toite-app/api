@@ -1,7 +1,7 @@
 import { IPagination } from "@core/decorators/pagination.decorator";
 import { NotFoundException } from "@core/errors/exceptions/not-found.exception";
 import { Inject, Injectable } from "@nestjs/common";
-import * as schema from "@postgress-db/schema";
+import { schema } from "@postgress-db/drizzle.module";
 import { count, eq } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { PG_CONNECTION } from "src/constants";

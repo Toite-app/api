@@ -1,4 +1,4 @@
-import { sessions } from "@postgress-db/schema";
+import { sessions } from "@postgress-db/schema/sessions";
 import { Expose } from "class-transformer";
 import { IsUUID } from "class-validator";
 import { createInsertSchema } from "drizzle-zod";

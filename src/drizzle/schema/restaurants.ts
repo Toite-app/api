@@ -13,33 +13,30 @@ import { workers } from "./workers";
 
 export const restaurants = pgTable("restaurants", {
   // Primary key
-  id: uuid("id").defaultRandom(),
+  id: uuid("id").defaultRandom().primaryKey(),
 
   // Name of the restaurant //
   name: text("name").notNull(),
 
   // Legal entity of the restaurant (can be a company or a person) //
-  legalEntity: text("legalEntity"),
+  legalEntity: text("legalEntity").notNull(),
 
   // Address of the restaurant //
-  address: text("address"),
-  latitude: numeric("latitude"),
-  longitude: numeric("longitude"),
+  address: text("address").notNull(),
+  latitude: numeric("latitude").notNull(),
+  longitude: numeric("longitude").notNull(),
 
   // Is the restaurant enabled? //
-  isEnabled: boolean("isEnabled").default(false),
+  isEnabled: boolean("isEnabled").notNull().default(false),
 
   // Timestamps //
-  createdAt: timestamp("createdAt")
-    .notNull()
-    .default(sql`CURRENT_TIMESTAMP`),
-
+  createdAt: timestamp("createdAt").notNull().defaultNow(),
   updatedAt: timestamp("updatedAt").notNull().defaultNow(),
 });
 
 export const restaurantHours = pgTable("restaurantHours", {
   // Primary key //
-  id: uuid("id").defaultRandom(),
+  id: uuid("id").defaultRandom().primaryKey(),
 
   // Restaurant //
   restaurantId: uuid("restaurantId").notNull(),
@@ -51,7 +48,7 @@ export const restaurantHours = pgTable("restaurantHours", {
   openingTime: time("openingTime").notNull(),
   closingTime: time("closingTime").notNull(),
 
-  isEnabled: boolean("isEnabled").default(true),
+  isEnabled: boolean("isEnabled").notNull().default(true),
 
   // Timestamps //
   createdAt: timestamp("createdAt").notNull().defaultNow(),

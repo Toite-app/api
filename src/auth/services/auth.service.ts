@@ -50,6 +50,10 @@ export class AuthService {
       ipAddress,
     });
 
+    if (!created) {
+      throw new UnauthorizedException("Failed to create session");
+    }
+
     return await this.sessionsService.findByToken(created.token);
   }
 

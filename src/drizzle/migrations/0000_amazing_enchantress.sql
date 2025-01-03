@@ -1,10 +1,5 @@
-DO $$ BEGIN
- CREATE TYPE "workerRoleEnum" AS ENUM('SYSTEM_ADMIN', 'CHIEF_ADMIN', 'ADMIN', 'KITCHENER', 'WAITER', 'CASHIER', 'DISPATCHER', 'COURIER');
-EXCEPTION
- WHEN duplicate_object THEN null;
-END $$;
---> statement-breakpoint
-CREATE TABLE IF NOT EXISTS "restaurantHours" (
+CREATE TYPE "public"."workerRoleEnum" AS ENUM('SYSTEM_ADMIN', 'CHIEF_ADMIN', 'ADMIN', 'KITCHENER', 'WAITER', 'CASHIER', 'DISPATCHER', 'COURIER');--> statement-breakpoint
+CREATE TABLE "restaurantHours" (
 	"id" uuid DEFAULT gen_random_uuid(),
 	"restaurantId" uuid NOT NULL,
 	"dayOfWeek" text NOT NULL,
@@ -15,7 +10,7 @@ CREATE TABLE IF NOT EXISTS "restaurantHours" (
 	"updatedAt" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS "restaurants" (
+CREATE TABLE "restaurants" (
 	"id" uuid DEFAULT gen_random_uuid(),
 	"name" text NOT NULL,
 	"legalEntity" text,
@@ -27,7 +22,7 @@ CREATE TABLE IF NOT EXISTS "restaurants" (
 	"updatedAt" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS "workers" (
+CREATE TABLE "workers" (
 	"id" uuid DEFAULT gen_random_uuid(),
 	"name" text,
 	"restaurantId" uuid,
@@ -43,7 +38,7 @@ CREATE TABLE IF NOT EXISTS "workers" (
 	CONSTRAINT "workers_login_unique" UNIQUE("login")
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS "sessions" (
+CREATE TABLE "sessions" (
 	"id" uuid DEFAULT gen_random_uuid(),
 	"workerId" uuid NOT NULL,
 	"httpAgent" text,
