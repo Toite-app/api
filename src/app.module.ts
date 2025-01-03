@@ -6,6 +6,7 @@ import { APP_FILTER, APP_GUARD, APP_PIPE } from "@nestjs/core";
 import { MongooseModule } from "@nestjs/mongoose";
 import { ThrottlerModule } from "@nestjs/throttler";
 import { ZodValidationPipe } from "nestjs-zod";
+import { AddressesModule } from "src/addresses/addresses.module";
 
 import { AuthModule } from "./auth/auth.module";
 import { SessionAuthGuard } from "./auth/guards/session-auth.guard";
@@ -36,6 +37,7 @@ import { WorkersModule } from "./workers/workers.module";
     AuthModule,
     WorkersModule,
     RestaurantsModule,
+    AddressesModule,
   ],
   providers: [
     {
