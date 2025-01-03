@@ -1,5 +1,6 @@
 import { AllExceptionsFilter } from "@core/errors/filter";
 import { RolesGuard } from "@core/guards/roles.guard";
+import { RedisModule } from "@liaoliaots/nestjs-redis";
 import { Module } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { APP_FILTER, APP_GUARD, APP_PIPE } from "@nestjs/core";
@@ -33,6 +34,11 @@ import { WorkersModule } from "./workers/workers.module";
       useFactory: (configService: ConfigService) => ({
         uri: configService.get<string>("MONGO_URL"),
       }),
+    }),
+    RedisModule.forRoot({
+      config: {
+        url: process.env.REDIS_URL,
+      },
     }),
     AuthModule,
     WorkersModule,
