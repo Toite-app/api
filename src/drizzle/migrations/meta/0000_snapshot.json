@@ -1,10 +1,10 @@
 {
-  "id": "13695bad-8e56-4c47-a933-914b2035a08c",
+  "id": "a1d8b137-af18-44cb-a268-e7657be61e76",
   "prevId": "00000000-0000-0000-0000-000000000000",
-  "version": "5",
-  "dialect": "pg",
+  "version": "7",
+  "dialect": "postgresql",
   "tables": {
-    "restaurantHours": {
+    "public.restaurantHours": {
       "name": "restaurantHours",
       "schema": "",
       "columns": {
@@ -64,9 +64,12 @@
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
-    "restaurants": {
+    "public.restaurants": {
       "name": "restaurants",
       "schema": "",
       "columns": {
@@ -132,9 +135,12 @@
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
-    "workers": {
+    "public.workers": {
       "name": "workers",
       "schema": "",
       "columns": {
@@ -166,6 +172,7 @@
         "role": {
           "name": "role",
           "type": "workerRoleEnum",
+          "typeSchema": "public",
           "primaryKey": false,
           "notNull": true
         },
@@ -226,9 +233,12 @@
             "login"
           ]
         }
-      }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
-    "sessions": {
+    "public.sessions": {
       "name": "sessions",
       "schema": "",
       "columns": {
@@ -295,25 +305,33 @@
             "token"
           ]
         }
-      }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     }
   },
   "enums": {
-    "workerRoleEnum": {
+    "public.workerRoleEnum": {
       "name": "workerRoleEnum",
-      "values": {
-        "SYSTEM_ADMIN": "SYSTEM_ADMIN",
-        "CHIEF_ADMIN": "CHIEF_ADMIN",
-        "ADMIN": "ADMIN",
-        "KITCHENER": "KITCHENER",
-        "WAITER": "WAITER",
-        "CASHIER": "CASHIER",
-        "DISPATCHER": "DISPATCHER",
-        "COURIER": "COURIER"
-      }
+      "schema": "public",
+      "values": [
+        "SYSTEM_ADMIN",
+        "CHIEF_ADMIN",
+        "ADMIN",
+        "KITCHENER",
+        "WAITER",
+        "CASHIER",
+        "DISPATCHER",
+        "COURIER"
+      ]
     }
   },
   "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
   "_meta": {
     "columns": {},
     "schemas": {},

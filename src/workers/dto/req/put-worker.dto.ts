@@ -5,7 +5,7 @@ import {
   PickType,
 } from "@nestjs/swagger";
 import { Expose } from "class-transformer";
-import { IsStrongPassword } from "class-validator";
+import { IsDate, IsOptional, IsStrongPassword } from "class-validator";
 import { WorkerEntity } from "src/workers/entities/worker.entity";
 
 export class CreateWorkerDto extends IntersectionType(
@@ -26,6 +26,14 @@ export class CreateWorkerDto extends IntersectionType(
     description: "Password of the worker (if provided changes is)",
   })
   password: string;
+
+  @IsOptional()
+  @IsDate()
+  updatedAt: Date;
+
+  @IsOptional()
+  @IsDate()
+  onlineAt: Date;
 }
 
 export class UpdateWorkerDto extends PartialType(CreateWorkerDto) {}

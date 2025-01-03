@@ -30,7 +30,7 @@ const clearDatabase = async () => {
 
   await Promise.all(
     tables.map((table) =>
-      db.execute(sql`TRUNCATE TABLE ${sql.identifier(table)};`),
+      db.execute(sql`TRUNCATE TABLE ${sql.identifier(table as string)};`),
     ),
   );
 

@@ -19,7 +19,7 @@ import {
   ApiOperation,
   ApiUnauthorizedResponse,
 } from "@nestjs/swagger";
-import { IWorker } from "@postgress-db/schema";
+import { IWorker } from "@postgress-db/schema/workers";
 import { Serializable } from "src/@core/decorators/serializable.decorator";
 import { WorkerEntity } from "src/workers/entities/worker.entity";
 
@@ -81,7 +81,7 @@ export class AuthController {
 
     return {
       ...worker,
-      setSessionToken: session.token,
+      setSessionToken: session?.token,
     };
   }
 

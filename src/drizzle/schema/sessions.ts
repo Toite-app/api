@@ -4,12 +4,12 @@ import { pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { workers } from "./workers";
 
 export const sessions = pgTable("sessions", {
-  id: uuid("id").defaultRandom(),
+  id: uuid("id").primaryKey().defaultRandom(),
   workerId: uuid("workerId").notNull(),
   httpAgent: text("httpAgent"),
   ipAddress: text("ipAddress"),
   token: text("token").notNull().unique(),
-  refreshedAt: timestamp("refreshedAt"),
+  refreshedAt: timestamp("refreshedAt").notNull().defaultNow(),
   createdAt: timestamp("createdAt").notNull().defaultNow(),
   updatedAt: timestamp("updatedAt").notNull().defaultNow(),
 });

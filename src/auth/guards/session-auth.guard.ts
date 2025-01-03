@@ -4,6 +4,7 @@ import { Response } from "@core/interfaces/response";
 import * as ms from "@lukeed/ms";
 import { CanActivate, ExecutionContext, Injectable } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
+import { IWorker } from "@postgress-db/schema/workers";
 import { SessionsService } from "src/sessions/sessions.service";
 import { WorkersService } from "src/workers/workers.service";
 
@@ -47,6 +48,10 @@ export class SessionAuthGuard implements CanActivate {
 
     const session = await this.sessionsService.findByToken(token);
 
+    if (!session) {
+      throw new UnauthorizedException();
+    }
+
     const isCompromated =
       session.ipAddress !== ip || session.httpAgent !== httpAgent;
 
@@ -57,7 +62,7 @@ export class SessionAuthGuard implements CanActivate {
 
     const isTimeToRefresh =
       new Date(session.refreshedAt).getTime() +
-        ms.parse(process.env?.SESSION_EXPIRES_IN || "30m") <
+        (ms.parse(process.env?.SESSION_EXPIRES_IN ?? "30m") ?? 0) <
       new Date().getTime();
 
     if (isTimeToRefresh) {
@@ -74,18 +79,21 @@ export class SessionAuthGuard implements CanActivate {
     const worker = await this.workersService.findById(session.workerId);
 
     const isTimeToUpdateOnline =
-      !worker.onlineAt ||
-      new Date(worker.onlineAt).getTime() + ms.parse("5m") <
+      !worker?.onlineAt ||
+      new Date(worker.onlineAt).getTime() + (ms.parse("5m") ?? 0) <
         new Date().getTime();
 
-    if (isTimeToUpdateOnline) {
+    if (isTimeToUpdateOnline && worker) {
       await this.workersService.update(worker.id, {
         onlineAt: new Date(),
       });
     }
 
     req.session = session;
-    req.worker = { ...worker, passwordHash: undefined };
+    req.worker = { ...worker, passwordHash: undefined } as Omit<
+      IWorker,
+      "passwordHash"
+    > & { passwordHash: undefined };
 
     return true;
   }

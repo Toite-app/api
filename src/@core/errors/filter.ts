@@ -29,7 +29,8 @@ export class AllExceptionsFilter implements ExceptionFilter {
       ctx.getResponse(),
       {
         statusCode,
-        errorCode: response.errorCode,
+        // @ts-expect-error response is not defined
+        errorCode: response?.errorCode,
         errorCategory,
         errorSubCode: null,
         ...(typeof response?.message === "object" &&

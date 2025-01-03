@@ -1,7 +1,8 @@
 import { UnauthorizedException } from "@core/errors/exceptions/unauthorized.exception";
 import { handleError } from "@core/errors/handleError";
 import { Inject, Injectable } from "@nestjs/common";
-import * as schema from "@postgress-db/schema";
+import { schema } from "@postgress-db/drizzle.module";
+import { ISession, sessions } from "@postgress-db/schema/sessions";
 import { eq } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { PG_CONNECTION } from "src/constants";
@@ -19,7 +20,7 @@ export class SessionsService {
     return `v1-${uuidv4()}-${uuidv4()}-${uuidv4()}-${uuidv4()}`;
   }
 
-  public async findByToken(token: string): Promise<schema.ISession> {
+  public async findByToken(token: string): Promise<ISession | undefined> {
     try {
       const result = await this.pg.query.sessions.findFirst({
         where: eq(schema.sessions.token, token),
@@ -33,13 +34,13 @@ export class SessionsService {
 
   public async create(
     dto: SessionPayloadDto,
-  ): Promise<Pick<schema.ISession, "id" | "token">> {
+  ): Promise<Pick<ISession, "id" | "token"> | undefined> {
     try {
       const { workerId, httpAgent, ipAddress } = dto;
       const token = this.generateToken();
 
       return await this.pg
-        .insert(schema.sessions)
+        .insert(sessions)
         .values({
           workerId,
           httpAgent,
@@ -59,7 +60,7 @@ export class SessionsService {
     }
   }
 
-  public async refresh(token: string): Promise<string> {
+  public async refresh(token: string): Promise<string | undefined> {
     try {
       if (!(await this.isSessionValid(token))) {
         throw new UnauthorizedException("Session is expired");
@@ -71,7 +72,7 @@ export class SessionsService {
         .update(schema.sessions)
         .set({
           token: newToken,
-          refreshedAt: new Date(),
+          // refreshedAt: new Date(),
           updatedAt: new Date(),
         })
         .where(eq(schema.sessions.token, token));
@@ -86,7 +87,7 @@ export class SessionsService {
     try {
       const session = await this.findByToken(token);
 
-      if (!session) return false;
+      if (!session || !session?.refreshedAt) return false;
 
       // If session is older than 7 days, it's expired
       const isExpired =
@@ -95,6 +96,7 @@ export class SessionsService {
       return !isExpired;
     } catch (err) {
       handleError(err);
+      return false;
     }
   }
 
@@ -107,6 +109,7 @@ export class SessionsService {
       return true;
     } catch (err) {
       handleError(err);
+      return false;
     }
   }
 }

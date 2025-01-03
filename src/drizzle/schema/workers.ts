@@ -26,13 +26,13 @@ export const workerRoleEnum = pgEnum("workerRoleEnum", [
 export const ZodWorkerRole = z.enum(workerRoleEnum.enumValues);
 
 export const workers = pgTable("workers", {
-  id: uuid("id").defaultRandom(),
-  name: text("name"),
+  id: uuid("id").defaultRandom().primaryKey(),
+  name: text("name").notNull().default("N/A"),
   restaurantId: uuid("restaurantId"),
   login: text("login").unique().notNull(),
   role: workerRoleEnum("role").notNull(),
   passwordHash: text("passwordHash").notNull(),
-  isBlocked: boolean("isBlocked").default(false),
+  isBlocked: boolean("isBlocked").notNull().default(false),
   hiredAt: timestamp("hiredAt"),
   firedAt: timestamp("firedAt"),
   onlineAt: timestamp("onlineAt"),

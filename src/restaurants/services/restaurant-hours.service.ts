@@ -1,6 +1,6 @@
 import { BadRequestException } from "@core/errors/exceptions/bad-request.exception";
 import { Inject, Injectable } from "@nestjs/common";
-import * as schema from "@postgress-db/schema";
+import { schema } from "@postgress-db/drizzle.module";
 import { and, eq } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { PG_CONNECTION } from "src/constants";
@@ -53,7 +53,7 @@ export class RestaurantHoursService {
    * @param id
    * @returns
    */
-  public async findOne(id: string): Promise<RestaurantHoursDto> {
+  public async findOne(id: string): Promise<RestaurantHoursDto | undefined> {
     return await this.pg.query.restaurantHours.findFirst({
       where: eq(schema.restaurantHours.id, id),
     });
@@ -76,11 +76,9 @@ export class RestaurantHoursService {
     const data = await this.pg
       .insert(schema.restaurantHours)
       .values(dto)
-      .returning({
-        id: schema.restaurantHours.id,
-      });
+      .returning();
 
-    return await this.findOne(data?.[0].id);
+    return data[0];
   }
 
   /**
@@ -97,12 +95,13 @@ export class RestaurantHoursService {
       throw new BadRequestException(`Restaurant with id ${id} not found`);
     }
 
-    await this.pg
+    const data = await this.pg
       .update(schema.restaurantHours)
       .set(dto)
-      .where(eq(schema.restaurantHours.id, id));
+      .where(eq(schema.restaurantHours.id, id))
+      .returning();
 
-    return await this.findOne(id);
+    return data[0];
   }
 
   /**
@@ -118,8 +117,11 @@ export class RestaurantHoursService {
       throw new BadRequestException(`Restaurant hours with id ${id} not found`);
     }
 
-    return await this.pg
+    const result = await this.pg
       .delete(schema.restaurantHours)
-      .where(eq(schema.restaurantHours.id, id));
+      .where(eq(schema.restaurantHours.id, id))
+      .returning();
+
+    return { id: result[0].id };
   }
 }
