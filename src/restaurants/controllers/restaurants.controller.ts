@@ -18,9 +18,9 @@ import {
 import { RequireSessionAuth } from "src/auth/decorators/session-auth.decorator";
 
 import { CreateRestaurantDto } from "../dto/create-restaurant.dto";
-import { RestaurantDto } from "../dto/restaurant.dto";
 import { UpdateRestaurantDto } from "../dto/update-restaurant.dto";
 import { RestaurantsPaginatedDto } from "../dto/views/get-restaurants.view";
+import { RestaurantDto } from "../entities/restaurant.entity";
 import { RestaurantsService } from "../services/restaurants.service";
 
 @RequireSessionAuth()

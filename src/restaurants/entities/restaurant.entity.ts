@@ -71,6 +71,14 @@ export class RestaurantDto implements IRestaurant {
   })
   isEnabled: boolean;
 
+  @IsBoolean()
+  @Expose()
+  @ApiProperty({
+    description: "Is restaurant closed forever",
+    example: false,
+  })
+  isClosedForever: boolean;
+
   @IsISO8601()
   @Expose()
   @ApiProperty({

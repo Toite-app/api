@@ -1,8 +1,9 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { Expose, Type } from "class-transformer";
 
+import { RestaurantDto } from "../entities/restaurant.entity";
+
 import { RestaurantHoursDto } from "./restaurant-hours.dto";
-import { RestaurantDto } from "./restaurant.dto";
 
 export class RestaurantWithHoursDto extends RestaurantDto {
   @Expose()

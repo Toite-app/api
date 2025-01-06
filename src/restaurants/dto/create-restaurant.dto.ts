@@ -1,6 +1,6 @@
 import { PickType } from "@nestjs/swagger";
 
-import { RestaurantDto } from "./restaurant.dto";
+import { RestaurantDto } from "../entities/restaurant.entity";
 
 export class CreateRestaurantDto extends PickType(RestaurantDto, [
   "name",
@@ -9,4 +9,5 @@ export class CreateRestaurantDto extends PickType(RestaurantDto, [
   "latitude",
   "longitude",
   "isEnabled",
+  "isClosedForever",
 ]) {}

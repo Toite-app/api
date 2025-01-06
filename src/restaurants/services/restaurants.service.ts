@@ -7,8 +7,8 @@ import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { PG_CONNECTION } from "src/constants";
 
 import { CreateRestaurantDto } from "../dto/create-restaurant.dto";
-import { RestaurantDto } from "../dto/restaurant.dto";
 import { UpdateRestaurantDto } from "../dto/update-restaurant.dto";
+import { RestaurantDto } from "../entities/restaurant.entity";
 
 @Injectable()
 export class RestaurantsService {
@@ -84,6 +84,11 @@ export class RestaurantsService {
     id: string,
     dto: UpdateRestaurantDto,
   ): Promise<RestaurantDto> {
+    // Disable restaurant if it is closed forever
+    if (dto.isClosedForever) {
+      dto.isEnabled = false;
+    }
+
     await this.pg
       .update(schema.restaurants)
       .set(dto)

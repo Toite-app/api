@@ -2,7 +2,7 @@ import { PaginationResponseDto } from "@core/dto/pagination-response.entity";
 import { ApiProperty } from "@nestjs/swagger";
 import { Expose, Type } from "class-transformer";
 
-import { RestaurantDto } from "../restaurant.dto";
+import { RestaurantDto } from "../../entities/restaurant.entity";
 
 export class RestaurantsPaginatedDto extends PaginationResponseDto {
   @Expose()
