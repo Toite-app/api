@@ -1,4 +1,4 @@
-import { relations, sql } from "drizzle-orm";
+import { relations } from "drizzle-orm";
 import {
   boolean,
   numeric,
@@ -28,6 +28,9 @@ export const restaurants = pgTable("restaurants", {
 
   // Is the restaurant enabled? //
   isEnabled: boolean("isEnabled").notNull().default(false),
+
+  // Is closed forever? //
+  isClosedForever: boolean("isClosedForever").notNull().default(false),
 
   // Timestamps //
   createdAt: timestamp("createdAt").notNull().defaultNow(),
