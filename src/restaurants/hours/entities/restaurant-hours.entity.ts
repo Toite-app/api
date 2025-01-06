@@ -1,9 +1,16 @@
+import { DayOfWeek, DayOfWeekEnum } from "@core/types/general";
 import { ApiProperty, OmitType, PartialType, PickType } from "@nestjs/swagger";
 import { IRestaurantHours } from "@postgress-db/schema/restaurants";
 import { Expose } from "class-transformer";
-import { IsBoolean, IsISO8601, IsString, IsUUID } from "class-validator";
+import {
+  IsBoolean,
+  IsEnum,
+  IsISO8601,
+  IsString,
+  IsUUID,
+} from "class-validator";
 
-export class RestaurantHoursDto implements IRestaurantHours {
+export class RestaurantHoursEntity implements IRestaurantHours {
   @IsUUID()
   @Expose()
   @ApiProperty({
@@ -20,13 +27,14 @@ export class RestaurantHoursDto implements IRestaurantHours {
   })
   restaurantId: string;
 
-  @IsString()
+  @IsEnum(Object.values(DayOfWeekEnum))
   @Expose()
   @ApiProperty({
     description: "Day of the week for hours",
-    example: "Monday",
+    example: "monday",
+    enum: Object.values(DayOfWeekEnum),
   })
-  dayOfWeek: string;
+  dayOfWeek: DayOfWeek;
 
   @IsString()
   @Expose()
@@ -69,7 +77,7 @@ export class RestaurantHoursDto implements IRestaurantHours {
   updatedAt: Date;
 }
 
-export class CreateRestaurantHoursDto extends PickType(RestaurantHoursDto, [
+export class CreateRestaurantHoursDto extends PickType(RestaurantHoursEntity, [
   "restaurantId",
   "dayOfWeek",
   "openingTime",

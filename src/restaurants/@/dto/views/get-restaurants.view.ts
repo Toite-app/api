@@ -2,14 +2,14 @@ import { PaginationResponseDto } from "@core/dto/pagination-response.entity";
 import { ApiProperty } from "@nestjs/swagger";
 import { Expose, Type } from "class-transformer";
 
-import { RestaurantDto } from "../../entities/restaurant.entity";
+import { RestaurantEntity } from "../../entities/restaurant.entity";
 
 export class RestaurantsPaginatedDto extends PaginationResponseDto {
   @Expose()
   @ApiProperty({
     description: "Array of restaurants",
-    type: [RestaurantDto],
+    type: [RestaurantEntity],
   })
-  @Type(() => RestaurantDto)
-  data: RestaurantDto[];
+  @Type(() => RestaurantEntity)
+  data: RestaurantEntity[];
 }

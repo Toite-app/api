@@ -5,13 +5,13 @@ import { and, eq } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { PG_CONNECTION } from "src/constants";
 
+import { RestaurantsService } from "../@/services/restaurants.service";
+
 import {
   CreateRestaurantHoursDto,
-  RestaurantHoursDto,
+  RestaurantHoursEntity,
   UpdateRestaurantHoursDto,
-} from "../dto/restaurant-hours.dto";
-
-import { RestaurantsService } from "./restaurants.service";
+} from "./entities/restaurant-hours.entity";
 
 @Injectable()
 export class RestaurantHoursService {
@@ -36,7 +36,9 @@ export class RestaurantHoursService {
    * @param restaurantId
    * @returns
    */
-  public async findMany(restaurantId: string): Promise<RestaurantHoursDto[]> {
+  public async findMany(
+    restaurantId: string,
+  ): Promise<RestaurantHoursEntity[]> {
     if (!(await this.restaurantsService.isExists(restaurantId))) {
       throw new BadRequestException(
         `Restaurant with id ${restaurantId} not found`,
@@ -53,7 +55,7 @@ export class RestaurantHoursService {
    * @param id
    * @returns
    */
-  public async findOne(id: string): Promise<RestaurantHoursDto | undefined> {
+  public async findOne(id: string): Promise<RestaurantHoursEntity | undefined> {
     return await this.pg.query.restaurantHours.findFirst({
       where: eq(schema.restaurantHours.id, id),
     });
@@ -66,7 +68,7 @@ export class RestaurantHoursService {
    */
   public async create(
     dto: CreateRestaurantHoursDto,
-  ): Promise<RestaurantHoursDto> {
+  ): Promise<RestaurantHoursEntity> {
     if (!(await this.restaurantsService.isExists(dto.restaurantId))) {
       throw new BadRequestException(
         `Restaurant with id ${dto.restaurantId} not found`,
@@ -90,7 +92,7 @@ export class RestaurantHoursService {
   public async update(
     id: string,
     dto: UpdateRestaurantHoursDto,
-  ): Promise<RestaurantHoursDto> {
+  ): Promise<RestaurantHoursEntity> {
     if (!(await this.restaurantsService.isExists(id))) {
       throw new BadRequestException(`Restaurant with id ${id} not found`);
     }

@@ -20,7 +20,7 @@ import { RequireSessionAuth } from "src/auth/decorators/session-auth.decorator";
 import { CreateRestaurantDto } from "../dto/create-restaurant.dto";
 import { UpdateRestaurantDto } from "../dto/update-restaurant.dto";
 import { RestaurantsPaginatedDto } from "../dto/views/get-restaurants.view";
-import { RestaurantDto } from "../entities/restaurant.entity";
+import { RestaurantEntity } from "../entities/restaurant.entity";
 import { RestaurantsService } from "../services/restaurants.service";
 
 @RequireSessionAuth()
@@ -54,46 +54,46 @@ export class RestaurantsController {
 
   @Post()
   @Roles("SYSTEM_ADMIN", "CHIEF_ADMIN")
-  @Serializable(RestaurantDto)
+  @Serializable(RestaurantEntity)
   @ApiOperation({
     summary: "Creates a new restaurant",
   })
   @ApiCreatedResponse({
     description: "Restaurant has been successfully created",
-    type: RestaurantDto,
+    type: RestaurantEntity,
   })
   @ApiForbiddenResponse({
     description: "Action available only for SYSTEM_ADMIN, CHIEF_ADMIN",
   })
-  async create(@Body() dto: CreateRestaurantDto): Promise<RestaurantDto> {
+  async create(@Body() dto: CreateRestaurantDto): Promise<RestaurantEntity> {
     return await this.restaurantsService.create(dto);
   }
 
   @Get(":id")
-  @Serializable(RestaurantDto)
+  @Serializable(RestaurantEntity)
   @ApiOperation({
     summary: "Gets restaurant by id",
   })
   @ApiOkResponse({
     description: "Restaurant has been successfully fetched",
-    type: RestaurantDto,
+    type: RestaurantEntity,
   })
   @ApiNotFoundResponse({
     description: "Restaurant with this id not found",
   })
-  async findOne(@Param("id") id: string): Promise<RestaurantDto> {
+  async findOne(@Param("id") id: string): Promise<RestaurantEntity> {
     return await this.restaurantsService.findById(id);
   }
 
   @Put(":id")
   @Roles("SYSTEM_ADMIN", "CHIEF_ADMIN")
-  @Serializable(RestaurantDto)
+  @Serializable(RestaurantEntity)
   @ApiOperation({
     summary: "Updates restaurant by id",
   })
   @ApiOkResponse({
     description: "Restaurant has been successfully updated",
-    type: RestaurantDto,
+    type: RestaurantEntity,
   })
   @ApiNotFoundResponse({
     description: "Restaurant with this id not found",
@@ -104,7 +104,7 @@ export class RestaurantsController {
   async update(
     @Param("id") id: string,
     @Body() dto: UpdateRestaurantDto,
-  ): Promise<RestaurantDto> {
+  ): Promise<RestaurantEntity> {
     return await this.restaurantsService.update(id, dto);
   }
 

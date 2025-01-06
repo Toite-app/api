@@ -8,7 +8,7 @@ import { PG_CONNECTION } from "src/constants";
 
 import { CreateRestaurantDto } from "../dto/create-restaurant.dto";
 import { UpdateRestaurantDto } from "../dto/update-restaurant.dto";
-import { RestaurantDto } from "../entities/restaurant.entity";
+import { RestaurantEntity } from "../entities/restaurant.entity";
 
 @Injectable()
 export class RestaurantsService {
@@ -34,7 +34,7 @@ export class RestaurantsService {
    */
   public async findMany(options: {
     pagination: IPagination;
-  }): Promise<RestaurantDto[]> {
+  }): Promise<RestaurantEntity[]> {
     return await this.pg.query.restaurants.findMany({
       limit: options.pagination.size,
       offset: options.pagination.offset,
@@ -46,7 +46,7 @@ export class RestaurantsService {
    * @param id
    * @returns
    */
-  public async findById(id: string): Promise<RestaurantDto> {
+  public async findById(id: string): Promise<RestaurantEntity> {
     const data = await this.pg.query.restaurants.findFirst({
       where: eq(schema.restaurants.id, id),
     });
@@ -63,7 +63,7 @@ export class RestaurantsService {
    * @param dto
    * @returns
    */
-  public async create(dto: CreateRestaurantDto): Promise<RestaurantDto> {
+  public async create(dto: CreateRestaurantDto): Promise<RestaurantEntity> {
     const data = await this.pg
       .insert(schema.restaurants)
       .values(dto)
@@ -83,7 +83,7 @@ export class RestaurantsService {
   public async update(
     id: string,
     dto: UpdateRestaurantDto,
-  ): Promise<RestaurantDto> {
+  ): Promise<RestaurantEntity> {
     // Disable restaurant if it is closed forever
     if (dto.isClosedForever) {
       dto.isEnabled = false;
