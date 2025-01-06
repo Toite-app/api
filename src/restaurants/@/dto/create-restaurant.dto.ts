@@ -1,8 +1,8 @@
 import { PickType } from "@nestjs/swagger";
 
-import { RestaurantDto } from "../entities/restaurant.entity";
+import { RestaurantEntity } from "../entities/restaurant.entity";
 
-export class CreateRestaurantDto extends PickType(RestaurantDto, [
+export class CreateRestaurantDto extends PickType(RestaurantEntity, [
   "name",
   "legalEntity",
   "address",

@@ -1,3 +1,4 @@
+import { restaurantWorkshops } from "@postgress-db/schema/restaurant-workshop";
 import { relations } from "drizzle-orm";
 import {
   boolean,
@@ -9,6 +10,7 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 
+import { dayOfWeekEnum } from "./general";
 import { workers } from "./workers";
 
 export const restaurants = pgTable("restaurants", {
@@ -45,7 +47,7 @@ export const restaurantHours = pgTable("restaurantHours", {
   restaurantId: uuid("restaurantId").notNull(),
 
   // Day of the week //
-  dayOfWeek: text("dayOfWeek").notNull(),
+  dayOfWeek: dayOfWeekEnum("dayOfWeek").notNull(),
 
   // Opening and closing hours //
   openingTime: time("openingTime").notNull(),
@@ -61,6 +63,7 @@ export const restaurantHours = pgTable("restaurantHours", {
 export const restaurantRelations = relations(restaurants, ({ many }) => ({
   restaurantHours: many(restaurantHours),
   workers: many(workers),
+  workshops: many(restaurantWorkshops),
 }));
 
 export const restaurantHourRelations = relations(

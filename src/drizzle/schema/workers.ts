@@ -9,6 +9,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { z } from "zod";
 
+import { workshopWorkers } from "./restaurant-workshop";
 import { restaurants } from "./restaurants";
 import { sessions } from "./sessions";
 
@@ -45,9 +46,8 @@ export const workerRelations = relations(workers, ({ one, many }) => ({
     fields: [workers.restaurantId],
     references: [restaurants.id],
   }),
-  sessions: many(sessions, {
-    relationName: "sessions",
-  }),
+  sessions: many(sessions),
+  workshops: many(workshopWorkers),
 }));
 
 export type IWorker = typeof workers.$inferSelect;

@@ -13,10 +13,10 @@ import { RequireSessionAuth } from "src/auth/decorators/session-auth.decorator";
 
 import {
   CreateRestaurantHoursDto,
-  RestaurantHoursDto,
+  RestaurantHoursEntity,
   UpdateRestaurantHoursDto,
-} from "../dto/restaurant-hours.dto";
-import { RestaurantHoursService } from "../services/restaurant-hours.service";
+} from "./entities/restaurant-hours.entity";
+import { RestaurantHoursService } from "./restaurant-hours.service";
 
 export class CreateRestaurantHoursPayloadDto extends OmitType(
   CreateRestaurantHoursDto,
@@ -33,11 +33,11 @@ export class RestaurantHoursController {
   ) {}
 
   @Get()
-  @Serializable(RestaurantHoursDto)
+  @Serializable(RestaurantHoursEntity)
   @ApiOperation({ summary: "Gets restaurant hours" })
   @ApiOkResponse({
     description: "Restaurant hours have been successfully fetched",
-    type: [RestaurantHoursDto],
+    type: [RestaurantHoursEntity],
   })
   async findAll(@Param("id") id: string) {
     return await this.restaurantHoursService.findMany(id);
@@ -64,7 +64,7 @@ export class RestaurantHoursController {
 
   @Put(":hoursId")
   @Roles("SYSTEM_ADMIN", "CHIEF_ADMIN")
-  @Serializable(RestaurantHoursDto)
+  @Serializable(RestaurantHoursEntity)
   @ApiOperation({ summary: "Updates restaurant hours" })
   @ApiOkResponse({
     description: "Restaurant hours have been successfully updated",

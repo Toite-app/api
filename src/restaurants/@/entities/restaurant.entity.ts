@@ -10,7 +10,7 @@ import {
   IsUUID,
 } from "class-validator";
 
-export class RestaurantDto implements IRestaurant {
+export class RestaurantEntity implements IRestaurant {
   @IsUUID()
   @Expose()
   @ApiProperty({
