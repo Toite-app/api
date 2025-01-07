@@ -1,7 +1,9 @@
 import { ApiProperty } from "@nestjs/swagger";
+import { Expose } from "class-transformer";
 import { IsArray, IsUUID } from "class-validator";
 
 export class UpdateRestaurantWorkshopWorkersDto {
+  @Expose()
   @IsArray()
   @IsUUID(4, { each: true })
   @ApiProperty({
