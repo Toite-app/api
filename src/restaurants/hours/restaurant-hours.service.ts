@@ -47,6 +47,7 @@ export class RestaurantHoursService {
 
     return await this.pg.query.restaurantHours.findMany({
       where: eq(schema.restaurantHours.restaurantId, restaurantId),
+      orderBy: schema.restaurantHours.dayOfWeek,
     });
   }
 
@@ -75,6 +76,17 @@ export class RestaurantHoursService {
       );
     }
 
+    // Make all previous value with dto.dayOfWeek to disabled
+    await this.pg
+      .update(schema.restaurantHours)
+      .set({ isEnabled: false })
+      .where(
+        and(
+          eq(schema.restaurantHours.restaurantId, dto.restaurantId),
+          eq(schema.restaurantHours.dayOfWeek, dto.dayOfWeek),
+        ),
+      );
+
     const data = await this.pg
       .insert(schema.restaurantHours)
       .values(dto)
@@ -93,8 +105,8 @@ export class RestaurantHoursService {
     id: string,
     dto: UpdateRestaurantHoursDto,
   ): Promise<RestaurantHoursEntity> {
-    if (!(await this.restaurantsService.isExists(id))) {
-      throw new BadRequestException(`Restaurant with id ${id} not found`);
+    if (!(await this.isExists(id))) {
+      throw new BadRequestException(`Hour record with id ${id} not found`);
     }
 
     const data = await this.pg
