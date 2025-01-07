@@ -1,3 +1,4 @@
+import { IsTimeFormat } from "@core/decorators/is-time-format.decorator";
 import { DayOfWeek, DayOfWeekEnum } from "@core/types/general";
 import { ApiProperty, OmitType, PartialType, PickType } from "@nestjs/swagger";
 import { IRestaurantHours } from "@postgress-db/schema/restaurants";
@@ -37,18 +38,22 @@ export class RestaurantHoursEntity implements IRestaurantHours {
   dayOfWeek: DayOfWeek;
 
   @IsString()
+  @IsTimeFormat()
   @Expose()
   @ApiProperty({
-    description: "Opening time for hours",
+    description: "Opening time for hours (24-hour format)",
     example: "10:00",
+    pattern: "^([01]\\d|2[0-3]):([0-5]\\d)$",
   })
   openingTime: string;
 
   @IsString()
+  @IsTimeFormat()
   @Expose()
   @ApiProperty({
-    description: "Closing time for hours",
+    description: "Closing time for hours (24-hour format)",
     example: "22:00",
+    pattern: "^([01]\\d|2[0-3]):([0-5]\\d)$",
   })
   closingTime: string;
 

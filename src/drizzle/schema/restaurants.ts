@@ -5,7 +5,6 @@ import {
   numeric,
   pgTable,
   text,
-  time,
   timestamp,
   uuid,
 } from "drizzle-orm/pg-core";
@@ -50,8 +49,8 @@ export const restaurantHours = pgTable("restaurantHours", {
   dayOfWeek: dayOfWeekEnum("dayOfWeek").notNull(),
 
   // Opening and closing hours //
-  openingTime: time("openingTime").notNull(),
-  closingTime: time("closingTime").notNull(),
+  openingTime: text("openingTime").notNull(),
+  closingTime: text("closingTime").notNull(),
 
   isEnabled: boolean("isEnabled").notNull().default(true),
 
