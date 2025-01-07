@@ -37,6 +37,16 @@ export class WorkerEntity implements IWorker {
   })
   restaurantId: string | null;
 
+  @IsOptional()
+  @IsString()
+  @Expose()
+  @ApiProperty({
+    description: "Name of the restaurant where worker is employed",
+    example: "Restaurant Name",
+    type: String,
+  })
+  restaurantName: string | null;
+
   @IsString()
   @MinLength(4)
   @Expose()

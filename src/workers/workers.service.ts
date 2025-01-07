@@ -47,7 +47,27 @@ export class WorkersService {
   }): Promise<WorkerEntity[]> {
     const { pagination, sorting, filters } = options;
 
-    const query = this.pg.select().from(schema.workers);
+    const query = this.pg
+      .select({
+        id: schema.workers.id,
+        name: schema.workers.name,
+        login: schema.workers.login,
+        role: schema.workers.role,
+        isBlocked: schema.workers.isBlocked,
+        hiredAt: schema.workers.hiredAt,
+        firedAt: schema.workers.firedAt,
+        onlineAt: schema.workers.onlineAt,
+        createdAt: schema.workers.createdAt,
+        updatedAt: schema.workers.updatedAt,
+        restaurantId: schema.workers.restaurantId,
+        restaurantName: schema.restaurants.name,
+        passwordHash: schema.workers.passwordHash,
+      })
+      .from(schema.workers)
+      .leftJoin(
+        schema.restaurants,
+        eq(schema.workers.restaurantId, schema.restaurants.id),
+      );
 
     if (filters) {
       query.where(DrizzleUtils.buildFilterConditions(schema.workers, filters));
@@ -69,10 +89,32 @@ export class WorkersService {
    * @param id number id of worker
    * @returns
    */
-  public async findById(id: string): Promise<IWorker | undefined> {
-    return await this.pg.query.workers.findFirst({
-      where: eq(schema.workers.id, id),
-    });
+  public async findById(id: string): Promise<WorkerEntity | undefined> {
+    const result = await this.pg
+      .select({
+        id: schema.workers.id,
+        name: schema.workers.name,
+        login: schema.workers.login,
+        role: schema.workers.role,
+        isBlocked: schema.workers.isBlocked,
+        hiredAt: schema.workers.hiredAt,
+        firedAt: schema.workers.firedAt,
+        onlineAt: schema.workers.onlineAt,
+        createdAt: schema.workers.createdAt,
+        updatedAt: schema.workers.updatedAt,
+        restaurantId: schema.workers.restaurantId,
+        restaurantName: schema.restaurants.name,
+        passwordHash: schema.workers.passwordHash,
+      })
+      .from(schema.workers)
+      .leftJoin(
+        schema.restaurants,
+        eq(schema.workers.restaurantId, schema.restaurants.id),
+      )
+      .where(eq(schema.workers.id, id))
+      .limit(1);
+
+    return result[0];
   }
 
   /**
@@ -80,10 +122,34 @@ export class WorkersService {
    * @param value string login
    * @returns
    */
-  public async findOneByLogin(value: string): Promise<IWorker | undefined> {
-    return await this.pg.query.workers.findFirst({
-      where: eq(schema.workers.login, value),
-    });
+  public async findOneByLogin(
+    value: string,
+  ): Promise<WorkerEntity | undefined> {
+    const result = await this.pg
+      .select({
+        id: schema.workers.id,
+        name: schema.workers.name,
+        login: schema.workers.login,
+        role: schema.workers.role,
+        isBlocked: schema.workers.isBlocked,
+        hiredAt: schema.workers.hiredAt,
+        firedAt: schema.workers.firedAt,
+        onlineAt: schema.workers.onlineAt,
+        createdAt: schema.workers.createdAt,
+        updatedAt: schema.workers.updatedAt,
+        restaurantId: schema.workers.restaurantId,
+        restaurantName: schema.restaurants.name,
+        passwordHash: schema.workers.passwordHash,
+      })
+      .from(schema.workers)
+      .leftJoin(
+        schema.restaurants,
+        eq(schema.workers.restaurantId, schema.restaurants.id),
+      )
+      .where(eq(schema.workers.login, value))
+      .limit(1);
+
+    return result[0];
   }
 
   /**
