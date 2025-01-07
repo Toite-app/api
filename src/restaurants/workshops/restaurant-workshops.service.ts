@@ -1,13 +1,18 @@
 import { BadRequestException } from "@core/errors/exceptions/bad-request.exception";
 import { Inject, Injectable } from "@nestjs/common";
 import { schema } from "@postgress-db/drizzle.module";
-import { restaurantWorkshops } from "@postgress-db/schema/restaurant-workshop";
+import {
+  restaurantWorkshops,
+  workshopWorkers,
+} from "@postgress-db/schema/restaurant-workshop";
+import { workers } from "@postgress-db/schema/workers";
 import { and, eq } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { PG_CONNECTION } from "src/constants";
 
 import { RestaurantsService } from "../@/services/restaurants.service";
 
+import { WorkshopWorkerEntity } from "./entity/restaurant-workshop-worker.entity";
 import {
   CreateRestaurantWorkshopDto,
   RestaurantWorkshopDto,
@@ -130,5 +135,63 @@ export class RestaurantWorkshopsService {
       .returning();
 
     return { id: result[0].id };
+  }
+
+  /**
+   * Get workshop workers
+   * @param workshopId
+   * @returns
+   */
+  public async getWorkers(workshopId: string): Promise<WorkshopWorkerEntity[]> {
+    if (!(await this.isExists(workshopId))) {
+      throw new BadRequestException(
+        `Restaurant workshop with id ${workshopId} not found`,
+      );
+    }
+
+    const result = await this.pg
+      .select({
+        workerId: workers.id,
+        name: workers.name,
+        login: workers.login,
+        role: workers.role,
+      })
+      .from(workshopWorkers)
+      .innerJoin(workers, eq(workshopWorkers.workerId, workers.id))
+      .where(eq(workshopWorkers.workshopId, workshopId));
+
+    return result;
+  }
+
+  /**
+   * Update workshop workers
+   * @param workshopId
+   * @param workerIds
+   * @returns
+   */
+  public async updateWorkers(
+    workshopId: string,
+    workerIds: string[],
+  ): Promise<void> {
+    if (!(await this.isExists(workshopId))) {
+      throw new BadRequestException(
+        `Restaurant workshop with id ${workshopId} not found`,
+      );
+    }
+
+    // Delete all existing assignments for this workshop
+    await this.pg
+      .delete(workshopWorkers)
+      .where(eq(workshopWorkers.workshopId, workshopId));
+
+    // If there are workers to assign, insert them
+    if (workerIds.length > 0) {
+      await this.pg.insert(workshopWorkers).values(
+        workerIds.map((workerId) => ({
+          workshopId,
+          workerId,
+        })),
+      );
+    }
   }
 }
