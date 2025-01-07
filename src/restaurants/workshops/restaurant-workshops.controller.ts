@@ -11,6 +11,8 @@ import {
 } from "@nestjs/swagger";
 import { RequireSessionAuth } from "src/auth/decorators/session-auth.decorator";
 
+import { UpdateRestaurantWorkshopWorkersDto } from "./dto/put-restaurant-workshop-workers.dto";
+import { WorkshopWorkerEntity } from "./entity/restaurant-workshop-worker.entity";
 import {
   CreateRestaurantWorkshopDto,
   RestaurantWorkshopDto,
@@ -77,6 +79,34 @@ export class RestaurantWorkshopsController {
     @Body() dto: UpdateRestaurantWorkshopDto,
   ) {
     return await this.restaurantWorkshopsService.update(id, dto);
+  }
+
+  @Get(":workshopId/workers")
+  @Serializable(WorkshopWorkerEntity)
+  @ApiOperation({ summary: "Gets workshop workers" })
+  @ApiOkResponse({
+    description: "Workshop workers have been successfully fetched",
+    type: [WorkshopWorkerEntity],
+  })
+  async getWorkers(@Param("workshopId") id: string) {
+    return await this.restaurantWorkshopsService.getWorkers(id);
+  }
+
+  @Put(":workshopId/workers")
+  @Roles("SYSTEM_ADMIN", "CHIEF_ADMIN")
+  @ApiOperation({ summary: "Updates workshop workers" })
+  @ApiOkResponse({
+    description: "Workshop workers have been successfully updated",
+  })
+  @ApiForbiddenResponse({
+    description: "Forbidden, allowed only for SYSTEM_ADMIN and CHIEF_ADMIN",
+  })
+  async updateWorkers(
+    @Param("workshopId") id: string,
+    @Body() dto: UpdateRestaurantWorkshopWorkersDto,
+  ) {
+    await this.restaurantWorkshopsService.updateWorkers(id, dto.workerIds);
+    return;
   }
 
   @Delete(":workshopId")
