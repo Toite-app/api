@@ -12,9 +12,7 @@ import { TimezonesListEntity } from "src/timezones/entities/timezones-list.entit
 import { TimezonesService } from "src/timezones/timezones.service";
 
 @RequireSessionAuth()
-@Controller("timezones", {
-  tags: ["Timezones"],
-})
+@Controller("timezones")
 @ApiForbiddenResponse({ description: "Forbidden" })
 @ApiUnauthorizedResponse({ description: "Unauthorized" })
 export class TimezonesController {

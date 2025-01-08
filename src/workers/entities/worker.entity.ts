@@ -1,4 +1,4 @@
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { IWorker, ZodWorkerRole } from "@postgress-db/schema/workers";
 import { Exclude, Expose } from "class-transformer";
 import {
@@ -35,6 +35,7 @@ export class WorkerEntity implements IWorker {
     description: "Unique identifier of the restaurant",
     example: null,
   })
+  @ApiPropertyOptional()
   restaurantId: string | null;
 
   @IsOptional()
@@ -45,6 +46,7 @@ export class WorkerEntity implements IWorker {
     example: "Restaurant Name",
     type: String,
   })
+  @ApiPropertyOptional()
   restaurantName: string | null;
 
   @IsString()
@@ -85,6 +87,7 @@ export class WorkerEntity implements IWorker {
     example: new Date("2021-08-01T00:00:00.000Z"),
     type: Date,
   })
+  @ApiPropertyOptional()
   hiredAt: Date | null;
 
   @IsOptional()
@@ -95,6 +98,7 @@ export class WorkerEntity implements IWorker {
     example: null,
     type: Date,
   })
+  @ApiPropertyOptional()
   firedAt: Date | null;
 
   @IsOptional()
@@ -105,6 +109,7 @@ export class WorkerEntity implements IWorker {
     example: new Date(),
     type: Date,
   })
+  @ApiPropertyOptional()
   onlineAt: Date | null;
 
   @IsISO8601()
