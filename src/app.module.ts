@@ -8,6 +8,7 @@ import { MongooseModule } from "@nestjs/mongoose";
 import { ThrottlerModule } from "@nestjs/throttler";
 import { ZodValidationPipe } from "nestjs-zod";
 import { AddressesModule } from "src/addresses/addresses.module";
+import { TimezonesModule } from "src/timezones/timezones.module";
 
 import { AuthModule } from "./auth/auth.module";
 import { SessionAuthGuard } from "./auth/guards/session-auth.guard";
@@ -40,6 +41,7 @@ import { WorkersModule } from "./workers/workers.module";
         url: process.env.REDIS_URL,
       },
     }),
+    TimezonesModule,
     AuthModule,
     WorkersModule,
     RestaurantsModule,
