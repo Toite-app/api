@@ -1,3 +1,5 @@
+import { dishesToCategories } from "@postgress-db/schema/many-to-many";
+import { relations } from "drizzle-orm";
 import {
   boolean,
   integer,
@@ -48,3 +50,7 @@ export const dishes = pgTable("dishes", {
 });
 
 export type IDish = typeof dishes.$inferSelect;
+
+export const dishRelations = relations(dishes, ({ many }) => ({
+  dishesToCategories: many(dishesToCategories),
+}));

@@ -5,6 +5,7 @@ import { Pool } from "pg";
 
 import { PG_CONNECTION } from "../constants";
 
+import * as dishCategories from "./schema/dish-categories";
 import * as dishes from "./schema/dishes";
 import * as guests from "./schema/guests";
 import * as restaurantWorkshops from "./schema/restaurant-workshop";
@@ -19,6 +20,7 @@ export const schema = {
   ...restaurantWorkshops,
   ...guests,
   ...dishes,
+  ...dishCategories,
 };
 
 export type Schema = typeof schema;
