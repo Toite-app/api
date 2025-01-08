@@ -63,6 +63,14 @@ export class RestaurantEntity implements IRestaurant {
   })
   longitude: string;
 
+  @Expose()
+  @IsString()
+  @ApiProperty({
+    description: "Timezone of the restaurant",
+    example: "Europe/Tallinn",
+  })
+  timezone: string;
+
   @IsBoolean()
   @Expose()
   @ApiProperty({

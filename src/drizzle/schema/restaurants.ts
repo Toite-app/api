@@ -27,6 +27,9 @@ export const restaurants = pgTable("restaurants", {
   latitude: numeric("latitude").notNull(),
   longitude: numeric("longitude").notNull(),
 
+  // Timezone of the restaurant //
+  timezone: text("timezone").notNull().default("Europe/Tallinn"),
+
   // Is the restaurant enabled? //
   isEnabled: boolean("isEnabled").notNull().default(false),
 
