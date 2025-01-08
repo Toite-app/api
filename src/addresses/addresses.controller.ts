@@ -14,9 +14,7 @@ import { AddressSuggestion } from "./entities/suggestion.entity";
 import { AddressesService } from "./services/addresses.service";
 
 @RequireSessionAuth()
-@Controller("addresses", {
-  tags: ["Addresses"],
-})
+@Controller("addresses")
 @ApiForbiddenResponse({ description: "Forbidden" })
 @ApiUnauthorizedResponse({ description: "Unauthorized" })
 export class AddressesController {

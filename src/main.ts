@@ -42,6 +42,7 @@ async function bootstrap() {
     .addTag("workers", "Get data about workers and manage them")
     .addTag("auth", "Part of authentification for workers part of the system")
     .addTag("restaurants", "Get data about restaurants and manage them")
+    .addTag("guests", "Get data about guests and manage them")
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
