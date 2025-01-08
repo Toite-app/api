@@ -14,4 +14,10 @@ export class TimezonesService {
 
     return timezones.map((tz) => tz.name);
   }
+
+  checkTimezone(timezone: string): boolean {
+    const timezones = this.getAllTimezones();
+
+    return timezones.includes(timezone);
+  }
 }

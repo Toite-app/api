@@ -1,10 +1,12 @@
 import { IPagination } from "@core/decorators/pagination.decorator";
+import { BadRequestException } from "@core/errors/exceptions/bad-request.exception";
 import { NotFoundException } from "@core/errors/exceptions/not-found.exception";
 import { Inject, Injectable } from "@nestjs/common";
 import { schema } from "@postgress-db/drizzle.module";
 import { count, eq } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { PG_CONNECTION } from "src/constants";
+import { TimezonesService } from "src/timezones/timezones.service";
 
 import { CreateRestaurantDto } from "../dto/create-restaurant.dto";
 import { UpdateRestaurantDto } from "../dto/update-restaurant.dto";
@@ -14,6 +16,7 @@ import { RestaurantEntity } from "../entities/restaurant.entity";
 export class RestaurantsService {
   constructor(
     @Inject(PG_CONNECTION) private readonly pg: NodePgDatabase<typeof schema>,
+    private readonly timezonesService: TimezonesService,
   ) {}
 
   /**
@@ -64,6 +67,12 @@ export class RestaurantsService {
    * @returns
    */
   public async create(dto: CreateRestaurantDto): Promise<RestaurantEntity> {
+    if (dto.timezone && !this.timezonesService.checkTimezone(dto.timezone)) {
+      throw new BadRequestException({
+        title: "Provided timezone can't be set",
+      });
+    }
+
     const data = await this.pg
       .insert(schema.restaurants)
       .values(dto)
@@ -84,6 +93,12 @@ export class RestaurantsService {
     id: string,
     dto: UpdateRestaurantDto,
   ): Promise<RestaurantEntity> {
+    if (dto.timezone && !this.timezonesService.checkTimezone(dto.timezone)) {
+      throw new BadRequestException({
+        title: "Provided timezone can't be set",
+      });
+    }
+
     // Disable restaurant if it is closed forever
     if (dto.isClosedForever) {
       dto.isEnabled = false;

@@ -20,7 +20,7 @@ import { TimezonesService } from "src/timezones/timezones.service";
 export class TimezonesController {
   constructor(private readonly timezonesService: TimezonesService) {}
 
-  @Get("list")
+  @Get()
   @ApiOperation({
     summary: "Get list of timezones",
   })

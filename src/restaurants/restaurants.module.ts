@@ -1,5 +1,6 @@
 import { Module } from "@nestjs/common";
 import { DrizzleModule } from "@postgress-db/drizzle.module";
+import { TimezonesModule } from "src/timezones/timezones.module";
 
 import { RestaurantsController } from "./@/controllers/restaurants.controller";
 import { RestaurantsService } from "./@/services/restaurants.service";
@@ -9,7 +10,7 @@ import { RestaurantWorkshopsController } from "./workshops/restaurant-workshops.
 import { RestaurantWorkshopsService } from "./workshops/restaurant-workshops.service";
 
 @Module({
-  imports: [DrizzleModule],
+  imports: [DrizzleModule, TimezonesModule],
   providers: [
     RestaurantsService,
     RestaurantHoursService,
