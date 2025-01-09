@@ -1,3 +1,4 @@
+import { IsPhoneNumber } from "@core/decorators/is-phone.decorator";
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { IGuest } from "@postgress-db/schema/guests";
 import { Expose } from "class-transformer";
@@ -22,6 +23,7 @@ export class GuestEntity implements IGuest {
 
   @Expose()
   @IsString()
+  @IsPhoneNumber()
   @ApiProperty({
     description: "Phone number of the guest",
     example: "+1234567890",
