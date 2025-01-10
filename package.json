@@ -22,11 +22,11 @@
     "db:studio": "drizzle-kit studio",
     "db:push": "drizzle-kit push",
     "db:push:test": "cross-env NODE_ENV=test drizzle-kit push",
-    "db:migrate": "node -r esbuild-register src/drizzle/migrate.ts",
-    "db:clear": "node -r esbuild-register src/drizzle/clear.ts",
-    "db:clear:test": "cross-env NODE_ENV=test node -r esbuild-register src/drizzle/clear.ts",
+    "db:migrate": "node -r esbuild-register src/@base/drizzle/migrate.ts",
+    "db:clear": "node -r esbuild-register src/@base/drizzle/clear.ts",
+    "db:clear:test": "cross-env NODE_ENV=test node -r esbuild-register src/@base/drizzle/clear.ts",
     "db:migrate:drop": "drizzle-kit drop",
-    "db:seed": "node -r esbuild-register src/drizzle/seed.ts"
+    "db:seed": "node -r esbuild-register src/@base/drizzle/seed.ts"
   },
   "dependencies": {
     "@liaoliaots/nestjs-redis": "^10.0.0",

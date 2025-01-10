@@ -70,10 +70,17 @@ export class DishCategoriesService {
   public async create(
     dto: CreateDishCategoryDto,
   ): Promise<DishCategoryEntity | undefined> {
+    const sortIndex = await this.pg
+      .select({
+        value: count(),
+      })
+      .from(schema.dishCategories);
+
     const categories = await this.pg
       .insert(schema.dishCategories)
       .values({
         ...dto,
+        sortIndex: sortIndex[0].value,
       })
       .returning();
 

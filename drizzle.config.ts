@@ -6,8 +6,8 @@ dotenv.config({
 });
 
 export default {
-  schema: "./src/drizzle/schema",
-  out: "./src/drizzle/migrations",
+  schema: "./src/@base/drizzle/schema",
+  out: "./src/@base/drizzle/migrations",
   // driver: "pg",
   dialect: "postgresql",
   dbCredentials: {
