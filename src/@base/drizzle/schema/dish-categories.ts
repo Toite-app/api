@@ -1,5 +1,5 @@
 import { dishesToCategories } from "@postgress-db/schema/many-to-many";
-import { relations, sql } from "drizzle-orm";
+import { relations } from "drizzle-orm";
 import {
   boolean,
   integer,
