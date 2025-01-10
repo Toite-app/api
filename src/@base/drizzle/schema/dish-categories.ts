@@ -22,11 +22,7 @@ export const dishCategories = pgTable("dishCategories", {
   showForGuests: boolean("showForGuests").notNull().default(false),
 
   // Sorting index in the admin menu //
-  sortIndex: integer("sortIndex")
-    .notNull()
-    .default(
-      sql`nextval(pg_get_serial_sequence('dishCategories', 'sortIndex'))`,
-    ),
+  sortIndex: integer("sortIndex").notNull(),
 
   // Default timestamps //
   createdAt: timestamp("createdAt").notNull().defaultNow(),
