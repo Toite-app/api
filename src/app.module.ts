@@ -8,6 +8,7 @@ import { MongooseModule } from "@nestjs/mongoose";
 import { ThrottlerModule } from "@nestjs/throttler";
 import { ZodValidationPipe } from "nestjs-zod";
 import { AddressesModule } from "src/addresses/addresses.module";
+import { DishesModule } from "src/dishes/dishes.module";
 import { GuestsModule } from "src/guests/guests.module";
 import { TimezonesModule } from "src/timezones/timezones.module";
 
@@ -48,6 +49,7 @@ import { WorkersModule } from "./workers/workers.module";
     RestaurantsModule,
     AddressesModule,
     GuestsModule,
+    DishesModule,
   ],
   providers: [
     {

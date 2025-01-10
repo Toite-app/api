@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { workerRoleEnum } from "@postgress-db/schema/workers";
+import { ZodWorkerRole } from "@postgress-db/schema/workers";
 import { Expose } from "class-transformer";
 
 export class WorkshopWorkerEntity {
@@ -27,7 +27,9 @@ export class WorkshopWorkerEntity {
   @Expose()
   @ApiProperty({
     description: "Worker role",
-    enum: workerRoleEnum.enumValues,
+    enum: ZodWorkerRole.Enum,
+    example: ZodWorkerRole.Enum.ADMIN,
+    examples: Object.values(ZodWorkerRole.Enum),
   })
-  role: (typeof workerRoleEnum.enumValues)[number];
+  role: typeof ZodWorkerRole._type;
 }
