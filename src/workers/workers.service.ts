@@ -10,8 +10,8 @@ import { IWorker } from "@postgress-db/schema/workers";
 import * as argon2 from "argon2";
 import { asc, count, desc, eq, sql } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
+import { DrizzleUtils } from "src/@base/drizzle/drizzle-utils";
 import { PG_CONNECTION } from "src/constants";
-import { DrizzleUtils } from "src/drizzle/drizzle-utils";
 
 import { CreateWorkerDto, UpdateWorkerDto } from "./dto/req/put-worker.dto";
 import { WorkerEntity } from "./entities/worker.entity";
