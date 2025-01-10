@@ -19,7 +19,7 @@
     "noFallthroughCasesInSwitch": true,
     "paths": {
       "@core/*": ["src/@core/*"],
-      "@postgress-db/*": ["src/drizzle/*"],
+      "@postgress-db/*": ["src/@base/drizzle/*"],
     },
   },
   "include": ["src/**/*"],

@@ -13,9 +13,9 @@ import { DishesModule } from "src/dishes/dishes.module";
 import { GuestsModule } from "src/guests/guests.module";
 import { TimezonesModule } from "src/timezones/timezones.module";
 
+import { DrizzleModule } from "./@base/drizzle/drizzle.module";
 import { AuthModule } from "./auth/auth.module";
 import { SessionAuthGuard } from "./auth/guards/session-auth.guard";
-import { DrizzleModule } from "./drizzle/drizzle.module";
 import { RestaurantsModule } from "./restaurants/restaurants.module";
 import { SessionsService } from "./sessions/sessions.service";
 import { WorkersModule } from "./workers/workers.module";

@@ -3,7 +3,7 @@ import { ConfigService } from "@nestjs/config";
 import { drizzle, NodePgDatabase } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
 
-import { PG_CONNECTION } from "../constants";
+import { PG_CONNECTION } from "../../constants";
 
 import * as dishCategories from "./schema/dish-categories";
 import * as dishes from "./schema/dishes";
