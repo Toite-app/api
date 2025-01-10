@@ -20,47 +20,45 @@ import {
 } from "@nestjs/swagger";
 import { RequireSessionAuth } from "src/auth/decorators/session-auth.decorator";
 
-import { CreateGuestDto } from "./dtos/create-guest.dto";
-import { UpdateGuestDto } from "./dtos/update-guest.dto";
-import { GuestEntity } from "./entities/guest.entity";
-import { GuestsPaginatedDto } from "./entities/guests-paginated.entity";
-import { GuestsService } from "./guests.service";
+import { DishesService } from "./dishes.service";
+import { CreateDishDto } from "./dtos/create-dish.dto";
+import { UpdateDishDto } from "./dtos/update-dish.dto";
+import { DishEntity } from "./entities/dish.entity";
+import { DishesPaginatedDto } from "./entities/dishes-paginated.entity";
 
 @RequireSessionAuth()
-@Controller("guests")
+@Controller("dishes")
 @ApiForbiddenResponse({ description: "Forbidden" })
 @ApiUnauthorizedResponse({ description: "Unauthorized" })
-export class GuestsController {
-  constructor(private readonly guestsService: GuestsService) {}
+export class DishesController {
+  constructor(private readonly dishesService: DishesService) {}
 
   @Get()
   @ApiOperation({
-    summary: "Gets guests that available in system",
+    summary: "Gets dishes that are available in system",
   })
-  @Serializable(GuestsPaginatedDto)
+  @Serializable(DishesPaginatedDto)
   @ApiOkResponse({
-    description: "Guests have been successfully fetched",
-    type: GuestsPaginatedDto,
+    description: "Dishes have been successfully fetched",
+    type: DishesPaginatedDto,
   })
   async findMany(
     @SortingParams({
       fields: [
         "id",
         "name",
-        "phone",
-        "email",
-        "bonusBalance",
+        "cookingTimeInMin",
+        "weight",
         "updatedAt",
         "createdAt",
-        "lastVisitAt",
       ],
     })
     sorting: ISorting,
     @PaginationParams() pagination: IPagination,
     @FilterParams() filters?: IFilters,
-  ): Promise<GuestsPaginatedDto> {
-    const total = await this.guestsService.getTotalCount(filters);
-    const data = await this.guestsService.findMany({
+  ): Promise<DishesPaginatedDto> {
+    const total = await this.dishesService.getTotalCount(filters);
+    const data = await this.dishesService.findMany({
       pagination,
       sorting,
       filters,
@@ -76,76 +74,76 @@ export class GuestsController {
   }
 
   @Post()
-  @Serializable(GuestEntity)
-  @ApiOperation({ summary: "Creates a new guest" })
-  @ApiCreatedResponse({ description: "Guest has been successfully created" })
-  async create(@Body() data: CreateGuestDto): Promise<GuestEntity> {
-    const guest = await this.guestsService.create(data);
+  @Serializable(DishEntity)
+  @ApiOperation({ summary: "Creates a new dish" })
+  @ApiCreatedResponse({ description: "Dish has been successfully created" })
+  async create(@Body() data: CreateDishDto): Promise<DishEntity> {
+    const dish = await this.dishesService.create(data);
 
-    if (!guest) {
-      throw new BadRequestException("Failed to create guest");
+    if (!dish) {
+      throw new BadRequestException("Failed to create dish");
     }
 
-    return guest;
+    return dish;
   }
 
   @Get(":id")
-  @Serializable(GuestEntity)
-  @ApiOperation({ summary: "Gets a guest by id" })
+  @Serializable(DishEntity)
+  @ApiOperation({ summary: "Gets a dish by id" })
   @ApiOkResponse({
-    description: "Guest has been successfully fetched",
-    type: GuestEntity,
+    description: "Dish has been successfully fetched",
+    type: DishEntity,
   })
   @ApiNotFoundResponse({
-    description: "Guest with this id doesn't exist",
+    description: "Dish with this id doesn't exist",
   })
   @ApiBadRequestResponse({
     description: "Id must be a string and provided",
   })
-  async findOne(@Param("id") id?: string): Promise<GuestEntity> {
+  async findOne(@Param("id") id?: string): Promise<DishEntity> {
     if (!id) {
       throw new BadRequestException("Id must be a string and provided");
     }
 
-    const guest = await this.guestsService.findById(id);
+    const dish = await this.dishesService.findById(id);
 
-    if (!guest) {
-      throw new NotFoundException("Guest with this id doesn't exist");
+    if (!dish) {
+      throw new NotFoundException("Dish with this id doesn't exist");
     }
 
-    return guest;
+    return dish;
   }
 
   @Put(":id")
-  @Serializable(GuestEntity)
-  @ApiOperation({ summary: "Updates a guest by id" })
+  @Serializable(DishEntity)
+  @ApiOperation({ summary: "Updates a dish by id" })
   @ApiOkResponse({
-    description: "Guest has been successfully updated",
-    type: GuestEntity,
+    description: "Dish has been successfully updated",
+    type: DishEntity,
   })
   @ApiNotFoundResponse({
-    description: "Guest with this id doesn't exist",
+    description: "Dish with this id doesn't exist",
   })
   @ApiBadRequestResponse({
     description: "Id must be a string and provided",
   })
   async update(
     @Param("id") id: string,
-    @Body() data: UpdateGuestDto,
-  ): Promise<GuestEntity> {
+    @Body() data: UpdateDishDto,
+  ): Promise<DishEntity> {
     if (!id) {
       throw new BadRequestException("Id must be a string and provided");
     }
 
-    const updatedGuest = await this.guestsService.update(id, {
+    const updatedDish = await this.dishesService.update(id, {
       ...data,
       updatedAt: new Date(),
     });
 
-    if (!updatedGuest) {
-      throw new NotFoundException("Guest with this id doesn't exist");
+    if (!updatedDish) {
+      throw new NotFoundException("Dish with this id doesn't exist");
     }
 
-    return updatedGuest;
+    return updatedDish;
   }
 }

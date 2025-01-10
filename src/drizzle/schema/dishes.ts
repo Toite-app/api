@@ -9,11 +9,16 @@ import {
   timestamp,
   uuid,
 } from "drizzle-orm/pg-core";
+import { z } from "zod";
 
 export const weightMeasureEnum = pgEnum("weightMeasureEnum", [
   "grams",
   "milliliters",
 ]);
+
+export const ZodWeightMeasureEnum = z.enum(weightMeasureEnum.enumValues);
+
+export type WeightMeasureEnum = typeof ZodWeightMeasureEnum._type;
 
 export const dishes = pgTable("dishes", {
   id: uuid("id").defaultRandom().primaryKey(),
