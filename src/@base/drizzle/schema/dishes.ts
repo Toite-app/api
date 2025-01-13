@@ -1,4 +1,7 @@
-import { dishesToCategories } from "@postgress-db/schema/many-to-many";
+import {
+  dishesToCategories,
+  dishesToImages,
+} from "@postgress-db/schema/many-to-many";
 import { relations } from "drizzle-orm";
 import {
   boolean,
@@ -58,4 +61,5 @@ export type IDish = typeof dishes.$inferSelect;
 
 export const dishRelations = relations(dishes, ({ many }) => ({
   dishesToCategories: many(dishesToCategories),
+  dishesToImages: many(dishesToImages),
 }));
