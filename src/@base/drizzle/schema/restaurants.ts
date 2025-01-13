@@ -67,16 +67,16 @@ export const restaurantRelations = relations(restaurants, ({ many }) => ({
   restaurantHours: many(restaurantHours),
   workers: many(workers),
   workshops: many(restaurantWorkshops),
+  orders: many(orders),
 }));
 
 export const restaurantHourRelations = relations(
   restaurantHours,
-  ({ one, many }) => ({
+  ({ one }) => ({
     restaurant: one(restaurants, {
       fields: [restaurantHours.restaurantId],
       references: [restaurants.id],
     }),
-    orders: many(orders),
   }),
 );
 

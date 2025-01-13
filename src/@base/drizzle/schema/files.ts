@@ -1,3 +1,5 @@
+import { dishesToImages } from "@postgress-db/schema/many-to-many";
+import { relations } from "drizzle-orm";
 import { integer, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 
 export const files = pgTable("files", {
@@ -35,3 +37,7 @@ export const files = pgTable("files", {
 });
 
 export type IFile = typeof files.$inferSelect;
+
+export const fileRelations = relations(files, ({ many }) => ({
+  dishesToImages: many(dishesToImages),
+}));
