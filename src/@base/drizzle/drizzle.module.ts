@@ -7,6 +7,7 @@ import { PG_CONNECTION } from "../../constants";
 
 import * as dishCategories from "./schema/dish-categories";
 import * as dishes from "./schema/dishes";
+import * as files from "./schema/files";
 import * as guests from "./schema/guests";
 import * as manyToMany from "./schema/many-to-many";
 import * as restaurantWorkshops from "./schema/restaurant-workshop";
@@ -23,6 +24,7 @@ export const schema = {
   ...dishes,
   ...dishCategories,
   ...manyToMany,
+  ...files,
 };
 
 export type Schema = typeof schema;
