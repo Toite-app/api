@@ -5,6 +5,12 @@ export const configApp = (app: INestApplication) => {
   // Parse cookies
   app.use(cookieParser());
 
+  // app.useGlobalPipes(
+  //   new ValidationPipe({
+  //     transform: true, // Transform is recomended configuration for avoind issues with arrays of files transformations
+  //   }),
+  // );
+
   // Enable CORS
   app.enableCors({
     origin: [

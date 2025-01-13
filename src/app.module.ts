@@ -6,10 +6,13 @@ import { ConfigModule, ConfigService } from "@nestjs/config";
 import { APP_FILTER, APP_GUARD, APP_PIPE } from "@nestjs/core";
 import { MongooseModule } from "@nestjs/mongoose";
 import { ThrottlerModule } from "@nestjs/throttler";
+import { NestjsFormDataModule } from "nestjs-form-data";
 import { ZodValidationPipe } from "nestjs-zod";
+import { S3Module } from "src/@base/s3/s3.module";
 import { AddressesModule } from "src/addresses/addresses.module";
 import { DishCategoriesModule } from "src/dish-categories/dish-categories.module";
 import { DishesModule } from "src/dishes/dishes.module";
+import { FilesModule } from "src/files/files.module";
 import { GuestsModule } from "src/guests/guests.module";
 import { TimezonesModule } from "src/timezones/timezones.module";
 
@@ -52,6 +55,9 @@ import { WorkersModule } from "./workers/workers.module";
     GuestsModule,
     DishesModule,
     DishCategoriesModule,
+    S3Module,
+    FilesModule,
+    NestjsFormDataModule,
   ],
   providers: [
     {
