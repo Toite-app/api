@@ -28,14 +28,12 @@ import {
   WorkerRole,
   workerRoleRank,
 } from "@postgress-db/schema/workers";
-import { RequireSessionAuth } from "src/auth/decorators/session-auth.decorator";
 
 import { CreateWorkerDto, UpdateWorkerDto } from "./dto/req/put-worker.dto";
 import { WorkersPaginatedDto } from "./dto/res/workers-paginated.dto";
 import { WorkerEntity } from "./entities/worker.entity";
 import { WorkersService } from "./workers.service";
 
-@RequireSessionAuth()
 @Controller("workers")
 @ApiForbiddenResponse({ description: "Forbidden" })
 @ApiUnauthorizedResponse({ description: "Unauthorized" })

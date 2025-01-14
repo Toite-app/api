@@ -15,7 +15,6 @@ import {
   ApiOperation,
   ApiUnauthorizedResponse,
 } from "@nestjs/swagger";
-import { RequireSessionAuth } from "src/auth/decorators/session-auth.decorator";
 
 import { CreateRestaurantDto } from "../dto/create-restaurant.dto";
 import { UpdateRestaurantDto } from "../dto/update-restaurant.dto";
@@ -23,7 +22,6 @@ import { RestaurantsPaginatedDto } from "../dto/views/get-restaurants.view";
 import { RestaurantEntity } from "../entities/restaurant.entity";
 import { RestaurantsService } from "../services/restaurants.service";
 
-@RequireSessionAuth()
 @Controller("restaurants")
 @ApiForbiddenResponse({ description: "Forbidden" })
 @ApiUnauthorizedResponse({ description: "Unauthorized" })

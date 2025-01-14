@@ -1,17 +1,17 @@
-import { IncomingHttpHeaders } from "http2";
-
 import { Controller } from "@core/decorators/controller.decorator";
 import { Cookies } from "@core/decorators/cookies.decorator";
+import IpAddress from "@core/decorators/ip-address.decorator";
+import UserAgent from "@core/decorators/user-agent.decorator";
 import { Worker } from "@core/decorators/worker.decorator";
+import { Response } from "@core/interfaces/response";
 import {
   Body,
   Delete,
   Get,
-  Headers,
   HttpCode,
   HttpStatus,
-  Ip,
   Post,
+  Res,
 } from "@nestjs/common";
 import {
   ApiForbiddenResponse,
@@ -24,8 +24,7 @@ import { Serializable } from "src/@core/decorators/serializable.decorator";
 import { WorkerEntity } from "src/workers/entities/worker.entity";
 
 import { AUTH_COOKIES } from "../auth.types";
-import { RequireSessionAuth } from "../decorators/session-auth.decorator";
-import { SetCookies } from "../decorators/set-cookie.decorator";
+import { Public } from "../decorators/public.decorator";
 import { SignInDto } from "../dto/req/sign-in.dto";
 import { AuthService } from "../services/auth.service";
 
@@ -33,7 +32,6 @@ import { AuthService } from "../services/auth.service";
 export class AuthController {
   constructor(private authService: AuthService) {}
 
-  @RequireSessionAuth()
   @Get("user")
   @HttpCode(HttpStatus.OK)
   @Serializable(WorkerEntity)
@@ -51,8 +49,8 @@ export class AuthController {
     return worker;
   }
 
+  @Public()
   @Post("sign-in")
-  @SetCookies()
   @HttpCode(HttpStatus.OK)
   @Serializable(WorkerEntity)
   @ApiOperation({
@@ -67,26 +65,32 @@ export class AuthController {
   })
   async signIn(
     @Body() dto: SignInDto,
-    @Ip() ipAddress: string,
-    @Headers() headers: IncomingHttpHeaders,
+    @IpAddress() ip: string,
+    @UserAgent() httpAgent: string,
+    @Res({ passthrough: true })
+    res: Response,
   ) {
     const worker = await this.authService.signIn(dto);
-    if (!ipAddress) ipAddress = "N/A";
+    if (!ip) ip = "N/A";
 
-    const session = await this.authService.createSession({
-      headers,
-      ipAddress,
+    const signedJWT = await this.authService.createSignedSession({
+      httpAgent,
+      ip,
       worker,
+    });
+
+    res.cookie(AUTH_COOKIES.token, signedJWT, {
+      maxAge: 60 * 60 * 24 * 365, // 1 year
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
     });
 
     return {
       ...worker,
-      setSessionToken: session?.token,
     };
   }
 
-  @RequireSessionAuth()
-  @SetCookies()
   @Delete("sign-out")
   @HttpCode(HttpStatus.OK)
   @Serializable(class Empty {})
@@ -100,7 +104,8 @@ export class AuthController {
     description: "You unauthorized",
   })
   async signOut(@Cookies(AUTH_COOKIES.token) token: string) {
-    await this.authService.destroySession(token);
+    token;
+    // await this.authService.destroySession(token);
 
     return {
       setSessionToken: null,

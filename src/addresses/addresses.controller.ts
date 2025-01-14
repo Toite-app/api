@@ -7,13 +7,11 @@ import {
   ApiResponse,
   ApiUnauthorizedResponse,
 } from "@nestjs/swagger";
-import { RequireSessionAuth } from "src/auth/decorators/session-auth.decorator";
 
 import { GetSuggestionsDto } from "./dto/get-suggestions.dto";
 import { AddressSuggestion } from "./entities/suggestion.entity";
 import { AddressesService } from "./services/addresses.service";
 
-@RequireSessionAuth()
 @Controller("addresses")
 @ApiForbiddenResponse({ description: "Forbidden" })
 @ApiUnauthorizedResponse({ description: "Unauthorized" })

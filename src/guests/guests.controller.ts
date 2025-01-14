@@ -18,7 +18,6 @@ import {
   ApiOperation,
   ApiUnauthorizedResponse,
 } from "@nestjs/swagger";
-import { RequireSessionAuth } from "src/auth/decorators/session-auth.decorator";
 
 import { CreateGuestDto } from "./dtos/create-guest.dto";
 import { UpdateGuestDto } from "./dtos/update-guest.dto";
@@ -26,7 +25,6 @@ import { GuestEntity } from "./entities/guest.entity";
 import { GuestsPaginatedDto } from "./entities/guests-paginated.entity";
 import { GuestsService } from "./guests.service";
 
-@RequireSessionAuth()
 @Controller("guests")
 @ApiForbiddenResponse({ description: "Forbidden" })
 @ApiUnauthorizedResponse({ description: "Unauthorized" })

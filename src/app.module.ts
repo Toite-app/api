@@ -20,7 +20,6 @@ import { DrizzleModule } from "./@base/drizzle/drizzle.module";
 import { AuthModule } from "./auth/auth.module";
 import { SessionAuthGuard } from "./auth/guards/session-auth.guard";
 import { RestaurantsModule } from "./restaurants/restaurants.module";
-import { SessionsService } from "./sessions/sessions.service";
 import { WorkersModule } from "./workers/workers.module";
 
 @Module({
@@ -64,7 +63,6 @@ import { WorkersModule } from "./workers/workers.module";
       provide: APP_FILTER,
       useClass: AllExceptionsFilter,
     },
-    SessionsService,
     {
       provide: APP_PIPE,
       useClass: ZodValidationPipe,
