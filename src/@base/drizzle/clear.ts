@@ -1,15 +1,16 @@
+import env from "@core/env";
 import dotenv from "dotenv";
 import { sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
 
 dotenv.config({
-  path: process.env.NODE_ENV === "test" ? "./.env.test" : "./.env",
+  path: env.NODE_ENV === "test" ? "./.env.test" : "./.env",
 });
 
 const clearDatabase = async () => {
   const pool = new Pool({
-    connectionString: process.env.POSTGRESQL_URL,
+    connectionString: env.POSTGRESQL_URL,
   });
 
   const db = drizzle(pool);

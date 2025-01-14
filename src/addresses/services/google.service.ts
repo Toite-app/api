@@ -1,3 +1,4 @@
+import env from "@core/env";
 import { HttpService } from "@nestjs/axios";
 import { Injectable } from "@nestjs/common";
 import { firstValueFrom } from "rxjs";
@@ -22,7 +23,7 @@ interface GoogleGeocodingResponse {
 export class GoogleService {
   private readonly API_URL =
     "https://maps.googleapis.com/maps/api/geocode/json";
-  private readonly API_KEY = process.env.GOOGLE_MAPS_API_KEY;
+  private readonly API_KEY = env.GOOGLE_MAPS_API_KEY;
 
   constructor(private readonly httpService: HttpService) {}
 

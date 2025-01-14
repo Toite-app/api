@@ -1,4 +1,5 @@
 import "dotenv/config";
+import env from "@core/env";
 import { Module } from "@nestjs/common";
 import { JwtModule } from "@nestjs/jwt";
 import { DrizzleModule } from "@postgress-db/drizzle.module";
@@ -13,7 +14,7 @@ import { SessionsService } from "./services/sessions.service";
     DrizzleModule,
     WorkersModule,
     JwtModule.register({
-      secret: process.env.JWT_SECRET,
+      secret: env.JWT.SECRET,
     }),
   ],
   providers: [AuthService, SessionsService],

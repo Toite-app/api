@@ -3,6 +3,7 @@ import { Cookies } from "@core/decorators/cookies.decorator";
 import IpAddress from "@core/decorators/ip-address.decorator";
 import UserAgent from "@core/decorators/user-agent.decorator";
 import { Worker } from "@core/decorators/worker.decorator";
+import env from "@core/env";
 import { Response } from "@core/interfaces/response";
 import {
   Body,
@@ -82,7 +83,7 @@ export class AuthController {
     res.cookie(AUTH_COOKIES.token, signedJWT, {
       maxAge: 60 * 60 * 24 * 365, // 1 year
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: env.NODE_ENV === "production",
       sameSite: "strict",
     });
 

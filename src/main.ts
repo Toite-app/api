@@ -1,4 +1,6 @@
+import "dotenv/config";
 import { configApp } from "@core/config/app";
+import env from "@core/env";
 import { NestFactory } from "@nestjs/core";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import { schema } from "@postgress-db/drizzle.module";
@@ -12,15 +14,14 @@ import { AppModule } from "./app.module";
 import { AUTH_COOKIES } from "./auth/auth.types";
 
 export const createUserIfDbEmpty = async () => {
-  const db = drizzle(
-    new Pool({ connectionString: process.env.POSTGRESQL_URL }),
-    { schema },
-  );
+  const db = drizzle(new Pool({ connectionString: env.POSTGRESQL_URL }), {
+    schema,
+  });
 
   if ((await db.query.workers.findMany()).length === 0) {
     await db.insert(workers).values({
       login: "admin",
-      passwordHash: await hash(process.env.INITIAL_ADMIN_PASSWORD ?? "123456"),
+      passwordHash: await hash(env.INITIAL_ADMIN_PASSWORD ?? "123456"),
       role: schema.ZodWorkerRole.Enum.SYSTEM_ADMIN,
     });
   }
@@ -54,7 +55,7 @@ async function bootstrap() {
     swaggerOptions: {},
   });
 
-  await app.listen(process.env?.PORT ?? 6701);
+  await app.listen(env.PORT);
 }
 
 createUserIfDbEmpty();

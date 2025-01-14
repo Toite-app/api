@@ -1,10 +1,11 @@
+import env from "@core/env";
+
 export class RedisUtils {
   public static buildKey(key: string | string[] | Record<string, string>) {
     const appName = "toite-api-instance";
     const version = "1.0.0";
-    const env = process.env.NODE_ENV;
 
-    const keyParts = [appName, version, env];
+    const keyParts = [appName, version, env.NODE_ENV];
 
     if (typeof key === "string") {
       keyParts.push(key);
