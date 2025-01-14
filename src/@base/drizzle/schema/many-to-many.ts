@@ -20,6 +20,8 @@ export const dishesToCategories = pgTable(
   ],
 );
 
+export type IDishesToCategories = typeof dishesToCategories.$inferSelect;
+
 export const dishesToCategoriesRelations = relations(
   dishesToCategories,
   ({ one }) => ({
@@ -50,6 +52,8 @@ export const dishesToImages = pgTable(
     }),
   ],
 );
+
+export type IDishesToImages = typeof dishesToImages.$inferSelect;
 
 export const dishesToImagesRelations = relations(dishesToImages, ({ one }) => ({
   dish: one(dishes, {

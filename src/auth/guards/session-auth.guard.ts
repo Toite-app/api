@@ -1,99 +1,99 @@
 import { UnauthorizedException } from "@core/errors/exceptions/unauthorized.exception";
 import { Request } from "@core/interfaces/request";
 import { Response } from "@core/interfaces/response";
-import * as ms from "@lukeed/ms";
-import { CanActivate, ExecutionContext, Injectable } from "@nestjs/common";
+import {
+  CanActivate,
+  ExecutionContext,
+  Injectable,
+  Logger,
+} from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
-import { IWorker } from "@postgress-db/schema/workers";
-import { SessionsService } from "src/sessions/sessions.service";
-import { WorkersService } from "src/workers/workers.service";
-
-import { AUTH_COOKIES } from "../auth.types";
-import { REQUIRE_SESSION_AUTH_KEY } from "../decorators/session-auth.decorator";
+import * as requestIp from "@supercharge/request-ip";
+import { AUTH_COOKIES } from "src/auth/auth.types";
+import { IS_PUBLIC_KEY } from "src/auth/decorators/public.decorator";
+import { AuthService } from "src/auth/services/auth.service";
 
 @Injectable()
 export class SessionAuthGuard implements CanActivate {
+  private readonly logger = new Logger(SessionAuthGuard.name);
+
   constructor(
-    private readonly sessionsService: SessionsService,
-    private readonly workersService: WorkersService,
     private readonly reflector: Reflector,
+    private readonly authService: AuthService,
   ) {}
 
-  async canActivate(context: ExecutionContext) {
-    const isSessionRequired = this.reflector.getAllAndOverride<boolean>(
-      REQUIRE_SESSION_AUTH_KEY,
-      [context.getHandler(), context.getClass()],
-    );
+  private getUserIp(req: Request) {
+    return requestIp.getClientIp(req);
+  }
 
-    if (!isSessionRequired) return true;
-
-    const req = context.switchToHttp().getRequest() as Request;
-    const res = context.switchToHttp().getResponse() as Response;
-
-    const ip = req.ip;
-    const token = req.cookies?.[AUTH_COOKIES.token];
-    const httpAgent = String(
+  private getUserAgent(req: Request) {
+    return String(
       req.headers["user-agent"] || req.headers["User-Agent"] || "N/A",
     );
+  }
 
-    if (!token) {
-      throw new UnauthorizedException();
-    }
+  private getCookie(req: Request, cookieName: string) {
+    return req.cookies?.[cookieName];
+  }
 
-    const isValid = await this.sessionsService.isSessionValid(token);
+  private async _isPublic(context: ExecutionContext) {
+    const isPublic = !!this.reflector.get(IS_PUBLIC_KEY, context.getHandler());
 
-    if (!isValid) {
-      throw new UnauthorizedException();
-    }
+    return isPublic;
+  }
 
-    const session = await this.sessionsService.findByToken(token);
+  private async _handleSession(req: Request, res: Response) {
+    res;
+    const jwtSign = this.getCookie(req, AUTH_COOKIES.token);
 
-    if (!session) {
-      throw new UnauthorizedException();
-    }
+    if (!jwtSign) throw new UnauthorizedException();
 
-    const isCompromated =
-      session.ipAddress !== ip || session.httpAgent !== httpAgent;
+    const httpAgent = this.getUserAgent(req);
+    const ip = this.getUserIp(req);
 
-    if (isCompromated) {
-      // TODO: Implement logic for notification about compromated session
-      throw new UnauthorizedException("Session is compromated");
-    }
+    const session = await this.authService.validateSession(jwtSign, {
+      httpAgent,
+      ip,
+    });
 
-    const isTimeToRefresh =
-      new Date(session.refreshedAt).getTime() +
-        (ms.parse(process.env?.SESSION_EXPIRES_IN ?? "30m") ?? 0) <
-      new Date().getTime();
+    if (!session) throw new UnauthorizedException();
 
-    if (isTimeToRefresh) {
-      const newToken = await this.sessionsService.refresh(token);
+    req.session = session;
+    req.worker = session?.worker ?? null;
 
-      res.cookie(AUTH_COOKIES.token, newToken, {
-        maxAge: ms.parse("1y"),
+    const isRequireRefresh = this.authService.isSessionRequireRefresh(session);
+
+    if (isRequireRefresh) {
+      const newSignedJWT = await this.authService.refreshSignedSession(
+        jwtSign,
+        {
+          httpAgent,
+          ip: ip ?? "N/A",
+        },
+      );
+
+      res.cookie(AUTH_COOKIES.token, newSignedJWT, {
+        maxAge: 60 * 60 * 24 * 365, // 1 year
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "strict",
       });
     }
 
-    const worker = await this.workersService.findById(session.workerId);
+    return true;
+  }
 
-    const isTimeToUpdateOnline =
-      !worker?.onlineAt ||
-      new Date(worker.onlineAt).getTime() + (ms.parse("5m") ?? 0) <
-        new Date().getTime();
-
-    if (isTimeToUpdateOnline && worker) {
-      await this.workersService.update(worker.id, {
-        onlineAt: new Date(),
-      });
+  async canActivate(context: ExecutionContext) {
+    // If session is not required, we can activate the guard from start
+    if (await this._isPublic(context)) {
+      return true;
     }
 
-    req.session = session;
-    req.worker = { ...worker, passwordHash: undefined } as Omit<
-      IWorker,
-      "passwordHash"
-    > & { passwordHash: undefined };
+    const req = context.switchToHttp().getRequest() as Request;
+    const res = context.switchToHttp().getResponse() as Response;
+
+    // Check if valid, throw if not and perform update if needed
+    await this._handleSession(req, res);
 
     return true;
   }

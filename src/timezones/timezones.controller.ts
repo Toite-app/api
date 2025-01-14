@@ -7,11 +7,9 @@ import {
   ApiOperation,
   ApiUnauthorizedResponse,
 } from "@nestjs/swagger";
-import { RequireSessionAuth } from "src/auth/decorators/session-auth.decorator";
 import { TimezonesListEntity } from "src/timezones/entities/timezones-list.entity";
 import { TimezonesService } from "src/timezones/timezones.service";
 
-@RequireSessionAuth()
 @Controller("timezones")
 @ApiForbiddenResponse({ description: "Forbidden" })
 @ApiUnauthorizedResponse({ description: "Unauthorized" })

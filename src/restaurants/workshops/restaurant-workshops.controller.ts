@@ -9,7 +9,6 @@ import {
   ApiOperation,
   OmitType,
 } from "@nestjs/swagger";
-import { RequireSessionAuth } from "src/auth/decorators/session-auth.decorator";
 
 import { UpdateRestaurantWorkshopWorkersDto } from "./dto/put-restaurant-workshop-workers.dto";
 import { WorkshopWorkerEntity } from "./entity/restaurant-workshop-worker.entity";
@@ -25,7 +24,6 @@ export class CreateRestaurantWorkshopPayloadDto extends OmitType(
   ["restaurantId"] as const,
 ) {}
 
-@RequireSessionAuth()
 @Controller("restaurants/:id/workshops", {
   tags: ["restaurants"],
 })

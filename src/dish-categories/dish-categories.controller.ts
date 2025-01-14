@@ -18,7 +18,6 @@ import {
   ApiOperation,
   ApiUnauthorizedResponse,
 } from "@nestjs/swagger";
-import { RequireSessionAuth } from "src/auth/decorators/session-auth.decorator";
 
 import { DishCategoriesService } from "./dish-categories.service";
 import { CreateDishCategoryDto } from "./dtos/create-dish-category.dto";
@@ -26,7 +25,6 @@ import { UpdateDishCategoryDto } from "./dtos/update-dish-category.dto";
 import { DishCategoriesPaginatedDto } from "./entities/dish-categories-paginated.entity";
 import { DishCategoryEntity } from "./entities/dish-category.entity";
 
-@RequireSessionAuth()
 @Controller("dish-categories")
 @ApiForbiddenResponse({ description: "Forbidden" })
 @ApiUnauthorizedResponse({ description: "Unauthorized" })

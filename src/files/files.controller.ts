@@ -11,12 +11,10 @@ import {
 } from "@nestjs/swagger";
 import { IWorker } from "@postgress-db/schema/workers";
 import { FormDataRequest } from "nestjs-form-data";
-import { RequireSessionAuth } from "src/auth/decorators/session-auth.decorator";
 import { UploadFormDataDto } from "src/files/dto/upload-form-data.dto";
 import { FileEntity } from "src/files/entitites/file.entity";
 import { FilesService } from "src/files/files.service";
 
-@RequireSessionAuth()
 @Controller("files")
 @ApiForbiddenResponse({ description: "Forbidden" })
 @ApiUnauthorizedResponse({ description: "Unauthorized" })

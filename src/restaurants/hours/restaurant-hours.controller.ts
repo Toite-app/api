@@ -9,7 +9,6 @@ import {
   ApiOperation,
   OmitType,
 } from "@nestjs/swagger";
-import { RequireSessionAuth } from "src/auth/decorators/session-auth.decorator";
 
 import {
   CreateRestaurantHoursDto,
@@ -23,7 +22,6 @@ export class CreateRestaurantHoursPayloadDto extends OmitType(
   ["restaurantId"] as const,
 ) {}
 
-@RequireSessionAuth()
 @Controller("restaurants/:id/hours", {
   tags: ["restaurants"],
 })
