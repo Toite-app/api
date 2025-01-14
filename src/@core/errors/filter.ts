@@ -24,6 +24,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
     const uri = new URL("http://localhost" + url);
 
     const errorCategory = slugify(uri.pathname.split("/")?.[1]).toUpperCase();
+    console.log(response, exception);
 
     httpAdapter.reply(
       ctx.getResponse(),

@@ -1,13 +1,13 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { IDishCategory } from "@postgress-db/schema/dish-categories";
-import { Expose } from "class-transformer";
 import {
   IsBoolean,
   IsISO8601,
   IsNumber,
   IsString,
   IsUUID,
-} from "class-validator";
+} from "@i18n-class-validator";
+import { ApiProperty } from "@nestjs/swagger";
+import { IDishCategory } from "@postgress-db/schema/dish-categories";
+import { Expose } from "class-transformer";
 
 export class DishCategoryEntity implements IDishCategory {
   @Expose()

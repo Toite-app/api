@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/ban-types */
 import { FormException } from "@core/errors/exceptions/form.exception";
 import { handleError } from "@core/errors/handleError";
+import { validate } from "@i18n-class-validator";
 import { ArgumentMetadata, Injectable, PipeTransform } from "@nestjs/common";
 import { plainToClass } from "class-transformer";
-import { validate } from "class-validator";
 
 import { BadRequestException } from "../errors/exceptions/bad-request.exception";
 

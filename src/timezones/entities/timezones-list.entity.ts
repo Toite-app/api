@@ -1,6 +1,6 @@
+import { IsArray, IsString } from "@i18n-class-validator";
 import { ApiProperty } from "@nestjs/swagger";
 import { Expose } from "class-transformer";
-import { IsArray, IsString } from "class-validator";
 
 export class TimezonesListEntity {
   @Expose()

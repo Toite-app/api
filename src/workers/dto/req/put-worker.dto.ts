@@ -1,3 +1,4 @@
+import { IsDate, IsOptional, IsStrongPassword } from "@i18n-class-validator";
 import {
   ApiProperty,
   IntersectionType,
@@ -5,7 +6,6 @@ import {
   PickType,
 } from "@nestjs/swagger";
 import { Expose } from "class-transformer";
-import { IsDate, IsOptional, IsStrongPassword } from "class-validator";
 import { WorkerEntity } from "src/workers/entities/worker.entity";
 
 export class CreateWorkerDto extends IntersectionType(

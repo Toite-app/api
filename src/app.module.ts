@@ -1,3 +1,5 @@
+import * as path from "path";
+
 import env from "@core/env";
 import { AllExceptionsFilter } from "@core/errors/filter";
 import { RolesGuard } from "@core/guards/roles.guard";
@@ -8,6 +10,12 @@ import { APP_FILTER, APP_GUARD, APP_PIPE } from "@nestjs/core";
 import { MongooseModule } from "@nestjs/mongoose";
 import { ThrottlerModule } from "@nestjs/throttler";
 import { NestjsFormDataModule } from "nestjs-form-data";
+import {
+  AcceptLanguageResolver,
+  HeaderResolver,
+  I18nModule,
+  QueryResolver,
+} from "nestjs-i18n";
 import { ZodValidationPipe } from "nestjs-zod";
 import { S3Module } from "src/@base/s3/s3.module";
 import { AddressesModule } from "src/addresses/addresses.module";
@@ -58,6 +66,18 @@ import { WorkersModule } from "./workers/workers.module";
     S3Module,
     FilesModule,
     NestjsFormDataModule,
+    I18nModule.forRoot({
+      fallbackLanguage: "en",
+      loaderOptions: {
+        path: path.join(__dirname, "/i18n/messages/"),
+        watch: true,
+      },
+      resolvers: [
+        { use: QueryResolver, options: ["lang"] },
+        new HeaderResolver(["x-lang"]),
+        AcceptLanguageResolver,
+      ],
+    }),
   ],
   providers: [
     {

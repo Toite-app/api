@@ -1,8 +1,8 @@
 import { IsPhoneNumber } from "@core/decorators/is-phone.decorator";
+import { IsISO8601, IsNumber, IsString, IsUUID } from "@i18n-class-validator";
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { IGuest } from "@postgress-db/schema/guests";
 import { Expose } from "class-transformer";
-import { IsISO8601, IsNumber, IsString, IsUUID } from "class-validator";
 
 export class GuestEntity implements IGuest {
   @Expose()

@@ -1,7 +1,7 @@
 import { IPagination } from "@core/decorators/pagination.decorator";
+import { IsNumber } from "@i18n-class-validator";
 import { ApiProperty } from "@nestjs/swagger";
 import { Expose } from "class-transformer";
-import { IsNumber } from "class-validator";
 
 export interface IPaginationMeta
   extends Pick<IPagination, "page" | "size" | "offset"> {

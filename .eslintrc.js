@@ -34,7 +34,7 @@ module.exports = {
         ],
         "newlines-between": "always",
         alphabetize: {
-          order: "asc" /* asc или desc */,
+          order: "asc",
           caseInsensitive: true,
         },
       },
@@ -51,5 +51,36 @@ module.exports = {
     "import/first": "error",
     "import/newline-after-import": "error",
     "import/no-duplicates": "error",
+    "no-restricted-imports": [
+      "error",
+      {
+        paths: [
+          {
+            name: "class-validator",
+            message:
+              "Import custom validators from @i18n-class-validator instead",
+          },
+        ],
+        patterns: [
+          {
+            group: ["class-validator/*"],
+            message:
+              "Import custom validators from @i18n-class-validator instead",
+          },
+        ],
+      },
+    ],
+    "import/no-restricted-paths": [
+      "error",
+      {
+        zones: [
+          {
+            target: "./src/**/*",
+            from: "class-validator",
+            except: ["./src/i18n/validators/index.ts"],
+          },
+        ],
+      },
+    ],
   },
 };

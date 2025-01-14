@@ -1,0 +1,22 @@
+{
+  "validators": {
+    "isString": "Must be a string",
+    "isNumber": "Must be a number",
+    "isBoolean": "Must be a boolean",
+    "isArray": "Must be an array",
+    "isObject": "Must be an object",
+    "isDate": "Must be a valid date",
+    "isEmail": "Must be a valid email address",
+    "isUUID": "Must be a valid UUID",
+    "isEnum": "Must be one of the allowed values",
+    "isNotEmpty": "Must not be empty",
+    "minLength": "Must be at least {constraints.0} characters long",
+    "maxLength": "Must be at most {constraints.0} characters long",
+    "min": "Must be greater than or equal to {constraints.0}",
+    "max": "Must be less than or equal to {constraints.0}",
+    "isPhoneNumber": "Must be a valid phone number",
+    "isTimeFormat": "Must be in HH:MM format (24-hour)",
+    "isStrongPassword": "Must be a strong password",
+    "isLatitude": "Must be a valid latitude"
+  }
+}

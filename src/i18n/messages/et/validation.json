@@ -1,0 +1,22 @@
+{
+  "validators": {
+    "isString": "Peab olema tekst",
+    "isNumber": "Peab olema number",
+    "isBoolean": "Peab olema tõene või väär",
+    "isArray": "Peab olema massiiv",
+    "isObject": "Peab olema objekt",
+    "isDate": "Peab olema kehtiv kuupäev",
+    "isEmail": "Peab olema kehtiv e-posti aadress",
+    "isUUID": "Peab olema kehtiv UUID",
+    "isEnum": "Peab olema üks lubatud väärtustest",
+    "isNotEmpty": "Ei tohi olla tühi",
+    "minLength": "Peab olema vähemalt {constraints.0} tähemärki pikk",
+    "maxLength": "Peab olema maksimaalselt {constraints.0} tähemärki pikk",
+    "min": "Peab olema suurem või võrdne kui {constraints.0}",
+    "max": "Peab olema väiksem või võrdne kui {constraints.0}",
+    "isPhoneNumber": "Peab olema kehtiv telefoninumber",
+    "isTimeFormat": "Peab olema HH:MM vormingus (24-tunni)",
+    "isStrongPassword": "Peab olema tugev parool",
+    "isLatitude": "Peab olema kehtiv laiuskraad"
+  }
+}

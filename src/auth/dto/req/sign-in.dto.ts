@@ -1,6 +1,6 @@
+import { IsString } from "@i18n-class-validator";
 import { ApiProperty } from "@nestjs/swagger";
 import { Expose } from "class-transformer";
-import { IsString } from "class-validator";
 import { z } from "zod";
 
 export const signInSchema = z.object({

@@ -1,13 +1,13 @@
-import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
-import { IFile } from "@postgress-db/schema/files";
-import { Expose } from "class-transformer";
 import {
   IsISO8601,
   IsNumber,
   IsOptional,
   IsString,
   IsUUID,
-} from "class-validator";
+} from "@i18n-class-validator";
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+import { IFile } from "@postgress-db/schema/files";
+import { Expose } from "class-transformer";
 
 export class FileEntity implements IFile {
   @IsUUID()

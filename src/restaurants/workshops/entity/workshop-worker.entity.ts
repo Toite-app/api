@@ -1,7 +1,7 @@
+import { IsISO8601, IsUUID } from "@i18n-class-validator";
 import { ApiProperty, OmitType } from "@nestjs/swagger";
 import { IWorkshopWorker } from "@postgress-db/schema/restaurant-workshop";
 import { Expose } from "class-transformer";
-import { IsISO8601, IsUUID } from "class-validator";
 
 export class WorkshopWorkerDto implements IWorkshopWorker {
   @IsUUID()
