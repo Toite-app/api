@@ -11,7 +11,7 @@ import { Reflector } from "@nestjs/core";
 import * as requestIp from "@supercharge/request-ip";
 import { AUTH_COOKIES } from "src/auth/auth.types";
 import { IS_PUBLIC_KEY } from "src/auth/decorators/public.decorator";
-import { AuthService } from "src/auth/services/auth.service";
+import { SessionsService } from "src/auth/services/sessions.service";
 
 @Injectable()
 export class SessionAuthGuard implements CanActivate {
@@ -19,7 +19,7 @@ export class SessionAuthGuard implements CanActivate {
 
   constructor(
     private readonly reflector: Reflector,
-    private readonly authService: AuthService,
+    private readonly sessionsService: SessionsService,
   ) {}
 
   private getUserIp(req: Request) {
@@ -51,7 +51,7 @@ export class SessionAuthGuard implements CanActivate {
     const httpAgent = this.getUserAgent(req);
     const ip = this.getUserIp(req);
 
-    const session = await this.authService.validateSession(jwtSign, {
+    const session = await this.sessionsService.validateSession(jwtSign, {
       httpAgent,
       ip,
     });
@@ -61,10 +61,11 @@ export class SessionAuthGuard implements CanActivate {
     req.session = session;
     req.worker = session?.worker ?? null;
 
-    const isRequireRefresh = this.authService.isSessionRequireRefresh(session);
+    const isRequireRefresh =
+      this.sessionsService.isSessionRequireRefresh(session);
 
     if (isRequireRefresh) {
-      const newSignedJWT = await this.authService.refreshSignedSession(
+      const newSignedJWT = await this.sessionsService.refreshSignedSession(
         jwtSign,
         {
           httpAgent,

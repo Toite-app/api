@@ -6,6 +6,7 @@ import { WorkersModule } from "src/workers/workers.module";
 
 import { AuthController } from "./controllers/auth.controller";
 import { AuthService } from "./services/auth.service";
+import { SessionsService } from "./services/sessions.service";
 
 @Module({
   imports: [
@@ -15,8 +16,8 @@ import { AuthService } from "./services/auth.service";
       secret: process.env.JWT_SECRET,
     }),
   ],
-  providers: [AuthService],
+  providers: [AuthService, SessionsService],
   controllers: [AuthController],
-  exports: [AuthService],
+  exports: [AuthService, SessionsService],
 })
 export class AuthModule {}
