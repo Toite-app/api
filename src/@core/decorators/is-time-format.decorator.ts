@@ -2,7 +2,7 @@ import {
   registerDecorator,
   ValidationArguments,
   ValidationOptions,
-} from "class-validator";
+} from "@i18n-class-validator";
 
 export function IsTimeFormat(validationOptions?: ValidationOptions) {
   return function (object: object, propertyName: string) {

@@ -1,6 +1,3 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { IRestaurant } from "@postgress-db/schema/restaurants";
-import { Expose } from "class-transformer";
 import {
   IsBoolean,
   IsISO8601,
@@ -8,7 +5,10 @@ import {
   IsOptional,
   IsString,
   IsUUID,
-} from "class-validator";
+} from "@i18n-class-validator";
+import { ApiProperty } from "@nestjs/swagger";
+import { IRestaurant } from "@postgress-db/schema/restaurants";
+import { Expose } from "class-transformer";
 
 export class RestaurantEntity implements IRestaurant {
   @IsUUID()

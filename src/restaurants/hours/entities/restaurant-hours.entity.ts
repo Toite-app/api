@@ -1,15 +1,15 @@
 import { IsTimeFormat } from "@core/decorators/is-time-format.decorator";
 import { DayOfWeek, DayOfWeekEnum } from "@core/types/general";
-import { ApiProperty, OmitType, PartialType, PickType } from "@nestjs/swagger";
-import { IRestaurantHours } from "@postgress-db/schema/restaurants";
-import { Expose } from "class-transformer";
 import {
   IsBoolean,
   IsEnum,
   IsISO8601,
   IsString,
   IsUUID,
-} from "class-validator";
+} from "@i18n-class-validator";
+import { ApiProperty, OmitType, PartialType, PickType } from "@nestjs/swagger";
+import { IRestaurantHours } from "@postgress-db/schema/restaurants";
+import { Expose } from "class-transformer";
 
 export class RestaurantHoursEntity implements IRestaurantHours {
   @IsUUID()

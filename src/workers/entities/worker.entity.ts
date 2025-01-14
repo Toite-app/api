@@ -1,6 +1,3 @@
-import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
-import { IWorker, ZodWorkerRole } from "@postgress-db/schema/workers";
-import { Exclude, Expose } from "class-transformer";
 import {
   IsBoolean,
   IsEnum,
@@ -9,7 +6,10 @@ import {
   IsString,
   IsUUID,
   MinLength,
-} from "class-validator";
+} from "@i18n-class-validator";
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+import { IWorker, ZodWorkerRole } from "@postgress-db/schema/workers";
+import { Exclude, Expose } from "class-transformer";
 
 export class WorkerEntity implements IWorker {
   @IsUUID()

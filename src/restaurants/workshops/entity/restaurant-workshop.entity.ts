@@ -1,7 +1,7 @@
+import { IsBoolean, IsISO8601, IsString, IsUUID } from "@i18n-class-validator";
 import { ApiProperty, OmitType, PartialType } from "@nestjs/swagger";
 import { IRestaurantWorkshop } from "@postgress-db/schema/restaurant-workshop";
 import { Expose } from "class-transformer";
-import { IsBoolean, IsISO8601, IsString, IsUUID } from "class-validator";
 
 export class RestaurantWorkshopDto implements IRestaurantWorkshop {
   @IsUUID()

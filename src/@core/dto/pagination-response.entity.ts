@@ -1,6 +1,6 @@
+import { IsArray } from "@i18n-class-validator";
 import { ApiProperty } from "@nestjs/swagger";
 import { Expose, Type } from "class-transformer";
-import { IsArray } from "class-validator";
 
 import { PaginationMetaDto } from "./pagination-meta.dto";
 

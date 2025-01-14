@@ -1,6 +1,3 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { IDish, ZodWeightMeasureEnum } from "@postgress-db/schema/dishes";
-import { Expose } from "class-transformer";
 import {
   IsBoolean,
   IsEnum,
@@ -8,7 +5,10 @@ import {
   IsNumber,
   IsString,
   IsUUID,
-} from "class-validator";
+} from "@i18n-class-validator";
+import { ApiProperty } from "@nestjs/swagger";
+import { IDish, ZodWeightMeasureEnum } from "@postgress-db/schema/dishes";
+import { Expose } from "class-transformer";
 
 export class DishEntity implements IDish {
   @Expose()

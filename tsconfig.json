@@ -19,6 +19,7 @@
     "noFallthroughCasesInSwitch": true,
     "paths": {
       "@core/*": ["src/@core/*"],
+      "@i18n-class-validator": ["src/i18n/validators"],
       "@postgress-db/*": ["src/@base/drizzle/*"],
     },
   },

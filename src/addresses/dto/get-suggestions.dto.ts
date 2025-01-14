@@ -1,12 +1,12 @@
-import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
-import { Expose, Transform } from "class-transformer";
 import {
   IsBoolean,
   IsEnum,
   IsOptional,
   IsString,
   MinLength,
-} from "class-validator";
+} from "@i18n-class-validator";
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+import { Expose, Transform } from "class-transformer";
 
 import { AddressProvider } from "../entities/suggestion.entity";
 

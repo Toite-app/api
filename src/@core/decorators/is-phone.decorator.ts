@@ -2,7 +2,7 @@ import {
   registerDecorator,
   ValidationArguments,
   ValidationOptions,
-} from "class-validator";
+} from "@i18n-class-validator";
 import { isValidPhoneNumber } from "libphonenumber-js";
 
 export function IsPhoneNumber(validationOptions?: ValidationOptions) {

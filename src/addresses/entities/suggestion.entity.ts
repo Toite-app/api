@@ -1,6 +1,6 @@
+import { IsOptional } from "@i18n-class-validator";
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { Expose } from "class-transformer";
-import { IsOptional } from "class-validator";
 
 export interface IGoogleRawResult {
   address_components: {
