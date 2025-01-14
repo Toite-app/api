@@ -1,3 +1,4 @@
+import env from "@core/env";
 import { BadRequestException } from "@core/errors/exceptions/bad-request.exception";
 import { UnauthorizedException } from "@core/errors/exceptions/unauthorized.exception";
 import { Inject, Injectable } from "@nestjs/common";
@@ -11,9 +12,9 @@ import { SessionTokenPayload } from "src/auth/auth.types";
 import { PG_CONNECTION } from "src/constants";
 import { v4 as uuidv4 } from "uuid";
 
-export const SESSION_TOKEN_GRACE_PERIOD = 60; // 1 minute
-export const SESSION_TOKEN_REFRESH_INTERVAL = 60 * 15; // 15 minutes
-export const SESSION_TOKEN_EXPIRES_IN = 60 * 60 * 24 * 31; // 31 days
+export const SESSION_TOKEN_GRACE_PERIOD = env.JWT.GRACE_PERIOD;
+export const SESSION_TOKEN_REFRESH_INTERVAL = env.JWT.REFRESH_INTERVAL;
+export const SESSION_TOKEN_EXPIRES_IN = env.JWT.EXPIRES_IN;
 
 @Injectable()
 export class SessionsService {

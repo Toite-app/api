@@ -6,6 +6,7 @@ import {
   PutObjectCommand,
   S3Client,
 } from "@aws-sdk/client-s3";
+import env from "@core/env";
 import { NotFoundException } from "@core/errors/exceptions/not-found.exception";
 import { ServerErrorException } from "@core/errors/exceptions/server-error.exception";
 import { Injectable, Logger } from "@nestjs/common";
@@ -22,11 +23,11 @@ export class S3Service {
 
   private _getEnvs() {
     return {
-      region: process.env.S3_REGION as string,
-      accessKeyId: process.env.S3_ACCESS_KEY_ID as string,
-      secretAccessKey: process.env.S3_SECRET_ACCESS_KEY as string,
-      endpoint: process.env.S3_ENDPOINT as string,
-      bucketName: process.env.S3_BUCKET_NAME as string,
+      region: env.S3_CONFIG.REGION,
+      accessKeyId: env.S3_CONFIG.ACCESS_KEY_ID,
+      secretAccessKey: env.S3_CONFIG.SECRET_ACCESS_KEY,
+      endpoint: env.S3_CONFIG.ENDPOINT,
+      bucketName: env.S3_CONFIG.BUCKET_NAME,
     };
   }
 

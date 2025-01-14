@@ -1,3 +1,4 @@
+import env from "@core/env";
 import { AllExceptionsFilter } from "@core/errors/filter";
 import { RolesGuard } from "@core/guards/roles.guard";
 import { RedisModule } from "@liaoliaots/nestjs-redis";
@@ -43,7 +44,7 @@ import { WorkersModule } from "./workers/workers.module";
     }),
     RedisModule.forRoot({
       config: {
-        url: process.env.REDIS_URL,
+        url: env.REDIS_URL,
       },
     }),
     TimezonesModule,

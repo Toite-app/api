@@ -1,3 +1,4 @@
+import env from "@core/env";
 import { UnauthorizedException } from "@core/errors/exceptions/unauthorized.exception";
 import { Request } from "@core/interfaces/request";
 import { Response } from "@core/interfaces/response";
@@ -76,7 +77,7 @@ export class SessionAuthGuard implements CanActivate {
       res.cookie(AUTH_COOKIES.token, newSignedJWT, {
         maxAge: 60 * 60 * 24 * 365, // 1 year
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
+        secure: env.NODE_ENV === "production",
         sameSite: "strict",
       });
     }

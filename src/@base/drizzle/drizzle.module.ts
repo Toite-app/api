@@ -1,3 +1,4 @@
+import env from "@core/env";
 import { Module } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { drizzle, NodePgDatabase } from "drizzle-orm/node-postgres";
@@ -38,7 +39,7 @@ export type Schema = typeof schema;
         const connectionString = configService.get<string>("POSTGRESQL_URL");
         const pool = new Pool({
           connectionString,
-          ssl: process.env.NODE_ENV === "production" ? true : false,
+          ssl: env.NODE_ENV === "production" ? true : false,
         });
 
         return drizzle(pool, { schema }) as NodePgDatabase<Schema>;

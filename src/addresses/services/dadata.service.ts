@@ -1,3 +1,4 @@
+import env from "@core/env";
 import { HttpService } from "@nestjs/axios";
 import { Injectable } from "@nestjs/common";
 import { firstValueFrom } from "rxjs";
@@ -15,7 +16,7 @@ interface DadataResponse {
 export class DadataService {
   private readonly API_URL =
     "https://suggestions.dadata.ru/suggestions/api/4_1/rs/suggest/address";
-  private readonly API_TOKEN = process.env.DADATA_API_TOKEN;
+  private readonly API_TOKEN = env.DADATA_API_TOKEN;
 
   constructor(private readonly httpService: HttpService) {}
 

@@ -1,3 +1,4 @@
+import env from "@core/env";
 import dotenv from "dotenv";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { migrate } from "drizzle-orm/node-postgres/migrator";
@@ -7,7 +8,7 @@ dotenv.config();
 
 export async function startMigration() {
   const pool = new Pool({
-    connectionString: process.env.POSTGRESQL_URL,
+    connectionString: env.POSTGRESQL_URL,
   });
 
   const db = drizzle(pool);
