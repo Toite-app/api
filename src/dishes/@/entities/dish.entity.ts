@@ -10,7 +10,7 @@ import {
 import { ApiProperty } from "@nestjs/swagger";
 import { IDish, ZodWeightMeasureEnum } from "@postgress-db/schema/dishes";
 import { Expose } from "class-transformer";
-import { DishImageEntity } from "src/dishes/entities/dish-image.entity";
+import { DishImageEntity } from "src/dishes/@/entities/dish-image.entity";
 
 export class DishEntity implements IDish {
   @Expose()
