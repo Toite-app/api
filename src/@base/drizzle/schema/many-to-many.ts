@@ -2,7 +2,7 @@ import { dishCategories } from "@postgress-db/schema/dish-categories";
 import { dishes } from "@postgress-db/schema/dishes";
 import { files } from "@postgress-db/schema/files";
 import { relations } from "drizzle-orm";
-import { integer, pgTable, primaryKey, uuid } from "drizzle-orm/pg-core";
+import { integer, pgTable, primaryKey, text, uuid } from "drizzle-orm/pg-core";
 
 // ----------------------------------- //
 // Dishes to dish categories relation  //
@@ -44,6 +44,7 @@ export const dishesToImages = pgTable(
   {
     dishId: uuid("dishId").notNull(),
     imageFileId: uuid("imageFileId").notNull(),
+    alt: text("alt").notNull().default(""),
     sortIndex: integer("sortIndex").notNull().default(0),
   },
   (t) => [
