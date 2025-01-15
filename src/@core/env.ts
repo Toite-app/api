@@ -30,9 +30,9 @@ export const envSchema = z.object({
   // JWT //
   JWT: z.object({
     SECRET: z.string(),
-    GRACE_PERIOD: z.number().default(60), // Default 1 minute
-    REFRESH_INTERVAL: z.number().default(60 * 15), // Default 15 minutes
-    EXPIRES_IN: z.number().default(60 * 60 * 24 * 31), // Default 31 days
+    GRACE_PERIOD: z.coerce.number().default(60), // Default 1 minute
+    REFRESH_INTERVAL: z.coerce.number().default(60 * 15), // Default 15 minutes
+    EXPIRES_IN: z.coerce.number().default(60 * 60 * 24 * 31), // Default 31 days
   }),
   // --- //
   // Databases //
