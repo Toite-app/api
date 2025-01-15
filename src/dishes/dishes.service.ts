@@ -76,6 +76,7 @@ export class DishesService {
       ...dish,
       images: dish.dishesToImages.map((di) => ({
         ...di.imageFile,
+        alt: di.alt,
         sortIndex: di.sortIndex,
       })),
     }));
@@ -135,6 +136,7 @@ export class DishesService {
       ...result,
       images: result.dishesToImages.map((di) => ({
         ...di.imageFile,
+        alt: di.alt,
         sortIndex: di.sortIndex,
       })),
     };
