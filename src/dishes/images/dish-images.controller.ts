@@ -59,6 +59,7 @@ export class DishImagesController {
   ) {
     return this.dishImagesService.updateImage(dishId, imageId, {
       alt: dto.alt,
+      sortIndex: dto.sortIndex,
     });
   }
 

@@ -34,7 +34,7 @@ export class DishImagesService {
       .from(schema.dishesToImages)
       .where(eq(schema.dishesToImages.dishId, dishId));
 
-    const sortIndex = result[0].value;
+    const sortIndex = result[0].value + 1;
 
     // Upload the file first
     const uploadedFile = await this.filesService.uploadFile(file, {
@@ -61,24 +61,73 @@ export class DishImagesService {
     dishId: string,
     imageId: string,
     data: {
-      alt: string;
+      alt?: string;
+      sortIndex?: number;
     },
   ): Promise<DishImageEntity> {
-    // Update the dish-to-image relation
+    // Get current image details
+    const currentImage = await this.pg.query.dishesToImages.findFirst({
+      where:
+        eq(schema.dishesToImages.dishId, dishId) &&
+        eq(schema.dishesToImages.imageFileId, imageId),
+    });
+
+    if (!currentImage) {
+      throw new BadRequestException("Image not found");
+    }
+
+    const updateData: Record<string, unknown> = {};
+
+    // Handle alt text update if provided
+    if (data.alt !== undefined) {
+      updateData.alt = data.alt;
+    }
+
+    // Handle sort index swap if provided
+    if (data.sortIndex !== undefined) {
+      // Find image with target sort index
+      const targetImage = await this.pg.query.dishesToImages.findFirst({
+        where:
+          eq(schema.dishesToImages.dishId, dishId) &&
+          eq(schema.dishesToImages.sortIndex, data.sortIndex),
+      });
+
+      if (!targetImage) {
+        throw new BadRequestException(
+          `No image found with sort index ${data.sortIndex}`,
+        );
+      }
+
+      // Swap sort indexes
+      await this.pg
+        .update(schema.dishesToImages)
+        .set({
+          sortIndex: currentImage.sortIndex,
+        })
+        .where(
+          eq(schema.dishesToImages.dishId, dishId) &&
+            eq(schema.dishesToImages.imageFileId, targetImage.imageFileId),
+        );
+
+      updateData.sortIndex = data.sortIndex;
+    }
+
+    console.log(data, updateData);
+
+    // Only update if we have changes
+    if (Object.keys(updateData).length === 0) {
+      throw new BadRequestException("No values to update");
+    }
+
+    // Update the current image
     const [updated] = await this.pg
       .update(schema.dishesToImages)
-      .set({
-        alt: data.alt,
-      })
+      .set(updateData)
       .where(
         eq(schema.dishesToImages.dishId, dishId) &&
           eq(schema.dishesToImages.imageFileId, imageId),
       )
       .returning();
-
-    if (!updated) {
-      throw new BadRequestException("Image not found");
-    }
 
     // Get the file details
     const file = await this.pg.query.files.findFirst({

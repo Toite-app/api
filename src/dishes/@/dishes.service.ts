@@ -74,11 +74,13 @@ export class DishesService {
 
     return result.map((dish) => ({
       ...dish,
-      images: dish.dishesToImages.map((di) => ({
-        ...di.imageFile,
-        alt: di.alt,
-        sortIndex: di.sortIndex,
-      })),
+      images: dish.dishesToImages
+        .sort((a, b) => a.sortIndex - b.sortIndex)
+        .map((di) => ({
+          ...di.imageFile,
+          alt: di.alt,
+          sortIndex: di.sortIndex,
+        })),
     }));
   }
 
@@ -134,11 +136,13 @@ export class DishesService {
 
     return {
       ...result,
-      images: result.dishesToImages.map((di) => ({
-        ...di.imageFile,
-        alt: di.alt,
-        sortIndex: di.sortIndex,
-      })),
+      images: result.dishesToImages
+        .sort((a, b) => a.sortIndex - b.sortIndex)
+        .map((di) => ({
+          ...di.imageFile,
+          alt: di.alt,
+          sortIndex: di.sortIndex,
+        })),
     };
   }
 }
