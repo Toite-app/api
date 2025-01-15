@@ -44,23 +44,41 @@ export class DishesService {
   }): Promise<DishEntity[]> {
     const { pagination, sorting, filters } = options ?? {};
 
-    const query = this.pg.select().from(schema.dishes);
+    const where = filters
+      ? DrizzleUtils.buildFilterConditions(schema.dishes, filters)
+      : undefined;
 
-    if (filters) {
-      query.where(DrizzleUtils.buildFilterConditions(schema.dishes, filters));
-    }
+    const orderBy = sorting
+      ? [
+          sorting.sortOrder === "asc"
+            ? asc(sql.identifier(sorting.sortBy))
+            : desc(sql.identifier(sorting.sortBy)),
+        ]
+      : undefined;
 
-    if (sorting) {
-      query.orderBy(
-        sorting.sortOrder === "asc"
-          ? asc(sql.identifier(sorting.sortBy))
-          : desc(sql.identifier(sorting.sortBy)),
-      );
-    }
+    const query = this.pg.query.dishes.findMany({
+      where,
+      with: {
+        dishesToImages: {
+          with: {
+            imageFile: true,
+          },
+        },
+      },
+      orderBy,
+      limit: pagination?.size ?? PAGINATION_DEFAULT_LIMIT,
+      offset: pagination?.offset ?? 0,
+    });
 
-    return await query
-      .limit(pagination?.size ?? PAGINATION_DEFAULT_LIMIT)
-      .offset(pagination?.offset ?? 0);
+    const result = await query;
+
+    return result.map((dish) => ({
+      ...dish,
+      images: dish.dishesToImages.map((di) => ({
+        ...di.imageFile,
+        sortIndex: di.sortIndex,
+      })),
+    }));
   }
 
   public async create(dto: CreateDishDto): Promise<DishEntity | undefined> {
@@ -76,7 +94,7 @@ export class DishesService {
       throw new ServerErrorException("Failed to create dish");
     }
 
-    return dish;
+    return { ...dish, images: [] };
   }
 
   public async update(
@@ -94,22 +112,31 @@ export class DishesService {
       .set(dto)
       .where(eq(schema.dishes.id, id));
 
-    const result = await this.pg
-      .select()
-      .from(schema.dishes)
-      .where(eq(schema.dishes.id, id))
-      .limit(1);
-
-    return result[0];
+    return this.findById(id);
   }
 
   public async findById(id: string): Promise<DishEntity | undefined> {
-    const result = await this.pg
-      .select()
-      .from(schema.dishes)
-      .where(eq(schema.dishes.id, id))
-      .limit(1);
+    const result = await this.pg.query.dishes.findFirst({
+      where: eq(schema.dishes.id, id),
+      with: {
+        dishesToImages: {
+          with: {
+            imageFile: true,
+          },
+        },
+      },
+    });
 
-    return result[0];
+    if (!result) {
+      return undefined;
+    }
+
+    return {
+      ...result,
+      images: result.dishesToImages.map((di) => ({
+        ...di.imageFile,
+        sortIndex: di.sortIndex,
+      })),
+    };
   }
 }

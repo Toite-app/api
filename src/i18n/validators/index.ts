@@ -23,6 +23,7 @@ export {
   validate,
   registerDecorator,
   ValidationArguments,
+  ValidateNested,
 } from "class-validator";
 export { ValidationOptions };
 

@@ -5,10 +5,12 @@ import {
   IsNumber,
   IsString,
   IsUUID,
+  ValidateNested,
 } from "@i18n-class-validator";
 import { ApiProperty } from "@nestjs/swagger";
 import { IDish, ZodWeightMeasureEnum } from "@postgress-db/schema/dishes";
 import { Expose } from "class-transformer";
+import { DishImageEntity } from "src/dishes/entities/dish-image.entity";
 
 export class DishEntity implements IDish {
   @Expose()
@@ -100,6 +102,14 @@ export class DishEntity implements IDish {
     example: true,
   })
   isPublishedAtSite: boolean;
+
+  @Expose()
+  @ValidateNested()
+  @ApiProperty({
+    description: "Images associated with the dish",
+    type: [DishImageEntity],
+  })
+  images: DishImageEntity[];
 
   @Expose()
   @IsISO8601()
