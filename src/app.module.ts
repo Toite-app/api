@@ -1,12 +1,11 @@
 import * as path from "path";
 
 import env from "@core/env";
-import { AllExceptionsFilter } from "@core/errors/filter";
 import { RolesGuard } from "@core/guards/roles.guard";
 import { RedisModule } from "@liaoliaots/nestjs-redis";
 import { Module } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
-import { APP_FILTER, APP_GUARD, APP_PIPE } from "@nestjs/core";
+import { APP_GUARD, APP_PIPE } from "@nestjs/core";
 import { MongooseModule } from "@nestjs/mongoose";
 import { ThrottlerModule } from "@nestjs/throttler";
 import { NestjsFormDataModule } from "nestjs-form-data";
@@ -80,10 +79,6 @@ import { WorkersModule } from "./workers/workers.module";
     }),
   ],
   providers: [
-    {
-      provide: APP_FILTER,
-      useClass: AllExceptionsFilter,
-    },
     {
       provide: APP_PIPE,
       useClass: ZodValidationPipe,

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-types */
 import { BadRequestException } from "@core/errors/exceptions/bad-request.exception";
-import { handleError } from "@core/errors/handleError";
+import { handleError } from "@core/errors/handle-error";
 import { validate } from "@i18n-class-validator";
 import { ArgumentMetadata, Injectable, PipeTransform } from "@nestjs/common";
 import { plainToClass } from "class-transformer";

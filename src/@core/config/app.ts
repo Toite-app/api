@@ -1,21 +1,20 @@
+import { HttpExceptionFilter } from "@core/errors/http-exception-filter";
 import { INestApplication } from "@nestjs/common";
 import * as cookieParser from "cookie-parser";
-import { I18nValidationExceptionFilter, I18nValidationPipe } from "nestjs-i18n";
+import { I18nValidationPipe } from "nestjs-i18n";
 
 export const configApp = (app: INestApplication) => {
   // Parse cookies
   app.use(cookieParser());
 
   app.useGlobalPipes(
-    // new ValidationPipe({
-    //   transform: true, // Transform is recomended configuration for avoind issues with arrays of files transformations
-    // }),
     new I18nValidationPipe({
       transform: true,
     }),
   );
 
-  app.useGlobalFilters(new I18nValidationExceptionFilter());
+  // app.useGlobalFilters(new I18nValidationExceptionFilter());
+  app.useGlobalFilters(new HttpExceptionFilter());
 
   // Enable CORS
   app.enableCors({
