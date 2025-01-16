@@ -3,29 +3,10 @@ import { configApp } from "@core/config/app";
 import env from "@core/env";
 import { NestFactory } from "@nestjs/core";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
-import { schema } from "@postgress-db/drizzle.module";
-import { workers } from "@postgress-db/schema/workers";
-import { hash } from "argon2";
-import { drizzle } from "drizzle-orm/node-postgres";
 import { patchNestJsSwagger } from "nestjs-zod";
-import { Pool } from "pg";
 
 import { AppModule } from "./app.module";
 import { AUTH_COOKIES } from "./auth/auth.types";
-
-export const createUserIfDbEmpty = async () => {
-  const db = drizzle(new Pool({ connectionString: env.POSTGRESQL_URL }), {
-    schema,
-  });
-
-  if ((await db.query.workers.findMany()).length === 0) {
-    await db.insert(workers).values({
-      login: "admin",
-      passwordHash: await hash(env.INITIAL_ADMIN_PASSWORD ?? "123456"),
-      role: schema.ZodWorkerRole.Enum.SYSTEM_ADMIN,
-    });
-  }
-};
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -58,6 +39,5 @@ async function bootstrap() {
   await app.listen(env.PORT);
 }
 
-createUserIfDbEmpty();
 patchNestJsSwagger();
 bootstrap();
