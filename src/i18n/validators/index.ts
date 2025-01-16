@@ -21,6 +21,7 @@ import { i18nValidationMessage } from "nestjs-i18n";
 // eslint-disable-next-line no-restricted-imports
 export {
   validate,
+  ValidationError,
   registerDecorator,
   ValidationArguments,
   ValidateNested,
