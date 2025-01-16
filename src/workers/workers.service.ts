@@ -1,10 +1,11 @@
 import { IFilters } from "@core/decorators/filter.decorator";
 import { IPagination } from "@core/decorators/pagination.decorator";
 import { ISorting } from "@core/decorators/sorting.decorator";
+import env from "@core/env";
 import { BadRequestException } from "@core/errors/exceptions/bad-request.exception";
 import { ConflictException } from "@core/errors/exceptions/conflict.exception";
 import { ServerErrorException } from "@core/errors/exceptions/server-error.exception";
-import { Inject, Injectable } from "@nestjs/common";
+import { Inject, Injectable, OnApplicationBootstrap } from "@nestjs/common";
 import { schema } from "@postgress-db/drizzle.module";
 import { IWorker } from "@postgress-db/schema/workers";
 import * as argon2 from "argon2";
@@ -17,10 +18,14 @@ import { CreateWorkerDto, UpdateWorkerDto } from "./dto/req/put-worker.dto";
 import { WorkerEntity } from "./entities/worker.entity";
 
 @Injectable()
-export class WorkersService {
+export class WorkersService implements OnApplicationBootstrap {
   constructor(
     @Inject(PG_CONNECTION) private readonly pg: NodePgDatabase<typeof schema>,
   ) {}
+
+  async onApplicationBootstrap() {
+    await this.createInitialAdminIfNeeded();
+  }
 
   private checkRestaurantRoleAssignment(role?: IWorker["role"]) {
     if (role === "SYSTEM_ADMIN" || role === "CHIEF_ADMIN") {
@@ -237,4 +242,20 @@ export class WorkersService {
   }
 
   public async remove() {}
+
+  /**
+   * Creates initial admin user if no workers exist in the database
+   */
+  public async createInitialAdminIfNeeded(): Promise<void> {
+    if ((await this.getTotalCount()) === 0) {
+      await this.create({
+        login: "admin",
+        name: "Admin",
+        password: env.INITIAL_ADMIN_PASSWORD ?? "123456",
+        role: schema.ZodWorkerRole.Enum.SYSTEM_ADMIN,
+        onlineAt: new Date(),
+        updatedAt: new Date(),
+      });
+    }
+  }
 }
