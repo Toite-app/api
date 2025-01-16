@@ -7,11 +7,17 @@ import { DishesController } from "./@/dishes.controller";
 import { DishesService } from "./@/dishes.service";
 import { DishImagesController } from "./images/dish-images.controller";
 import { DishImagesService } from "./images/dish-images.service";
+import { DishPricelistController } from "./pricelist/dish-pricelist.controller";
+import { DishPricelistService } from "./pricelist/dish-pricelist.service";
 
 @Module({
   imports: [DrizzleModule, FilesModule, NestjsFormDataModule],
-  controllers: [DishesController, DishImagesController],
-  providers: [DishesService, DishImagesService],
-  exports: [DishesService, DishImagesService],
+  controllers: [
+    DishesController,
+    DishImagesController,
+    DishPricelistController,
+  ],
+  providers: [DishesService, DishImagesService, DishPricelistService],
+  exports: [DishesService, DishImagesService, DishPricelistService],
 })
 export class DishesModule {}

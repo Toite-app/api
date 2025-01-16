@@ -1,3 +1,4 @@
+import { currencyEnum } from "@postgress-db/schema/general";
 import {
   dishesToCategories,
   dishesToImages,
@@ -67,7 +68,11 @@ export const dishesToWorkshops = pgTable(
     dishId: uuid("dishId").notNull(),
     workshopId: uuid("workshopId").notNull(),
     price: integer("price").notNull().default(0),
+    currency: currencyEnum("currency").notNull().default("EUR"),
     isInStoplist: boolean("isInStoplist").notNull().default(true),
+    isActive: boolean("isActive").notNull().default(true),
+    createdAt: timestamp("createdAt").notNull().defaultNow(),
+    updatedAt: timestamp("updatedAt").notNull().defaultNow(),
   },
   (t) => [
     primaryKey({
