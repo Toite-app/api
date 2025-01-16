@@ -94,7 +94,7 @@ export class DishesService {
 
     const dish = dishes[0];
     if (!dish) {
-      throw new ServerErrorException("errors.dishes.failed-to-create-dish");
+      throw new ServerErrorException("Failed to create dish");
     }
 
     return { ...dish, images: [] };
@@ -106,7 +106,7 @@ export class DishesService {
   ): Promise<DishEntity | undefined> {
     if (Object.keys(dto).length === 0) {
       throw new BadRequestException(
-        "errors.common.atleast-one-field-should-be-provided",
+        "You should provide at least one field to update",
       );
     }
 
