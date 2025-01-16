@@ -1,3 +1,4 @@
+import { dishesToWorkshops } from "@postgress-db/schema/dishes";
 import { relations } from "drizzle-orm";
 import { boolean, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 
@@ -27,6 +28,8 @@ export const restaurantWorkshops = pgTable("restaurantWorkshop", {
   updatedAt: timestamp("updatedAt").notNull().defaultNow(),
 });
 
+export type IRestaurantWorkshop = typeof restaurantWorkshops.$inferSelect;
+
 export const workshopWorkers = pgTable("workshopWorkers", {
   workerId: uuid("workerId")
     .notNull()
@@ -37,6 +40,8 @@ export const workshopWorkers = pgTable("workshopWorkers", {
   createdAt: timestamp("createdAt").notNull().defaultNow(),
 });
 
+export type IWorkshopWorker = typeof workshopWorkers.$inferSelect;
+
 export const restaurantWorkshopRelations = relations(
   restaurantWorkshops,
   ({ one, many }) => ({
@@ -45,6 +50,7 @@ export const restaurantWorkshopRelations = relations(
       references: [restaurants.id],
     }),
     workers: many(workshopWorkers),
+    dishesToWorkshops: many(dishesToWorkshops),
   }),
 );
 
@@ -61,6 +67,3 @@ export const workshopWorkerRelations = relations(
     }),
   }),
 );
-
-export type IRestaurantWorkshop = typeof restaurantWorkshops.$inferSelect;
-export type IWorkshopWorker = typeof workshopWorkers.$inferSelect;

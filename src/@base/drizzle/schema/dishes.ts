@@ -2,12 +2,14 @@ import {
   dishesToCategories,
   dishesToImages,
 } from "@postgress-db/schema/many-to-many";
+import { restaurantWorkshops } from "@postgress-db/schema/restaurant-workshop";
 import { relations } from "drizzle-orm";
 import {
   boolean,
   integer,
   pgEnum,
   pgTable,
+  primaryKey,
   text,
   timestamp,
   uuid,
@@ -59,7 +61,37 @@ export const dishes = pgTable("dishes", {
 
 export type IDish = typeof dishes.$inferSelect;
 
+export const dishesToWorkshops = pgTable(
+  "dishesToWorkshops",
+  {
+    dishId: uuid("dishId").notNull(),
+    workshopId: uuid("workshopId").notNull(),
+    price: integer("price").notNull().default(0),
+    isInStoplist: boolean("isInStoplist").notNull().default(true),
+  },
+  (t) => [
+    primaryKey({
+      columns: [t.dishId, t.workshopId],
+    }),
+  ],
+);
+
+export const dishesToWorkshopsRelations = relations(
+  dishesToWorkshops,
+  ({ one }) => ({
+    dish: one(dishes, {
+      fields: [dishesToWorkshops.dishId],
+      references: [dishes.id],
+    }),
+    workshop: one(restaurantWorkshops, {
+      fields: [dishesToWorkshops.workshopId],
+      references: [restaurantWorkshops.id],
+    }),
+  }),
+);
+
 export const dishRelations = relations(dishes, ({ many }) => ({
   dishesToCategories: many(dishesToCategories),
   dishesToImages: many(dishesToImages),
+  dishesToWorkshops: many(dishesToWorkshops),
 }));
