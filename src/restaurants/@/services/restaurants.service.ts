@@ -68,9 +68,12 @@ export class RestaurantsService {
    */
   public async create(dto: CreateRestaurantDto): Promise<RestaurantEntity> {
     if (dto.timezone && !this.timezonesService.checkTimezone(dto.timezone)) {
-      throw new BadRequestException({
-        title: "Provided timezone can't be set",
-      });
+      throw new BadRequestException(
+        "errors.restaurants.provided-timezone-cant-be-set",
+        {
+          property: "timezone",
+        },
+      );
     }
 
     const data = await this.pg
@@ -94,9 +97,12 @@ export class RestaurantsService {
     dto: UpdateRestaurantDto,
   ): Promise<RestaurantEntity> {
     if (dto.timezone && !this.timezonesService.checkTimezone(dto.timezone)) {
-      throw new BadRequestException({
-        title: "Provided timezone can't be set",
-      });
+      throw new BadRequestException(
+        "errors.restaurants.provided-timezone-cant-be-set",
+        {
+          property: "timezone",
+        },
+      );
     }
 
     // Disable restaurant if it is closed forever

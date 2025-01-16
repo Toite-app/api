@@ -1,12 +1,9 @@
-export type ErrorMessage<T = unknown> =
-  | {
-      title: string;
-      description?: string;
-      details?: T;
-    }
-  | string;
+export interface ErrorOptions {
+  property?: string;
+}
 
-export interface ErrorInstance<T = unknown> {
+export interface ErrorInstance {
   errorCode: string;
-  message: ErrorMessage<T>;
+  message?: string;
+  options?: ErrorOptions;
 }

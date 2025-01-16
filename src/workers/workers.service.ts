@@ -29,7 +29,12 @@ export class WorkersService implements OnApplicationBootstrap {
 
   private checkRestaurantRoleAssignment(role?: IWorker["role"]) {
     if (role === "SYSTEM_ADMIN" || role === "CHIEF_ADMIN") {
-      throw new BadRequestException("You can't assign restaurant to this role");
+      throw new BadRequestException(
+        "errors.workers.role.cant-assign-restaurant-to-this-role",
+        {
+          property: "role",
+        },
+      );
     }
 
     return true;
@@ -180,8 +185,9 @@ export class WorkersService implements OnApplicationBootstrap {
       .returning();
 
     const worker = workers[0];
+
     if (!worker || !worker.login) {
-      throw new ServerErrorException("Failed to create worker");
+      throw new ServerErrorException("errors.workers.failed-to-create-worker");
     }
 
     return await this.findOneByLogin(worker.login);
@@ -207,7 +213,12 @@ export class WorkersService implements OnApplicationBootstrap {
         exist.id !== id &&
         exist.login.toLowerCase() === login.toLowerCase()
       ) {
-        throw new ConflictException("Worker with this login already exists");
+        throw new ConflictException(
+          "errors.workers.worker-with-this-login-already-exists",
+          {
+            property: "login",
+          },
+        );
       }
     }
 
@@ -217,7 +228,7 @@ export class WorkersService implements OnApplicationBootstrap {
 
     if (Object.keys(dto).length === 0) {
       throw new BadRequestException(
-        "You should provide at least one field to update",
+        "errors.common.atleast-one-field-should-be-provided",
       );
     }
 

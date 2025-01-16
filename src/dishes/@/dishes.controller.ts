@@ -79,7 +79,7 @@ export class DishesController {
     const dish = await this.dishesService.create(data);
 
     if (!dish) {
-      throw new BadRequestException("Failed to create dish");
+      throw new BadRequestException("errors.dishes.failed-to-create-dish");
     }
 
     return dish;
@@ -100,13 +100,15 @@ export class DishesController {
   })
   async findOne(@Param("id") id?: string): Promise<DishEntity> {
     if (!id) {
-      throw new BadRequestException("Id must be a string and provided");
+      throw new BadRequestException(
+        "errors.common.id-must-be-a-string-and-provided",
+      );
     }
 
     const dish = await this.dishesService.findById(id);
 
     if (!dish) {
-      throw new NotFoundException("Dish with this id doesn't exist");
+      throw new NotFoundException("errors.dishes.with-this-id-doesnt-exist");
     }
 
     return dish;
@@ -130,7 +132,9 @@ export class DishesController {
     @Body() data: UpdateDishDto,
   ): Promise<DishEntity> {
     if (!id) {
-      throw new BadRequestException("Id must be a string and provided");
+      throw new BadRequestException(
+        "errors.common.id-must-be-a-string-and-provided",
+      );
     }
 
     const updatedDish = await this.dishesService.update(id, {
@@ -139,7 +143,7 @@ export class DishesController {
     });
 
     if (!updatedDish) {
-      throw new NotFoundException("Dish with this id doesn't exist");
+      throw new NotFoundException("errors.dishes.with-this-id-doesnt-exist");
     }
 
     return updatedDish;

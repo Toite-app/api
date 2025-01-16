@@ -1,0 +1,61 @@
+{
+  "BAD_REQUEST": "Vigane päring",
+  "FORBIDDEN": "Keelatud",
+  "NOT_FOUND": "Ei leitud",
+  "UNAUTHORIZED": "Autoriseerimata",
+  "CONFLICT": "Konflikt",
+  "SERVER_ERROR": "Serveri viga",
+  "common": {
+    "atleast-one-field-should-be-provided": "Vähemalt üks väli peab olema täidetud",
+    "id-must-be-a-string-and-provided": "Id peab olema sõne ja peab olema esitatud",
+    "invalid-phone-number": "Vigane telefoninumber",
+    "invalid-phone-number-format": "Vigane telefoninumbri formaat",
+    "body-should-be-an-object": "Sisu peab olema objekt",
+    "validation-error": "Valideerimise viga",
+    "forbidden-access-to-resource": "Teil pole õigust sellele ressursile ligi pääseda",
+    "invalid-sort-by-field": "Vigane sorteerimisväli",
+    "invalid-sort-order-field": "Vigane sorteerimise järjekord",
+    "invalid-pagination-size": "Vigane lehekülje suurus",
+    "invalid-pagination-page": "Vigane lehekülje number",
+    "invalid-pagination-params": "Vigased lehekülgede parameetrid",
+    "invalid-filters-format": "Vigane filtrite formaat: peab olema JSON sõne või massiiv",
+    "invalid-filter-condition": "Vigane filtri tingimus",
+    "invalid-filter-format": "Vigane filtri formaat: igal filtril peab olema väli, väärtus ja tingimus"
+  },
+  "auth": {
+    "invalid-credentials": "Vigased sisselogimisandmed"
+  },
+  "workers": {
+    "with-this-id-doesnt-exist": "Sellise id-ga töötajat ei eksisteeri",
+    "cant-create-system-admin": "Te ei saa luua süsteemi administraatorit",
+    "not-enough-rights-to-create-worker-with-this-role": "Teil pole õigust luua selle rolliga töötajat",
+    "role": {
+      "cant-assign-restaurant-to-this-role": "Te ei saa sellele rollile restorani määrata"
+    },
+    "failed-to-create-worker": "Töötaja loomine ebaõnnestus",
+    "worker-with-this-login-already-exists": "Sellise kasutajanimega töötaja on juba olemas"
+  },
+  "restaurants": {
+    "provided-timezone-cant-be-set": "Määratud ajavööndit ei saa seadistada",
+    "with-this-id-doesnt-exist": "Sellise id-ga restorani ei eksisteeri",
+    "with-provided-id-doesnt-exist": "Määratud id-ga restorani ei eksisteeri"
+  },
+  "restaurant-hours": {
+    "with-this-id-doesnt-exist": "Sellise id-ga restorani lahtiolekuaegu ei eksisteeri"
+  },
+  "restaurant-workshops": {
+    "with-this-id-doesnt-exist": "Sellise id-ga restorani töökoda ei eksisteeri"
+  },
+  "guests": {
+    "failed-to-create-guest": "Külalise loomine ebaõnnestus",
+    "with-this-id-doesnt-exist": "Sellise id-ga külalist ei eksisteeri"
+  },
+  "dishes": {
+    "failed-to-create-dish": "Roa loomine ebaõnnestus",
+    "with-this-id-doesnt-exist": "Sellise id-ga rooga ei eksisteeri"
+  },
+  "dish-categories": {
+    "failed-to-create-dish-category": "Roogade kategooria loomine ebaõnnestus",
+    "with-this-id-doesnt-exist": "Sellise id-ga roogade kategooriat ei eksisteeri"
+  }
+}

@@ -41,7 +41,10 @@ export class RestaurantHoursService {
   ): Promise<RestaurantHoursEntity[]> {
     if (!(await this.restaurantsService.isExists(restaurantId))) {
       throw new BadRequestException(
-        `Restaurant with id ${restaurantId} not found`,
+        "errors.restaurants.with-provided-id-doesnt-exist",
+        {
+          property: "restaurantId",
+        },
       );
     }
 
@@ -72,7 +75,10 @@ export class RestaurantHoursService {
   ): Promise<RestaurantHoursEntity> {
     if (!(await this.restaurantsService.isExists(dto.restaurantId))) {
       throw new BadRequestException(
-        `Restaurant with id ${dto.restaurantId} not found`,
+        "errors.restaurants.with-provided-id-doesnt-exist",
+        {
+          property: "restaurantId",
+        },
       );
     }
 
@@ -128,7 +134,9 @@ export class RestaurantHoursService {
     restaurantId?: string,
   ): Promise<{ id: string }> {
     if (!(await this.isExists(id, restaurantId))) {
-      throw new BadRequestException(`Restaurant hours with id ${id} not found`);
+      throw new BadRequestException(
+        "errors.restaurant-hours.with-this-id-doesnt-exist",
+      );
     }
 
     const result = await this.pg

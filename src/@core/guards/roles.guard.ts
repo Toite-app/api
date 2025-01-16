@@ -16,10 +16,9 @@ export class RolesGuard implements CanActivate {
     ]);
 
     const notAllowed = () => {
-      throw new ForbiddenException({
-        title: "Forbidden",
-        description: "You don't have permission to access this resource",
-      });
+      throw new ForbiddenException(
+        "errors.common.forbidden-access-to-resource",
+      );
     };
 
     // If there is no roles, then allow access

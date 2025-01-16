@@ -47,7 +47,10 @@ export class RestaurantWorkshopsService {
   ): Promise<RestaurantWorkshopDto[]> {
     if (!(await this.restaurantsService.isExists(restaurantId))) {
       throw new BadRequestException(
-        `Restaurant with id ${restaurantId} not found`,
+        "errors.restaurants.with-provided-id-doesnt-exist",
+        {
+          property: "restaurantId",
+        },
       );
     }
 
@@ -77,7 +80,10 @@ export class RestaurantWorkshopsService {
   ): Promise<RestaurantWorkshopDto> {
     if (!(await this.restaurantsService.isExists(dto.restaurantId))) {
       throw new BadRequestException(
-        `Restaurant with id ${dto.restaurantId} not found`,
+        "errors.restaurants.with-provided-id-doesnt-exist",
+        {
+          property: "restaurantId",
+        },
       );
     }
 
@@ -101,7 +107,10 @@ export class RestaurantWorkshopsService {
   ): Promise<RestaurantWorkshopDto> {
     if (!(await this.isExists(id))) {
       throw new BadRequestException(
-        `Restaurant workshop with id ${id} not found`,
+        "errors.restaurant-workshops.with-this-id-doesnt-exist",
+        {
+          property: "id",
+        },
       );
     }
 
@@ -125,7 +134,10 @@ export class RestaurantWorkshopsService {
   ): Promise<{ id: string }> {
     if (!(await this.isExists(id, restaurantId))) {
       throw new BadRequestException(
-        `Restaurant workshop with id ${id} not found`,
+        "errors.restaurant-workshops.with-this-id-doesnt-exist",
+        {
+          property: "id",
+        },
       );
     }
 
@@ -145,7 +157,10 @@ export class RestaurantWorkshopsService {
   public async getWorkers(workshopId: string): Promise<WorkshopWorkerEntity[]> {
     if (!(await this.isExists(workshopId))) {
       throw new BadRequestException(
-        `Restaurant workshop with id ${workshopId} not found`,
+        "errors.restaurant-workshops.with-this-id-doesnt-exist",
+        {
+          property: "workshopId",
+        },
       );
     }
 
@@ -175,7 +190,10 @@ export class RestaurantWorkshopsService {
   ): Promise<void> {
     if (!(await this.isExists(workshopId))) {
       throw new BadRequestException(
-        `Restaurant workshop with id ${workshopId} not found`,
+        "errors.restaurant-workshops.with-this-id-doesnt-exist",
+        {
+          property: "workshopId",
+        },
       );
     }
 

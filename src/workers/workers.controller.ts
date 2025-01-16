@@ -9,7 +9,6 @@ import { Serializable } from "@core/decorators/serializable.decorator";
 import { ISorting, SortingParams } from "@core/decorators/sorting.decorator";
 import { Worker } from "@core/decorators/worker.decorator";
 import { BadRequestException } from "@core/errors/exceptions/bad-request.exception";
-import { ConflictException } from "@core/errors/exceptions/conflict.exception";
 import { ForbiddenException } from "@core/errors/exceptions/forbidden.exception";
 import { NotFoundException } from "@core/errors/exceptions/not-found.exception";
 import { Body, Get, Param, Post, Put } from "@nestjs/common";
@@ -97,24 +96,18 @@ export class WorkersController {
     const requesterRoleRank = workerRoleRank[worker.role];
 
     if (role === "SYSTEM_ADMIN") {
-      throw new ForbiddenException({
-        title: "System Admin Role",
-        description: "You can't create system admin",
+      throw new ForbiddenException("errors.workers.cant-create-system-admin", {
+        property: "role",
       });
     }
 
     if (requesterRoleRank <= roleRank) {
-      throw new ForbiddenException({
-        title: "Not enough rights",
-        description: "You can't create worker with this role",
-      });
-    }
-
-    if (await this.workersService.findOneByLogin(data.login)) {
-      throw new ConflictException({
-        title: "Login conflict",
-        description: "Worker with this login already exists",
-      });
+      throw new ForbiddenException(
+        "errors.workers.not-enough-rights-to-create-worker-with-this-role",
+        {
+          property: "role",
+        },
+      );
     }
 
     return await this.workersService.create(data);
@@ -135,13 +128,15 @@ export class WorkersController {
   })
   async findOne(@Param("id") id?: string): Promise<WorkerEntity> {
     if (!id) {
-      throw new BadRequestException("Id must be a string and provided");
+      throw new BadRequestException(
+        "errors.common.id-must-be-a-string-and-provided",
+      );
     }
 
     const worker = await this.workersService.findById(id);
 
     if (!worker) {
-      throw new NotFoundException("Worker with this id doesn't exist");
+      throw new NotFoundException("errors.workers.with-this-id-doesnt-exist");
     }
 
     return worker;
@@ -168,7 +163,9 @@ export class WorkersController {
     @Worker() worker: IWorker,
   ): Promise<WorkerEntity> {
     if (!id) {
-      throw new BadRequestException("Id must be a number and provided");
+      throw new BadRequestException(
+        "errors.common.id-must-be-a-string-and-provided",
+      );
     }
 
     const { role } = data;
@@ -178,17 +175,21 @@ export class WorkersController {
 
     if (role) {
       if (role === "SYSTEM_ADMIN") {
-        throw new ForbiddenException({
-          title: "System Admin Role",
-          description: "You can't create system admin",
-        });
+        throw new ForbiddenException(
+          "errors.workers.cant-create-system-admin",
+          {
+            property: "role",
+          },
+        );
       }
 
       if (requesterRoleRank <= roleRank) {
-        throw new ForbiddenException({
-          title: "Not enough rights",
-          description: "You can't create worker with this role",
-        });
+        throw new ForbiddenException(
+          "errors.workers.not-enough-rights-to-create-worker-with-this-role",
+          {
+            property: "role",
+          },
+        );
       }
     }
 
@@ -198,7 +199,7 @@ export class WorkersController {
     });
 
     if (!updatedWorker) {
-      throw new NotFoundException("Worker with this id doesn't exist");
+      throw new NotFoundException("errors.workers.with-this-id-doesnt-exist");
     }
 
     return updatedWorker;

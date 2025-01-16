@@ -1,6 +1,6 @@
 import { BadRequestException as Exception } from "@nestjs/common";
 
-import { ErrorInstance, ErrorMessage } from "../index.types";
+import { ErrorInstance, ErrorOptions } from "../index.types";
 
 export type FormExceptionDetail = {
   property: string;
@@ -9,10 +9,11 @@ export type FormExceptionDetail = {
 };
 
 export class FormException extends Exception {
-  constructor(message?: ErrorMessage<FormExceptionDetail[]>) {
+  constructor(message?: string, options?: ErrorOptions) {
     super({
       errorCode: "FORM",
-      message: message || "Some fields are not valid",
-    } as ErrorInstance<FormExceptionDetail[]>);
+      message,
+      options,
+    } as ErrorInstance);
   }
 }

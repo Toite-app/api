@@ -1,4 +1,5 @@
 // import { ValidationError } from "@i18n-class-validator";
+import { ErrorInstance } from "@core/errors/index.types";
 import {
   ArgumentsHost,
   Catch,
@@ -34,6 +35,29 @@ export class HttpExceptionFilter implements ExceptionFilter {
     return null;
   }
 
+  private getError(exception: HttpException) {
+    const i18n = I18nContext.current();
+    const response = exception.getResponse() as ErrorInstance;
+
+    if (!response || !response?.errorCode) return null;
+
+    const tKey = response?.message ?? `errors.${response.errorCode}`;
+    const message = i18n?.t(tKey) ?? response?.message ?? null;
+
+    return {
+      message,
+      validationError:
+        !!message && response.options?.property
+          ? ({
+              property: response.options.property,
+              constraints: {
+                exception: String(message),
+              },
+            } as IValidationError)
+          : null,
+    };
+  }
+
   catch(exception: HttpException, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const request = ctx.getRequest();
@@ -41,14 +65,23 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const statusCode = exception.getStatus();
 
     const timestamp = new Date().getTime();
-    const validationErrors = this.getValidationErrors(exception);
+    const error = this.getError(exception);
+
+    const validationErrors = [
+      ...(this.getValidationErrors(exception) ?? []),
+      ...(error?.validationError ? [error.validationError] : []),
+    ].filter(Boolean);
+
+    const message = error?.message ?? exception.message;
 
     response.status(statusCode).json({
       statusCode,
       path: request.url,
       timestamp,
-      message: exception.message,
-      ...(validationErrors ? { validationErrors } : {}),
+      message,
+      ...(validationErrors && validationErrors.length > 0
+        ? { validationErrors }
+        : {}),
     });
   }
 }
