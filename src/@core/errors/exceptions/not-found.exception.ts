@@ -1,16 +1,17 @@
 import { NotFoundException as Exception } from "@nestjs/common";
 
-import { ErrorInstance, ErrorMessage } from "../index.types";
+import { ErrorInstance, ErrorOptions } from "../index.types";
 
 /**
  * Not found exception which is thrown if called data doesn't exist in database
  * @see [Exception filters - NestJS](https://docs.nestjs.com/exception-filters)
  */
 export class NotFoundException extends Exception {
-  constructor(message?: ErrorMessage) {
+  constructor(message?: string, options?: ErrorOptions) {
     super({
       errorCode: "NOT_FOUND",
-      message: message || "Not found",
+      message,
+      options,
     } as ErrorInstance);
   }
 }

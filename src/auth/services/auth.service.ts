@@ -24,12 +24,12 @@ export class AuthService {
     const worker = await this.workersService.findOneByLogin(login);
 
     if (!worker) {
-      throw new UnauthorizedException("User not found");
+      throw new UnauthorizedException("errors.auth.invalid-credentials");
     }
 
     // TODO: Implement logic for timeout in case of wrong password
     if (!(await argon2.verify(worker.passwordHash, password))) {
-      throw new UnauthorizedException("Wrong password");
+      throw new UnauthorizedException("errors.auth.invalid-credentials");
     }
 
     return worker;

@@ -1,0 +1,61 @@
+{
+  "BAD_REQUEST": "Некорректный запрос",
+  "FORBIDDEN": "Доступ запрещен",
+  "NOT_FOUND": "Не найдено",
+  "UNAUTHORIZED": "Не авторизован",
+  "CONFLICT": "Конфликт",
+  "SERVER_ERROR": "Ошибка сервера",
+  "common": {
+    "atleast-one-field-should-be-provided": "Необходимо указать хотя бы одно поле для обновления",
+    "id-must-be-a-string-and-provided": "Id должен быть строкой и должен быть указан",
+    "invalid-phone-number": "Неверный номер телефона",
+    "invalid-phone-number-format": "Неверный формат номера телефона",
+    "body-should-be-an-object": "Тело запроса должно быть объектом",
+    "validation-error": "Ошибка валидации",
+    "forbidden-access-to-resource": "У вас нет прав доступа к этому ресурсу",
+    "invalid-sort-by-field": "Неверное поле сортировки",
+    "invalid-sort-order-field": "Неверный порядок сортировки",
+    "invalid-pagination-size": "Неверный размер страницы",
+    "invalid-pagination-page": "Неверный номер страницы",
+    "invalid-pagination-params": "Неверные параметры пагинации",
+    "invalid-filters-format": "Неверный формат фильтров: должен быть JSON строкой или массивом",
+    "invalid-filter-condition": "Неверное условие фильтра",
+    "invalid-filter-format": "Неверный формат фильтра: каждый фильтр должен иметь поле, значение и условие"
+  },
+  "auth": {
+    "invalid-credentials": "Неверные учетные данные"
+  },
+  "workers": {
+    "with-this-id-doesnt-exist": "Работник с таким id не существует",
+    "cant-create-system-admin": "Вы не можете создать системного администратора",
+    "not-enough-rights-to-create-worker-with-this-role": "Вы не можете создать работника с этой ролью",
+    "role": {
+      "cant-assign-restaurant-to-this-role": "Вы не можете назначить ресторан этой роли"
+    },
+    "failed-to-create-worker": "Не удалось создать работника",
+    "worker-with-this-login-already-exists": "Работник с таким логином уже существует"
+  },
+  "restaurants": {
+    "provided-timezone-cant-be-set": "Указанный часовой пояс не может быть установлен",
+    "with-this-id-doesnt-exist": "Ресторан с таким id не существует",
+    "with-provided-id-doesnt-exist": "Ресторан с указанным id не существует"
+  },
+  "restaurant-hours": {
+    "with-this-id-doesnt-exist": "Часы работы ресторана с таким id не существуют"
+  },
+  "restaurant-workshops": {
+    "with-this-id-doesnt-exist": "Цех ресторана с таким id не существует"
+  },
+  "guests": {
+    "failed-to-create-guest": "Не удалось создать гостя",
+    "with-this-id-doesnt-exist": "Гость с таким id не существует"
+  },
+  "dishes": {
+    "failed-to-create-dish": "Не удалось создать блюдо",
+    "with-this-id-doesnt-exist": "Блюдо с таким id не существует"
+  },
+  "dish-categories": {
+    "failed-to-create-dish-category": "Не удалось создать категорию блюд",
+    "with-this-id-doesnt-exist": "Категория блюд с таким id не существует"
+  }
+}

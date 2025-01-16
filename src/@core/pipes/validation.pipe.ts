@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/ban-types */
-import { FormException } from "@core/errors/exceptions/form.exception";
 import { handleError } from "@core/errors/handle-error";
 import { validate } from "@i18n-class-validator";
 import { ArgumentMetadata, Injectable, PipeTransform } from "@nestjs/common";
@@ -38,10 +37,7 @@ export class ValidationPipe implements PipeTransform {
       if (metatype === String) return String(value);
 
       if (typeof value !== "object" && metatype === Object) {
-        throw new BadRequestException({
-          title: "Body error",
-          description: "Body should be an object",
-        });
+        throw new BadRequestException("errors.common.body-should-be-an-object");
       }
 
       if (!metatype || !this.toValidate(metatype)) {
@@ -58,20 +54,19 @@ export class ValidationPipe implements PipeTransform {
       });
 
       if (errors.length > 0) {
-        const messages = errors.map(({ constraints }) => {
-          const [key] = Object.keys(constraints ?? {});
-          return `${constraints?.[key]}`;
-        });
-
-        throw new FormException({
-          title: "Validation error",
-          description: messages.join(", "),
-          details: errors.map(({ property, constraints }) => ({
-            property,
-            message: messages.join("; "),
-            constraints,
-          })),
-        });
+        // const messages = errors.map(({ constraints }) => {
+        //   const [key] = Object.keys(constraints ?? {});
+        //   return `${constraints?.[key]}`;
+        // });
+        // throw new FormException({
+        //   title: "Validation error",
+        //   description: messages.join(", "),
+        //   details: errors.map(({ property, constraints }) => ({
+        //     property,
+        //     message: messages.join("; "),
+        //     constraints,
+        //   })),
+        // });
       }
 
       return object;

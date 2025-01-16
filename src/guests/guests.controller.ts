@@ -81,7 +81,7 @@ export class GuestsController {
     const guest = await this.guestsService.create(data);
 
     if (!guest) {
-      throw new BadRequestException("Failed to create guest");
+      throw new BadRequestException("errors.guests.failed-to-create-guest");
     }
 
     return guest;
@@ -102,13 +102,15 @@ export class GuestsController {
   })
   async findOne(@Param("id") id?: string): Promise<GuestEntity> {
     if (!id) {
-      throw new BadRequestException("Id must be a string and provided");
+      throw new BadRequestException(
+        "errors.common.id-must-be-a-string-and-provided",
+      );
     }
 
     const guest = await this.guestsService.findById(id);
 
     if (!guest) {
-      throw new NotFoundException("Guest with this id doesn't exist");
+      throw new NotFoundException("errors.guests.with-this-id-doesnt-exist");
     }
 
     return guest;
@@ -132,7 +134,9 @@ export class GuestsController {
     @Body() data: UpdateGuestDto,
   ): Promise<GuestEntity> {
     if (!id) {
-      throw new BadRequestException("Id must be a string and provided");
+      throw new BadRequestException(
+        "errors.common.id-must-be-a-string-and-provided",
+      );
     }
 
     const updatedGuest = await this.guestsService.update(id, {
@@ -141,7 +145,7 @@ export class GuestsController {
     });
 
     if (!updatedGuest) {
-      throw new NotFoundException("Guest with this id doesn't exist");
+      throw new NotFoundException("errors.guests.with-this-id-doesnt-exist");
     }
 
     return updatedGuest;

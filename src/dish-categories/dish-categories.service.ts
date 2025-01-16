@@ -86,7 +86,9 @@ export class DishCategoriesService {
 
     const category = categories[0];
     if (!category) {
-      throw new ServerErrorException("Failed to create dish category");
+      throw new ServerErrorException(
+        "errors.dish-categories.failed-to-create-dish-category",
+      );
     }
 
     return category;
@@ -98,7 +100,7 @@ export class DishCategoriesService {
   ): Promise<DishCategoryEntity | undefined> {
     if (Object.keys(dto).length === 0) {
       throw new BadRequestException(
-        "You should provide at least one field to update",
+        "errors.common.atleast-one-field-should-be-provided",
       );
     }
 

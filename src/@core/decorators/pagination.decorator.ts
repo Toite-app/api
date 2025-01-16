@@ -32,17 +32,15 @@ export const PaginationParams = createParamDecorator(
     const size = Number(req.query?.size || defaultLimit);
 
     if (isNaN(page) || page < 1 || isNaN(size) || size < 1) {
-      throw new BadRequestException({
-        title: "Invalid pagination params",
-        description: "Page and size should be positive integers",
+      throw new BadRequestException("errors.common.invalid-pagination-params", {
+        property: "page",
       });
     }
 
     // do not allow to fetch large slices of the dataset
     if (size > 100) {
-      throw new BadRequestException({
-        title: "Invalid pagination size",
-        description: "Max size is 100",
+      throw new BadRequestException("errors.common.invalid-pagination-size", {
+        property: "size",
       });
     }
 

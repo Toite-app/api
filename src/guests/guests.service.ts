@@ -67,12 +67,19 @@ export class GuestsService {
     try {
       const phoneNumber = parsePhoneNumber(phone);
       if (!phoneNumber || !isValidPhoneNumber(phone)) {
-        throw new BadRequestException("Invalid phone number");
+        throw new BadRequestException("errors.common.invalid-phone-number", {
+          property: "phone",
+        });
       }
       // Format to E.164 format (e.g., +12133734253)
       return phoneNumber.format("E.164");
     } catch (error) {
-      throw new BadRequestException("Invalid phone number format");
+      throw new BadRequestException(
+        "errors.common.invalid-phone-number-format",
+        {
+          property: "phone",
+        },
+      );
     }
   }
 
@@ -91,7 +98,7 @@ export class GuestsService {
 
     const guest = guests[0];
     if (!guest) {
-      throw new ServerErrorException("Failed to create guest");
+      throw new ServerErrorException("errors.guests.failed-to-create-guest");
     }
 
     return guest;
@@ -103,7 +110,7 @@ export class GuestsService {
   ): Promise<GuestEntity | undefined> {
     if (Object.keys(dto).length === 0) {
       throw new BadRequestException(
-        "You should provide at least one field to update",
+        "errors.common.atleast-one-field-should-be-provided",
       );
     }
 

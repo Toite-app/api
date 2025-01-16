@@ -36,28 +36,37 @@ export const FilterParams = createParamDecorator(
       const filters = JSON.parse(rawFilters as string);
 
       if (!Array.isArray(filters)) {
-        throw new BadRequestException({
-          title: "Invalid filters format",
-          description: "Filters should be an array",
+        throw new BadRequestException("errors.common.invalid-filters-format", {
+          property: "filters",
         });
+        // throw new BadRequestException({
+        //   title: "Invalid filters format",
+        //   description: "Filters should be an array",
+        // });
       }
 
       // Validate each filter
       filters.forEach((filter) => {
         if (!filter.field || !filter.value || !filter.condition) {
-          throw new BadRequestException({
-            title: "Invalid filter format",
-            description: "Each filter must have field, value and condition",
+          throw new BadRequestException("errors.common.invalid-filter-format", {
+            property: "filters",
           });
+          // throw new BadRequestException({
+          //   title: "Invalid filter format",
+          //   description: "Each filter must have field, value and condition",
+          // });
         }
 
         if (!Object.values(FilterCondition).includes(filter.condition)) {
-          throw new BadRequestException({
-            title: "Invalid filter condition",
-            description: `Condition must be one of: ${Object.values(
-              FilterCondition,
-            ).join(", ")}`,
-          });
+          throw new BadRequestException(
+            "errors.common.invalid-filter-condition",
+          );
+          // throw new BadRequestException({
+          //   title: "Invalid filter condition",
+          //   description: `Condition must be one of: ${Object.values(
+          //     FilterCondition,
+          //   ).join(", ")}`,
+          // });
         }
       });
 
@@ -66,9 +75,8 @@ export const FilterParams = createParamDecorator(
       if (error instanceof BadRequestException) {
         throw error;
       }
-      throw new BadRequestException({
-        title: "Invalid filters format",
-        description: "Could not parse filters JSON",
+      throw new BadRequestException("errors.common.invalid-filters-format", {
+        property: "filters",
       });
     }
   },

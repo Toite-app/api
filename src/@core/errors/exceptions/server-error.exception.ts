@@ -1,6 +1,6 @@
 import { InternalServerErrorException as Exception } from "@nestjs/common";
 
-import { ErrorInstance, ErrorMessage } from "../index.types";
+import { ErrorInstance, ErrorOptions } from "../index.types";
 
 /**
  * Server error exception which is thrown on any internal error
@@ -8,10 +8,11 @@ import { ErrorInstance, ErrorMessage } from "../index.types";
  * @see [Exception filters - NestJS](https://docs.nestjs.com/exception-filters)
  */
 export class ServerErrorException extends Exception {
-  constructor(message?: ErrorMessage) {
+  constructor(message?: string, options?: ErrorOptions) {
     super({
       errorCode: "SERVER_ERROR",
-      message: message || "Server error",
+      message,
+      options,
     } as ErrorInstance);
   }
 }

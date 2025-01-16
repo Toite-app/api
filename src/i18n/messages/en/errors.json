@@ -1,0 +1,61 @@
+{
+  "BAD_REQUEST": "Bad request",
+  "FORBIDDEN": "Forbidden",
+  "NOT_FOUND": "Not found",
+  "UNAUTHORIZED": "Unauthorized",
+  "CONFLICT": "Conflict",
+  "SERVER_ERROR": "Server error",
+  "common": {
+    "atleast-one-field-should-be-provided": "You should provide at least one field to update",
+    "id-must-be-a-string-and-provided": "Id must be a string and provided",
+    "invalid-phone-number": "Invalid phone number",
+    "invalid-phone-number-format": "Invalid phone number format",
+    "body-should-be-an-object": "Body should be an object",
+    "validation-error": "Validation error",
+    "forbidden-access-to-resource": "You don't have permission to access this resource",
+    "invalid-sort-by-field": "Invalid sortBy field",
+    "invalid-sort-order-field": "Invalid sortOrder field",
+    "invalid-pagination-size": "Invalid pagination size",
+    "invalid-pagination-page": "Invalid pagination page",
+    "invalid-pagination-params": "Invalid pagination params",
+    "invalid-filters-format": "Invalid filters format: should be a JSON string or an array",
+    "invalid-filter-condition": "Invalid filter condition",
+    "invalid-filter-format": "Invalid filter format: each filter must have field, value and condition"
+  },
+  "auth": {
+    "invalid-credentials": "Invalid credentials"
+  },
+  "workers": {
+    "with-this-id-doesnt-exist": "Worker with this id doesn't exist",
+    "cant-create-system-admin": "You can't create system admin",
+    "not-enough-rights-to-create-worker-with-this-role": "You can't create worker with this role",
+    "role": {
+      "cant-assign-restaurant-to-this-role": "You can't assign restaurant to this role"
+    },
+    "failed-to-create-worker": "Failed to create worker",
+    "worker-with-this-login-already-exists": "Worker with this login already exists"
+  },
+  "restaurants": {
+    "provided-timezone-cant-be-set": "Provided timezone can't be set",
+    "with-this-id-doesnt-exist": "Restaurant with this id doesn't exist",
+    "with-provided-id-doesnt-exist": "Restaurant with provided id doesn't exist"
+  },
+  "restaurant-hours": {
+    "with-this-id-doesnt-exist": "Restaurant hours with this id doesn't exist"
+  },
+  "restaurant-workshops": {
+    "with-this-id-doesnt-exist": "Restaurant workshop with this id doesn't exist"
+  },
+  "guests": {
+    "failed-to-create-guest": "Failed to create guest",
+    "with-this-id-doesnt-exist": "Guest with this id doesn't exist"
+  },
+  "dishes": {
+    "failed-to-create-dish": "Failed to create dish",
+    "with-this-id-doesnt-exist": "Dish with this id doesn't exist"
+  },
+  "dish-categories": {
+    "failed-to-create-dish-category": "Failed to create dish category",
+    "with-this-id-doesnt-exist": "Dish category with this id doesn't exist"
+  }
+}
