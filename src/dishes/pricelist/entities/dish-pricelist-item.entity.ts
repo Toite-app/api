@@ -16,7 +16,6 @@ export interface IDishPricelistWorkshop {
   workshopName: string;
   isActive: boolean;
   createdAt: Date | null;
-  updatedAt: Date | null;
 }
 
 export interface IDishPricelistItem {
@@ -26,6 +25,8 @@ export interface IDishPricelistItem {
   price: number;
   currency: ICurrency;
   isInStoplist: boolean;
+  createdAt: Date | null;
+  updatedAt: Date | null;
 }
 
 export class DishPricelistWorkshopEntity implements IDishPricelistWorkshop {
@@ -60,14 +61,6 @@ export class DishPricelistWorkshopEntity implements IDishPricelistWorkshop {
     nullable: true,
   })
   createdAt: Date | null;
-
-  @Expose()
-  @ApiProperty({
-    description: "When the workshop assignment was last updated",
-    example: "2024-03-20T12:00:00Z",
-    nullable: true,
-  })
-  updatedAt: Date | null;
 }
 
 export default class DishPricelistItemEntity implements IDishPricelistItem {
@@ -121,4 +114,20 @@ export default class DishPricelistItemEntity implements IDishPricelistItem {
     example: false,
   })
   isInStoplist: boolean;
+
+  @Expose()
+  @ApiProperty({
+    description: "When the dish was added to restaurant",
+    example: "2024-03-20T12:00:00Z",
+    nullable: true,
+  })
+  createdAt: Date | null;
+
+  @Expose()
+  @ApiProperty({
+    description: "When the dish-restaurant relation was last updated",
+    example: "2024-03-20T12:00:00Z",
+    nullable: true,
+  })
+  updatedAt: Date | null;
 }

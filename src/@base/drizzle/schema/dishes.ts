@@ -4,6 +4,7 @@ import {
   dishesToImages,
 } from "@postgress-db/schema/many-to-many";
 import { restaurantWorkshops } from "@postgress-db/schema/restaurant-workshop";
+import { restaurants } from "@postgress-db/schema/restaurants";
 import { relations } from "drizzle-orm";
 import {
   boolean,
@@ -62,17 +63,46 @@ export const dishes = pgTable("dishes", {
 
 export type IDish = typeof dishes.$inferSelect;
 
+export const dishesToRestaurants = pgTable(
+  "dishesToRestaurants",
+  {
+    dishId: uuid("dishId").notNull(),
+    restaurantId: uuid("restaurantId").notNull(),
+    price: integer("price").notNull().default(0),
+    currency: currencyEnum("currency").notNull().default("EUR"),
+    isInStopList: boolean("isInStopList").notNull().default(false),
+    createdAt: timestamp("createdAt").notNull().defaultNow(),
+    updatedAt: timestamp("updatedAt").notNull().defaultNow(),
+  },
+  (t) => [
+    primaryKey({
+      columns: [t.dishId, t.restaurantId],
+    }),
+  ],
+);
+
+export type IDishToRestaurant = typeof dishesToRestaurants.$inferSelect;
+
+export const dishesToRestaurantsRelations = relations(
+  dishesToRestaurants,
+  ({ one }) => ({
+    dish: one(dishes, {
+      fields: [dishesToRestaurants.dishId],
+      references: [dishes.id],
+    }),
+    restaurant: one(restaurants, {
+      fields: [dishesToRestaurants.restaurantId],
+      references: [restaurants.id],
+    }),
+  }),
+);
+
 export const dishesToWorkshops = pgTable(
   "dishesToWorkshops",
   {
     dishId: uuid("dishId").notNull(),
     workshopId: uuid("workshopId").notNull(),
-    price: integer("price").notNull().default(0),
-    currency: currencyEnum("currency").notNull().default("EUR"),
-    isInStoplist: boolean("isInStoplist").notNull().default(true),
-    isActive: boolean("isActive").notNull().default(true),
     createdAt: timestamp("createdAt").notNull().defaultNow(),
-    updatedAt: timestamp("updatedAt").notNull().defaultNow(),
   },
   (t) => [
     primaryKey({
@@ -80,6 +110,8 @@ export const dishesToWorkshops = pgTable(
     }),
   ],
 );
+
+export type IDishToWorkshop = typeof dishesToWorkshops.$inferSelect;
 
 export const dishesToWorkshopsRelations = relations(
   dishesToWorkshops,
@@ -99,4 +131,5 @@ export const dishRelations = relations(dishes, ({ many }) => ({
   dishesToCategories: many(dishesToCategories),
   dishesToImages: many(dishesToImages),
   dishesToWorkshops: many(dishesToWorkshops),
+  dishesToRestaurants: many(dishesToRestaurants),
 }));
