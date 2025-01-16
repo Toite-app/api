@@ -43,6 +43,10 @@ export class SessionAuthGuard implements CanActivate {
     return isPublic;
   }
 
+  private async _isRefreshDisabled(req: Request) {
+    return !!req.headers["x-disable-session-refresh"];
+  }
+
   private async _handleSession(req: Request, res: Response) {
     res;
     const jwtSign = this.getCookie(req, AUTH_COOKIES.token);
@@ -62,10 +66,11 @@ export class SessionAuthGuard implements CanActivate {
     req.session = session;
     req.worker = session?.worker ?? null;
 
+    const isRefreshDisabled = await this._isRefreshDisabled(req);
     const isRequireRefresh =
       this.sessionsService.isSessionRequireRefresh(session);
 
-    if (isRequireRefresh) {
+    if (isRequireRefresh && !isRefreshDisabled) {
       const newSignedJWT = await this.sessionsService.refreshSignedSession(
         jwtSign,
         {
