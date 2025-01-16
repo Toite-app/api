@@ -20,7 +20,9 @@
     "invalid-pagination-params": "Invalid pagination params",
     "invalid-filters-format": "Invalid filters format: should be a JSON string or an array",
     "invalid-filter-condition": "Invalid filter condition",
-    "invalid-filter-format": "Invalid filter format: each filter must have field, value and condition"
+    "invalid-filter-format": "Invalid filter format: each filter must have field, value and condition",
+    "invalid-search-param": "Invalid search parameter",
+    "invalid-search-length": "Search length must be between {minLength} and {maxLength} characters"
   },
   "auth": {
     "invalid-credentials": "Invalid credentials"

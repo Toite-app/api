@@ -1,9 +1,14 @@
 import { Controller } from "@core/decorators/controller.decorator";
-import { FilterParams, IFilters } from "@core/decorators/filter.decorator";
+import {
+  FilterCondition,
+  FilterParams,
+  IFilters,
+} from "@core/decorators/filter.decorator";
 import {
   IPagination,
   PaginationParams,
 } from "@core/decorators/pagination.decorator";
+import SearchParam from "@core/decorators/search.decorator";
 import { Serializable } from "@core/decorators/serializable.decorator";
 import { ISorting, SortingParams } from "@core/decorators/sorting.decorator";
 import { BadRequestException } from "@core/errors/exceptions/bad-request.exception";
@@ -54,8 +59,22 @@ export class DishesController {
     sorting: ISorting,
     @PaginationParams() pagination: IPagination,
     @FilterParams() filters?: IFilters,
+    @SearchParam() search?: string,
   ): Promise<DishesPaginatedDto> {
+    if (typeof search === "string" && search.length > 0 && search !== "null") {
+      if (!filters) {
+        filters = { filters: [] };
+      }
+
+      filters.filters.push({
+        field: "name",
+        value: search,
+        condition: FilterCondition.Contains,
+      });
+    }
+
     const total = await this.dishesService.getTotalCount(filters);
+
     const data = await this.dishesService.findMany({
       pagination,
       sorting,
