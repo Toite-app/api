@@ -46,7 +46,7 @@ export class DishPricelistService {
             createdAt: dishWorkshop?.createdAt ?? null,
           };
         }),
-        price: dishToRestaurant?.price ?? 0,
+        price: parseFloat(dishToRestaurant?.price ?? "0"),
         currency: dishToRestaurant?.currency ?? "EUR",
         isInStoplist: dishToRestaurant?.isInStopList ?? false,
         createdAt: dishToRestaurant?.createdAt ?? null,
@@ -82,7 +82,7 @@ export class DishPricelistService {
       .values({
         dishId,
         restaurantId,
-        price: dto.price,
+        price: dto.price.toString(),
         currency: dto.currency,
         isInStopList: dto.isInStoplist,
       })
@@ -92,7 +92,7 @@ export class DishPricelistService {
           schema.dishesToRestaurants.restaurantId,
         ],
         set: {
-          price: dto.price,
+          price: dto.price.toString(),
           currency: dto.currency,
           isInStopList: dto.isInStoplist,
           updatedAt: new Date(),

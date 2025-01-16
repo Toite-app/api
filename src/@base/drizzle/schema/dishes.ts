@@ -8,6 +8,7 @@ import { restaurants } from "@postgress-db/schema/restaurants";
 import { relations } from "drizzle-orm";
 import {
   boolean,
+  decimal,
   integer,
   pgEnum,
   pgTable,
@@ -68,7 +69,7 @@ export const dishesToRestaurants = pgTable(
   {
     dishId: uuid("dishId").notNull(),
     restaurantId: uuid("restaurantId").notNull(),
-    price: integer("price").notNull().default(0),
+    price: decimal("price", { precision: 10, scale: 2 }).notNull().default("0"),
     currency: currencyEnum("currency").notNull().default("EUR"),
     isInStopList: boolean("isInStopList").notNull().default(false),
     createdAt: timestamp("createdAt").notNull().defaultNow(),
