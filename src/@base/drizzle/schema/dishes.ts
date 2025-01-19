@@ -3,6 +3,7 @@ import {
   dishesToCategories,
   dishesToImages,
 } from "@postgress-db/schema/many-to-many";
+import { orderDishes } from "@postgress-db/schema/order-dishes";
 import { restaurantWorkshops } from "@postgress-db/schema/restaurant-workshop";
 import { restaurants } from "@postgress-db/schema/restaurants";
 import { relations } from "drizzle-orm";
@@ -133,4 +134,5 @@ export const dishRelations = relations(dishes, ({ many }) => ({
   dishesToImages: many(dishesToImages),
   dishesToWorkshops: many(dishesToWorkshops),
   dishesToRestaurants: many(dishesToRestaurants),
+  orderDishes: many(orderDishes),
 }));

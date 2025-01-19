@@ -1,3 +1,4 @@
+import { orderDeliveries } from "@postgress-db/schema/order-deliveries";
 import { relations } from "drizzle-orm";
 import {
   boolean,
@@ -48,6 +49,7 @@ export const workerRelations = relations(workers, ({ one, many }) => ({
   }),
   sessions: many(sessions),
   workshops: many(workshopWorkers),
+  deliveries: many(orderDeliveries),
 }));
 
 export type IWorker = typeof workers.$inferSelect;
