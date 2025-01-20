@@ -1,0 +1,94 @@
+{
+  "addresses": [
+    {
+      "city": "Kuressaare",
+      "address": "6CHQ+PV Nasva, Saare County, Estonia",
+      "latitude": "58.2293",
+      "longitude": "22.4397"
+    },
+    {
+      "city": "Kuressaare",
+      "address": "Vana-Tänava, Parila, 93836 Saare maakond, Estonia",
+      "latitude": "58.2759",
+      "longitude": "22.4332"
+    },
+    {
+      "city": "Pärnu",
+      "address": "9F2C+9H Pärnu, Pärnu County, Estonia",
+      "latitude": "58.3509",
+      "longitude": "24.4714"
+    },
+    {
+      "city": "Kuressaare",
+      "address": "6F63+3J Nasva, Saare County, Estonia",
+      "latitude": "58.2102",
+      "longitude": "22.454"
+    },
+    {
+      "city": "Tallinn",
+      "address": "CP2P+8H Tallinn, Harju County, Estonia",
+      "latitude": "59.4008",
+      "longitude": "24.7364"
+    },
+    {
+      "city": "Tallinn",
+      "address": "9MRJ+526, 11614 Tallinn, Estonia",
+      "latitude": "59.3903",
+      "longitude": "24.6785"
+    },
+    {
+      "city": "Tallinn",
+      "address": "Paljassaare põik 5, 10313 Tallinn, Estonia",
+      "latitude": "59.4631",
+      "longitude": "24.7037"
+    },
+    {
+      "city": "Tallinn",
+      "address": "Smuuli viadukt, J. Smuuli tee, 11415 Tallinn, Estonia",
+      "latitude": "59.4223",
+      "longitude": "24.8413"
+    },
+    {
+      "city": "Tallinn",
+      "address": "Nõlva tn 9, 10416 Tallinn, Estonia",
+      "latitude": "59.458",
+      "longitude": "24.7098"
+    },
+    {
+      "city": "Pärnu",
+      "address": "9F6V+PF Pärnu, Pärnu County, Estonia",
+      "latitude": "58.3618",
+      "longitude": "24.4937"
+    },
+    {
+      "city": "Tallinn",
+      "address": "FQFH+MX Tallinn, Harju County, Estonia",
+      "latitude": "59.4742",
+      "longitude": "24.7799"
+    },
+    {
+      "city": "Tallinn",
+      "address": "Urva, 12012 Tallinn, Estonia",
+      "latitude": "59.4585",
+      "longitude": "24.8292"
+    },
+    {
+      "city": "Pärnu",
+      "address": "9G7J+9F Pärnu, Pärnu County, Estonia",
+      "latitude": "58.3634",
+      "longitude": "24.5312"
+    },
+    {
+      "city": "Pärnu",
+      "address": "8FJ6+5V Pärnu, Pärnu County, Estonia",
+      "latitude": "58.3304",
+      "longitude": "24.4622"
+    },
+    {
+      "city": "Pärnu",
+      "address": "CH48+GH Kilksama, Pärnu County, Estonia",
+      "latitude": "58.4063",
+      "longitude": "24.5665"
+    }
+  ]
+}

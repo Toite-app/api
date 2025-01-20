@@ -3,12 +3,16 @@ import { eq } from "drizzle-orm";
 import * as request from "supertest";
 
 import { TEST_IP_ADDRESS, TEST_PASSWORD, TEST_USER_AGENT } from "./consts";
-import { db, schema } from "./db";
+import { DatabaseHelper, schema } from "./database";
 
 export const signIn = async (login: string, app: INestApplication) => {
-  const worker = await db.query.workers.findFirst({
+  const worker = await DatabaseHelper.pg.query.workers.findFirst({
     where: eq(schema.workers.login, login),
   });
+
+  if (!worker) {
+    throw new Error("Worker not found");
+  }
 
   await request(app.getHttpServer())
     .post("/auth/sign-in")
@@ -24,11 +28,11 @@ export const signIn = async (login: string, app: INestApplication) => {
       }
     });
 
-  const session = await db.query.sessions.findFirst({
+  const session = await DatabaseHelper.pg.query.sessions.findFirst({
     where: eq(schema.sessions.workerId, worker.id),
   });
 
-  await db.insert(schema.sessions).values({
+  await DatabaseHelper.pg.insert(schema.sessions).values({
     token: login,
     workerId: worker.id,
     httpAgent: TEST_USER_AGENT,

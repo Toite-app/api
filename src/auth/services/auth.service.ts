@@ -1,12 +1,12 @@
 import { UnauthorizedException } from "@core/errors/exceptions/unauthorized.exception";
 import { Inject, Injectable } from "@nestjs/common";
+import { schema } from "@postgress-db/drizzle.module";
 import * as argon2 from "argon2";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { SignInDto } from "src/auth/dto/req/sign-in.dto";
 import { PG_CONNECTION } from "src/constants";
 import { WorkerEntity } from "src/workers/entities/worker.entity";
 import { WorkersService } from "src/workers/workers.service";
-import { schema } from "test/helpers/db";
 
 import { SessionsService } from "./sessions.service";
 
