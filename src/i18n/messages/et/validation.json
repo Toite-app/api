@@ -17,6 +17,8 @@
     "isPhoneNumber": "Peab olema kehtiv telefoninumber",
     "isTimeFormat": "Peab olema HH:MM vormingus (24-tunni)",
     "isStrongPassword": "Peab olema tugev parool",
-    "isLatitude": "Peab olema kehtiv laiuskraad"
+    "isLatitude": "Peab olema kehtiv laiuskraad",
+    "isInt": "Peab olema täisarv",
+    "isDecimal": "Peab olema kümnendarv"
   }
 }

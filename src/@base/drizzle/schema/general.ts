@@ -1,4 +1,5 @@
 import { pgEnum } from "drizzle-orm/pg-core";
+import { z } from "zod";
 
 export const dayOfWeekEnum = pgEnum("day_of_week", [
   "monday",
@@ -11,5 +12,9 @@ export const dayOfWeekEnum = pgEnum("day_of_week", [
 ]);
 
 export const currencyEnum = pgEnum("currency", ["EUR", "USD", "RUB"]);
+
+export const ZodCurrency = z.enum(currencyEnum.enumValues);
+
+export type ZodCurrencyEnum = typeof ZodCurrency._type;
 
 export type ICurrency = (typeof currencyEnum.enumValues)[number];

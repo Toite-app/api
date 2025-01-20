@@ -4,7 +4,9 @@ import {
   IsArray as _IsArray,
   IsBoolean as _IsBoolean,
   IsDate as _IsDate,
+  IsDecimal as _IsDecimal,
   IsEnum as _IsEnum,
+  IsInt as _IsInt,
   IsISO8601 as _IsISO8601,
   IsLatitude as _IsLatitude,
   IsNumber as _IsNumber,
@@ -17,6 +19,7 @@ import {
   ValidationOptions,
 } from "class-validator";
 import { i18nValidationMessage } from "nestjs-i18n";
+import { DecimalLocale } from "validator";
 
 // eslint-disable-next-line no-restricted-imports
 export {
@@ -107,4 +110,33 @@ export const IsStrongPassword = (
       options,
       mergeI18nValidation("isStrongPassword", validationOptions),
     ),
+  );
+
+export const IsInt = (validationOptions?: ValidationOptions) =>
+  applyDecorators(_IsInt(mergeI18nValidation("isInt", validationOptions)));
+
+export const IsDecimal = (
+  options: {
+    /**
+     * @default false
+     */
+    force_decimal?: boolean | undefined;
+    /**
+     * `decimal_digits` is given as a range like `'1,3'`,
+     * a specific value like `'3'` or min like `'1,'`
+     *
+     * @default '1,'
+     */
+    decimal_digits?: string | undefined;
+    /**
+     * DecimalLocale
+     *
+     * @default 'en-US'
+     */
+    locale?: DecimalLocale | undefined;
+  } = {},
+  validationOptions?: ValidationOptions,
+) =>
+  applyDecorators(
+    _IsDecimal(options, mergeI18nValidation("isDecimal", validationOptions)),
   );

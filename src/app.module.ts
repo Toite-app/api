@@ -22,6 +22,7 @@ import { DishCategoriesModule } from "src/dish-categories/dish-categories.module
 import { DishesModule } from "src/dishes/dishes.module";
 import { FilesModule } from "src/files/files.module";
 import { GuestsModule } from "src/guests/guests.module";
+import { OrdersModule } from "src/orders/orders.module";
 import { TimezonesModule } from "src/timezones/timezones.module";
 
 import { DrizzleModule } from "./@base/drizzle/drizzle.module";
@@ -65,6 +66,7 @@ import { WorkersModule } from "./workers/workers.module";
     S3Module,
     FilesModule,
     NestjsFormDataModule,
+    OrdersModule,
     I18nModule.forRoot({
       fallbackLanguage: "en",
       loaderOptions: {

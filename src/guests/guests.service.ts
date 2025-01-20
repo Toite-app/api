@@ -142,6 +142,24 @@ export class GuestsService {
       .where(eq(schema.guests.id, id))
       .limit(1);
 
-    return result[0];
+    return result?.[0];
+  }
+
+  public async findByPhoneNumber(
+    phone?: string | null,
+  ): Promise<GuestEntity | undefined> {
+    if (!phone) {
+      return undefined;
+    }
+
+    const formattedPhone = this.formatPhoneNumber(phone);
+
+    const result = await this.pg
+      .select()
+      .from(schema.guests)
+      .where(eq(schema.guests.phone, formattedPhone))
+      .limit(1);
+
+    return result?.[0];
   }
 }

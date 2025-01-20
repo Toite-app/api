@@ -51,6 +51,12 @@ export const ZodOrderTypeEnum = z.enum(orderTypeEnum.enumValues);
 
 export type OrderTypeEnum = typeof ZodOrderTypeEnum._type;
 
+export const orderNumberBroneering = pgTable("orderNumberBroneering", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  number: text("number").notNull(),
+  createdAt: timestamp("createdAt").notNull().defaultNow(),
+});
+
 export const orders = pgTable("orders", {
   id: uuid("id").defaultRandom().primaryKey(),
 
@@ -59,13 +65,14 @@ export const orders = pgTable("orders", {
   restaurantId: uuid("restaurantId"),
 
   // Order number //
-  number: integer("number").notNull(),
+  number: text("number").notNull(),
   tableNumber: text("tableNumber"),
 
   // Order type //
   type: orderTypeEnum("type").notNull(),
   status: orderStatusEnum("status").notNull(),
   currency: currencyEnum("currency").notNull(),
+  from: orderFromEnum("from").notNull(),
 
   // Note from the admins //
   note: text("note"),
@@ -98,6 +105,7 @@ export const orders = pgTable("orders", {
   createdAt: timestamp("createdAt").notNull().defaultNow(),
   updatedAt: timestamp("updatedAt").notNull().defaultNow(),
   removedAt: timestamp("removedAt"),
+  delayedTo: timestamp("delayedTo"),
 });
 
 export type IOrder = typeof orders.$inferSelect;
