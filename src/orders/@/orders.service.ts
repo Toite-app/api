@@ -6,7 +6,8 @@ import { Inject, Injectable } from "@nestjs/common";
 import { DrizzleUtils } from "@postgress-db/drizzle-utils";
 import { Schema } from "@postgress-db/drizzle.module";
 import { orderNumberBroneering, orders } from "@postgress-db/schema/orders";
-import { asc, count, desc, eq, sql } from "drizzle-orm";
+import { restaurants } from "@postgress-db/schema/restaurants";
+import { asc, count, desc, eq, inArray, sql } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { AnyPgSelect, PgSelectPrepare } from "drizzle-orm/pg-core";
 import { PG_CONNECTION } from "src/constants";
@@ -99,7 +100,7 @@ export class OrdersService {
         from: "internal",
         status: "pending",
         currency: "RUB",
-        delayedTo,
+        ...(delayedTo ? { delayedTo: new Date(delayedTo) } : {}),
         guestsAmount,
         note,
         restaurantId,
@@ -126,6 +127,43 @@ export class OrdersService {
     }
 
     return await query.then((res) => res[0].value);
+  }
+
+  private async attachRestaurantNames(
+    orders: OrderEntity[],
+  ): Promise<OrderEntity[]> {
+    // Get unique restaurant IDs from orders
+    const restaurantIds = [
+      ...new Set(
+        orders.filter((o) => o.restaurantId).map((o) => o.restaurantId),
+      ),
+    ].filter(Boolean) as string[];
+
+    if (restaurantIds.length === 0) {
+      return orders;
+    }
+
+    // Fetch all relevant restaurants in one query
+    const restaurantsResult = await this.pg
+      .select({
+        id: restaurants.id,
+        name: restaurants.name,
+      })
+      .from(restaurants)
+      .where(inArray(restaurants.id, restaurantIds));
+
+    // Create a map for quick lookups
+    const restaurantMap = new Map(
+      restaurantsResult.map((restaurant) => [restaurant.id, restaurant.name]),
+    );
+
+    // Attach restaurant names to orders
+    return orders.map((order) => ({
+      ...order,
+      restaurantName: order.restaurantId
+        ? restaurantMap.get(order.restaurantId) ?? null
+        : null,
+    }));
   }
 
   public async findMany(options?: {
@@ -176,9 +214,11 @@ export class OrdersService {
       );
     }
 
-    return await query
+    const _orders = await query
       .limit(pagination?.size ?? 10)
       .offset(pagination?.offset ?? 0);
+
+    return this.attachRestaurantNames(_orders);
   }
 
   public async findById(id: string): Promise<OrderEntity> {
@@ -190,6 +230,7 @@ export class OrdersService {
       throw new NotFoundException("errors.orders.with-this-id-doesnt-exist");
     }
 
-    return order;
+    const [orderWithRestaurant] = await this.attachRestaurantNames([order]);
+    return orderWithRestaurant;
   }
 }
