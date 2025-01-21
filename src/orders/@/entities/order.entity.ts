@@ -4,6 +4,7 @@ import {
   IsDecimal,
   IsEnum,
   IsInt,
+  IsISO8601,
   IsOptional,
   IsString,
   IsUUID,
@@ -44,6 +45,15 @@ export class OrderEntity implements IOrder {
     example: "d290f1ee-6c54-4b01-90e6-d701748f0851",
   })
   restaurantId: string | null;
+
+  @IsString()
+  @IsOptional()
+  @Expose()
+  @ApiPropertyOptional({
+    description: "Restaurant name",
+    example: "Downtown Restaurant",
+  })
+  restaurantName?: string | null;
 
   @IsString()
   @Expose()
@@ -215,7 +225,7 @@ export class OrderEntity implements IOrder {
   })
   removedAt: Date | null;
 
-  @IsDate()
+  @IsISO8601()
   @IsOptional()
   @Expose()
   @ApiPropertyOptional({

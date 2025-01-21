@@ -30,7 +30,7 @@ export const orderStatusEnum = pgEnum("orderStatusEnum", [
   "pending",
   "cooking",
   "ready",
-  "deliverying",
+  "delivering",
   "paid",
   "completed",
   "cancelled",
