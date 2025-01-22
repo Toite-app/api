@@ -7,6 +7,7 @@ import { relations } from "drizzle-orm";
 import {
   boolean,
   decimal,
+  index,
   integer,
   pgEnum,
   pgTable,
@@ -57,56 +58,67 @@ export const orderNumberBroneering = pgTable("orderNumberBroneering", {
   createdAt: timestamp("createdAt").notNull().defaultNow(),
 });
 
-export const orders = pgTable("orders", {
-  id: uuid("id").defaultRandom().primaryKey(),
+export const orders = pgTable(
+  "orders",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
 
-  // Links //
-  guestId: uuid("guestId"),
-  restaurantId: uuid("restaurantId"),
+    // Links //
+    guestId: uuid("guestId"),
+    restaurantId: uuid("restaurantId"),
 
-  // Order number //
-  number: text("number").notNull(),
-  tableNumber: text("tableNumber"),
+    // Order number //
+    number: text("number").notNull(),
+    tableNumber: text("tableNumber"),
 
-  // Order type //
-  type: orderTypeEnum("type").notNull(),
-  status: orderStatusEnum("status").notNull(),
-  currency: currencyEnum("currency").notNull(),
-  from: orderFromEnum("from").notNull(),
+    // Order type //
+    type: orderTypeEnum("type").notNull(),
+    status: orderStatusEnum("status").notNull(),
+    currency: currencyEnum("currency").notNull(),
+    from: orderFromEnum("from").notNull(),
 
-  // Note from the admins //
-  note: text("note"),
+    // Note from the admins //
+    note: text("note"),
 
-  // Guest information //
-  guestName: text("guestName"),
-  guestPhone: text("guestPhone"),
-  guestsAmount: integer("guestsAmount"),
+    // Guest information //
+    guestName: text("guestName"),
+    guestPhone: text("guestPhone"),
+    guestsAmount: integer("guestsAmount"),
 
-  // Price info //
-  subtotal: decimal("subtotal", { precision: 10, scale: 2 })
-    .notNull()
-    .default("0"),
-  discountAmount: decimal("discountAmount", { precision: 10, scale: 2 })
-    .notNull()
-    .default("0"),
-  surchargeAmount: decimal("surchargeAmount", { precision: 10, scale: 2 })
-    .notNull()
-    .default("0"),
-  bonusUsed: decimal("bonusUsed", { precision: 10, scale: 2 })
-    .notNull()
-    .default("0"),
-  total: decimal("total", { precision: 10, scale: 2 }).notNull().default("0"),
+    // Price info //
+    subtotal: decimal("subtotal", { precision: 10, scale: 2 })
+      .notNull()
+      .default("0"),
+    discountAmount: decimal("discountAmount", { precision: 10, scale: 2 })
+      .notNull()
+      .default("0"),
+    surchargeAmount: decimal("surchargeAmount", { precision: 10, scale: 2 })
+      .notNull()
+      .default("0"),
+    bonusUsed: decimal("bonusUsed", { precision: 10, scale: 2 })
+      .notNull()
+      .default("0"),
+    total: decimal("total", { precision: 10, scale: 2 }).notNull().default("0"),
 
-  // Booleans flags //
-  isHiddenForGuest: boolean("isHiddenForGuest").notNull().default(false),
-  isRemoved: boolean("isRemoved").notNull().default(false),
+    // Booleans flags //
+    isHiddenForGuest: boolean("isHiddenForGuest").notNull().default(false),
+    isRemoved: boolean("isRemoved").notNull().default(false),
+    isArchived: boolean("isArchived").notNull().default(false),
 
-  // Default timestamps
-  createdAt: timestamp("createdAt").notNull().defaultNow(),
-  updatedAt: timestamp("updatedAt").notNull().defaultNow(),
-  removedAt: timestamp("removedAt"),
-  delayedTo: timestamp("delayedTo"),
-});
+    // Default timestamps
+    createdAt: timestamp("createdAt").notNull().defaultNow(),
+    updatedAt: timestamp("updatedAt").notNull().defaultNow(),
+    removedAt: timestamp("removedAt"),
+    delayedTo: timestamp("delayedTo"),
+  },
+  (table) => [
+    index("orders_restaurantId_idx").on(table.restaurantId),
+    index("orders_created_at_idx").on(table.createdAt),
+    index("orders_isArchived_idx").on(table.isArchived),
+    index("orders_isRemoved_idx").on(table.isRemoved),
+    index("order_id_and_created_at_idx").on(table.id, table.createdAt),
+  ],
+);
 
 export type IOrder = typeof orders.$inferSelect;
 

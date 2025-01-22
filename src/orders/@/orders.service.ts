@@ -5,14 +5,17 @@ import { NotFoundException } from "@core/errors/exceptions/not-found.exception";
 import { Inject, Injectable } from "@nestjs/common";
 import { DrizzleUtils } from "@postgress-db/drizzle-utils";
 import { Schema } from "@postgress-db/drizzle.module";
+import { dishes } from "@postgress-db/schema/dishes";
+import { orderDishes } from "@postgress-db/schema/order-dishes";
 import { orderNumberBroneering, orders } from "@postgress-db/schema/orders";
 import { restaurants } from "@postgress-db/schema/restaurants";
-import { asc, count, desc, eq, inArray, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, inArray, sql } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { AnyPgSelect, PgSelectPrepare } from "drizzle-orm/pg-core";
 import { PG_CONNECTION } from "src/constants";
 import { GuestsService } from "src/guests/guests.service";
 import { CreateOrderDto } from "src/orders/@/dtos/create-order.dto";
+import { KitchenOrderDishDto } from "src/orders/@/dtos/kitchen-order-dish.dto";
 import { OrderEntity } from "src/orders/@/entities/order.entity";
 
 @Injectable()
@@ -112,6 +115,7 @@ export class OrdersService {
       })
       .returning();
 
+    // @ts-expect-errorsafas
     return order;
   }
 
@@ -129,43 +133,6 @@ export class OrdersService {
     return await query.then((res) => res[0].value);
   }
 
-  private async attachRestaurantNames(
-    orders: OrderEntity[],
-  ): Promise<OrderEntity[]> {
-    // Get unique restaurant IDs from orders
-    const restaurantIds = [
-      ...new Set(
-        orders.filter((o) => o.restaurantId).map((o) => o.restaurantId),
-      ),
-    ].filter(Boolean) as string[];
-
-    if (restaurantIds.length === 0) {
-      return orders;
-    }
-
-    // Fetch all relevant restaurants in one query
-    const restaurantsResult = await this.pg
-      .select({
-        id: restaurants.id,
-        name: restaurants.name,
-      })
-      .from(restaurants)
-      .where(inArray(restaurants.id, restaurantIds));
-
-    // Create a map for quick lookups
-    const restaurantMap = new Map(
-      restaurantsResult.map((restaurant) => [restaurant.id, restaurant.name]),
-    );
-
-    // Attach restaurant names to orders
-    return orders.map((order) => ({
-      ...order,
-      restaurantName: order.restaurantId
-        ? restaurantMap.get(order.restaurantId) ?? null
-        : null,
-    }));
-  }
-
   public async findMany(options?: {
     pagination?: IPagination;
     sorting?: ISorting;
@@ -175,6 +142,7 @@ export class OrdersService {
 
     const query = this.pg
       .select({
+        // Order fields
         id: orders.id,
         number: orders.number,
         tableNumber: orders.tableNumber,
@@ -193,44 +161,93 @@ export class OrdersService {
         total: orders.total,
         isHiddenForGuest: orders.isHiddenForGuest,
         isRemoved: orders.isRemoved,
+        isArchived: orders.isArchived,
         createdAt: orders.createdAt,
         updatedAt: orders.updatedAt,
         removedAt: orders.removedAt,
         delayedTo: orders.delayedTo,
         restaurantId: orders.restaurantId,
         guestId: orders.guestId,
+
+        // Restaurant name
+        restaurantName: restaurants.name,
       })
-      .from(orders);
+      .from(orders)
+      .where(and(eq(orders.isArchived, false), eq(orders.isRemoved, false)))
+      .leftJoin(restaurants, eq(orders.restaurantId, restaurants.id))
+      .leftJoin(orderDishes, eq(orders.id, orderDishes.orderId))
+      .groupBy(orders.id, restaurants.name);
 
-    if (filters) {
-      query.where(DrizzleUtils.buildFilterConditions(orders, filters));
-    }
+    // if (filters) {
+    //   query.where(DrizzleUtils.buildFilterConditions(orders, filters));
+    // }
 
-    if (sorting) {
-      query.orderBy(
-        sorting.sortOrder === "asc"
-          ? asc(sql.identifier(sorting.sortBy))
-          : desc(sql.identifier(sorting.sortBy)),
-      );
-    }
+    query.orderBy(desc(orders.createdAt));
+    // if (sorting) {
+    //   query.orderBy(
+    //     sorting.sortOrder === "asc"
+    //       ? asc(sql.identifier(sorting.sortBy))
+    //       : desc(sql.identifier(sorting.sortBy)),
+    //   );
+    // }
 
-    const _orders = await query
+    const results = await query
       .limit(pagination?.size ?? 10)
       .offset(pagination?.offset ?? 0);
 
-    return this.attachRestaurantNames(_orders);
+    return results.map((order) => ({
+      ...order,
+      orderDishes: [],
+      // createdAt: new Date(order.createdAt),
+    }));
   }
 
   public async findById(id: string): Promise<OrderEntity> {
-    const result = await this.findByIdQuery.execute({ id });
+    const [result] = await this.pg
+      .select({
+        // Order fields
+        id: orders.id,
+        number: orders.number,
+        tableNumber: orders.tableNumber,
+        type: orders.type,
+        status: orders.status,
+        currency: orders.currency,
+        from: orders.from,
+        note: orders.note,
+        guestName: orders.guestName,
+        guestPhone: orders.guestPhone,
+        guestsAmount: orders.guestsAmount,
+        subtotal: orders.subtotal,
+        discountAmount: orders.discountAmount,
+        surchargeAmount: orders.surchargeAmount,
+        bonusUsed: orders.bonusUsed,
+        total: orders.total,
+        isHiddenForGuest: orders.isHiddenForGuest,
+        isRemoved: orders.isRemoved,
+        isArchived: orders.isArchived,
+        createdAt: orders.createdAt,
+        updatedAt: orders.updatedAt,
+        removedAt: orders.removedAt,
+        delayedTo: orders.delayedTo,
+        restaurantId: orders.restaurantId,
+        guestId: orders.guestId,
 
-    const order = result[0];
+        // Restaurant name
+        restaurantName: restaurants.name,
+      })
+      .from(orders)
+      .leftJoin(restaurants, eq(orders.restaurantId, restaurants.id))
+      .leftJoin(orderDishes, eq(orders.id, orderDishes.orderId))
+      .where(eq(orders.id, id))
+      .groupBy(orders.id, restaurants.name);
 
-    if (!order) {
+    if (!result) {
       throw new NotFoundException("errors.orders.with-this-id-doesnt-exist");
     }
 
-    const [orderWithRestaurant] = await this.attachRestaurantNames([order]);
-    return orderWithRestaurant;
+    return {
+      ...result,
+      orderDishes: [],
+    };
   }
 }

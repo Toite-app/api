@@ -17,7 +17,8 @@ import {
   ZodOrderStatusEnum,
   ZodOrderTypeEnum,
 } from "@postgress-db/schema/orders";
-import { Expose } from "class-transformer";
+import { Expose, Type } from "class-transformer";
+import { OrderDishEntity } from "src/orders/@/entities/order-dish.entity";
 
 export class OrderEntity implements IOrder {
   @IsUUID()
@@ -53,7 +54,7 @@ export class OrderEntity implements IOrder {
     description: "Restaurant name",
     example: "Downtown Restaurant",
   })
-  restaurantName?: string | null;
+  restaurantName: string | null;
 
   @IsString()
   @Expose()
@@ -199,6 +200,22 @@ export class OrderEntity implements IOrder {
     example: false,
   })
   isRemoved: boolean;
+
+  @IsBoolean()
+  @Expose()
+  @ApiProperty({
+    description: "Is order archived",
+    example: false,
+  })
+  isArchived: boolean;
+
+  @Expose()
+  @ApiProperty({
+    description: "Order dishes",
+    type: [OrderDishEntity],
+  })
+  @Type(() => OrderDishEntity)
+  orderDishes: OrderDishEntity[];
 
   @IsDate()
   @Expose()

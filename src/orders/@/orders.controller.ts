@@ -48,47 +48,6 @@ export class OrdersController {
     return await this.ordersService.findById(id);
   }
 
-  @Get()
-  @ApiOperation({
-    summary: "Gets orders that available in system",
-  })
-  @ApiOkResponse({
-    description: "Orders have been successfully fetched",
-    type: OrdersPaginatedDto,
-  })
-  async findMany(
-    @SortingParams({
-      fields: [
-        "id",
-        "number",
-        "type",
-        "status",
-        "guestName",
-        "total",
-        "createdAt",
-        "updatedAt",
-      ],
-    })
-    sorting: ISorting,
-    @PaginationParams() pagination: IPagination,
-    @FilterParams() filters?: IFilters,
-  ): Promise<OrdersPaginatedDto> {
-    const total = await this.ordersService.getTotalCount(filters);
-    const data = await this.ordersService.findMany({
-      pagination,
-      sorting,
-      filters,
-    });
-
-    return {
-      data,
-      meta: {
-        ...pagination,
-        total,
-      },
-    };
-  }
-
   @Post()
   @Serializable(OrderEntity)
   @ApiOperation({ summary: "Creates a new order" })

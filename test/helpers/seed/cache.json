@@ -89,6 +89,24 @@
       "address": "CH48+GH Kilksama, Pärnu County, Estonia",
       "latitude": "58.4063",
       "longitude": "24.5665"
+    },
+    {
+      "city": "Kuressaare",
+      "address": "6G94+5G Kuressaare, Saare County, Estonia",
+      "latitude": "58.2179",
+      "longitude": "22.5063"
+    },
+    {
+      "city": "Pärnu",
+      "address": "Haraka tn 31b, Pärnu, 80023 Pärnu maakond, Estonia",
+      "latitude": "58.3583",
+      "longitude": "24.5636"
+    },
+    {
+      "city": "Kuressaare",
+      "address": "6FG3+MJ Nasva, Saare County, Estonia",
+      "latitude": "58.2267",
+      "longitude": "22.454"
     }
   ]
 }

@@ -13,6 +13,7 @@ import * as guests from "src/@base/drizzle/schema/guests";
 import * as manyToMany from "src/@base/drizzle/schema/many-to-many";
 import * as orderDeliveries from "src/@base/drizzle/schema/order-deliveries";
 import * as orderDishes from "src/@base/drizzle/schema/order-dishes";
+import * as orders from "src/@base/drizzle/schema/orders";
 import * as restaurantWorkshops from "src/@base/drizzle/schema/restaurant-workshop";
 import * as restaurants from "src/@base/drizzle/schema/restaurants";
 import * as sessions from "src/@base/drizzle/schema/sessions";
@@ -30,6 +31,7 @@ export const schema = {
   ...manyToMany,
   ...orderDeliveries,
   ...orderDishes,
+  ...orders,
   ...files,
 };
 
