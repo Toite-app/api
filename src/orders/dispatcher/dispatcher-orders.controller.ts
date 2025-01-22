@@ -38,4 +38,20 @@ export class DispatcherOrdersController {
       },
     };
   }
+
+  @Get("attention-required")
+  @Serializable(DispatcherOrdersPaginatedEntity)
+  async findManyAttentionRequired(): Promise<DispatcherOrdersPaginatedEntity> {
+    const data = await this.dispatcherOrdersService.findManyAttentionRequired();
+
+    return {
+      data,
+      meta: {
+        offset: 0,
+        size: 10,
+        page: 1,
+        total: 10,
+      },
+    };
+  }
 }
