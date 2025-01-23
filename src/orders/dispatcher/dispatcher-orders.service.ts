@@ -2,6 +2,8 @@ import { ICursor } from "@core/decorators/cursor.decorator";
 import { Inject, Injectable } from "@nestjs/common";
 import { Schema } from "@postgress-db/drizzle.module";
 import { orderDishes } from "@postgress-db/schema/order-dishes";
+import { OrderTypeEnum } from "@postgress-db/schema/orders";
+import { addDays } from "date-fns";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { PG_CONNECTION } from "src/constants";
 import { DispatcherOrderEntity } from "src/orders/dispatcher/entities/dispatcher-order.entity";
@@ -24,8 +26,10 @@ export class DispatcherOrdersService {
 
   async findMany(options?: {
     cursor?: ICursor;
+    type?: OrderTypeEnum;
+    restaurantId?: string;
   }): Promise<DispatcherOrderEntity[]> {
-    const { cursor } = options ?? {};
+    const { cursor, type, restaurantId } = options ?? {};
 
     const fetchedOrders = await this.pg.query.orders.findMany({
       where: (orders, { eq, and, lt, isNull, or, isNotNull }) =>
@@ -36,13 +40,20 @@ export class DispatcherOrdersService {
           eq(orders.isRemoved, false),
           // Exclude pending delayed orders
           or(
-            and(isNotNull(orders.delayedTo), lt(orders.delayedTo, new Date())),
+            and(
+              isNotNull(orders.delayedTo),
+              lt(orders.delayedTo, addDays(new Date(), 1)),
+            ),
             isNull(orders.delayedTo),
           ),
           // Cursor pagination
           cursor?.cursorId
             ? lt(orders.createdAt, new Date(cursor.cursorId))
             : undefined,
+          // Filter by type
+          !!type ? eq(orders.type, type) : undefined,
+          // Filter by restaurantId
+          !!restaurantId ? eq(orders.restaurantId, restaurantId) : undefined,
         ),
       with: {
         // Restaurant for restaurantName
@@ -65,16 +76,28 @@ export class DispatcherOrdersService {
     return this.attachRestaurantsName(fetchedOrders);
   }
 
-  async findManyAttentionRequired() {
+  async findManyAttentionRequired(options?: {
+    type?: OrderTypeEnum;
+    restaurantId?: string;
+  }) {
+    const { type, restaurantId } = options ?? {};
+
     const fetchedOrders = await this.pg.query.orders.findMany({
       where: (
         orders,
         { eq, and, lt, or, isNotNull, isNull, notInArray, exists },
       ) =>
         and(
+          // Filter by restaurantId
+          !!restaurantId ? eq(orders.restaurantId, restaurantId) : undefined,
           // Check if the order is delayed and the delay time is in the past
           or(
-            and(isNotNull(orders.delayedTo), lt(orders.delayedTo, new Date())),
+            // If restaurant is not set attention is still required even if the order is delayed
+            isNull(orders.restaurantId),
+            and(
+              isNotNull(orders.delayedTo),
+              lt(orders.delayedTo, addDays(new Date(), 1)),
+            ),
             isNull(orders.delayedTo),
           ),
           or(
@@ -97,6 +120,8 @@ export class DispatcherOrdersService {
           eq(orders.isArchived, false),
           // Exclude cancelled and completed orders
           notInArray(orders.status, ["cancelled", "completed"]),
+          // Filter by type
+          !!type ? eq(orders.type, type) : undefined,
         ),
       with: {
         // Restaurant for restaurantName
@@ -119,16 +144,28 @@ export class DispatcherOrdersService {
     return this.attachRestaurantsName(fetchedOrders);
   }
 
-  async findManyDelayed() {
+  async findManyDelayed(options?: {
+    type?: OrderTypeEnum;
+    restaurantId?: string;
+  }) {
+    const { type, restaurantId } = options ?? {};
+
     const fetchedOrders = await this.pg.query.orders.findMany({
       where: (orders, { eq, and, gt, isNotNull }) =>
         and(
+          // Filter by restaurantId
+          !!restaurantId ? eq(orders.restaurantId, restaurantId) : undefined,
           // Exclude archived orders
           eq(orders.isArchived, false),
           // Exclude removed orders
           eq(orders.isRemoved, false),
           // Delayed orders condition
-          and(isNotNull(orders.delayedTo), gt(orders.delayedTo, new Date())),
+          and(
+            isNotNull(orders.delayedTo),
+            gt(orders.delayedTo, addDays(new Date(), 1)),
+          ),
+          // Filter by type
+          !!type ? eq(orders.type, type) : undefined,
         ),
       with: {
         // Restaurant for restaurantName
@@ -144,7 +181,7 @@ export class DispatcherOrdersService {
           },
         },
       },
-      orderBy: (orders, { desc }) => [desc(orders.createdAt)],
+      orderBy: (orders, { asc }) => [asc(orders.delayedTo)],
       limit: 100,
     });
 

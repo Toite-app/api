@@ -14,6 +14,7 @@ import {
   IsString as _IsString,
   IsStrongPassword as _IsStrongPassword,
   IsUUID as _IsUUID,
+  Min as _Min,
   MinLength as _MinLength,
   IsNumberOptions,
   ValidationOptions,
@@ -140,3 +141,6 @@ export const IsDecimal = (
   applyDecorators(
     _IsDecimal(options, mergeI18nValidation("isDecimal", validationOptions)),
   );
+
+export const Min = (min: number, validationOptions?: ValidationOptions) =>
+  applyDecorators(_Min(min, mergeI18nValidation("min", validationOptions)));
