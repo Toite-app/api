@@ -28,10 +28,18 @@ export class DispatcherOrdersService {
     const { cursor } = options ?? {};
 
     const fetchedOrders = await this.pg.query.orders.findMany({
-      where: (orders, { eq, and, lt }) =>
+      where: (orders, { eq, and, lt, isNull, or, isNotNull }) =>
         and(
+          // Exclude archived orders
           eq(orders.isArchived, false),
+          // Exclude removed orders
           eq(orders.isRemoved, false),
+          // Exclude pending delayed orders
+          or(
+            and(isNotNull(orders.delayedTo), lt(orders.delayedTo, new Date())),
+            isNull(orders.delayedTo),
+          ),
+          // Cursor pagination
           cursor?.cursorId
             ? lt(orders.createdAt, new Date(cursor.cursorId))
             : undefined,
@@ -50,10 +58,7 @@ export class DispatcherOrdersService {
           },
         },
       },
-      orderBy: (orders, { asc, desc }) => [
-        desc(orders.createdAt),
-        asc(orders.id),
-      ],
+      orderBy: (orders, { desc }) => [desc(orders.createdAt)],
       limit: cursor?.limit ?? 100,
     });
 
@@ -107,10 +112,39 @@ export class DispatcherOrdersService {
           },
         },
       },
-      orderBy: (orders, { asc, desc }) => [
-        desc(orders.createdAt),
-        asc(orders.id),
-      ],
+      orderBy: (orders, { desc }) => [desc(orders.createdAt)],
+      limit: 100,
+    });
+
+    return this.attachRestaurantsName(fetchedOrders);
+  }
+
+  async findManyDelayed() {
+    const fetchedOrders = await this.pg.query.orders.findMany({
+      where: (orders, { eq, and, gt, isNotNull }) =>
+        and(
+          // Exclude archived orders
+          eq(orders.isArchived, false),
+          // Exclude removed orders
+          eq(orders.isRemoved, false),
+          // Delayed orders condition
+          and(isNotNull(orders.delayedTo), gt(orders.delayedTo, new Date())),
+        ),
+      with: {
+        // Restaurant for restaurantName
+        restaurant: {
+          columns: {
+            name: true,
+          },
+        },
+        // Order dishes for statuses
+        orderDishes: {
+          columns: {
+            status: true,
+          },
+        },
+      },
+      orderBy: (orders, { desc }) => [desc(orders.createdAt)],
       limit: 100,
     });
 

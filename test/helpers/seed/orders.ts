@@ -137,21 +137,31 @@ export default async function seedOrders({
   active,
   archived,
   removed,
+  delayed,
 }: {
   active: number;
   archived: number;
   removed: number;
+  delayed: number;
 }) {
   console.log("Seeding orders...");
 
-  const totalCount = active + archived + removed;
+  const totalCount = active + archived + removed + delayed;
   const orders = await mockOrders(totalCount);
 
   orders.forEach((order, index) => {
-    if (index < active) {
+    if (index < delayed) {
+      order.order.status = "pending";
+      order.order.delayedTo = faker.date.future();
+      order.orderDishes.forEach((dish) => {
+        dish.status = "pending";
+      });
       return;
     }
-    if (index < active + archived) {
+    if (index < delayed + active) {
+      return;
+    }
+    if (index < delayed + active + archived) {
       order.order.isArchived = true;
       order.order.removedAt = null;
     } else {
