@@ -1,3 +1,4 @@
+import { IsPhoneNumber } from "@core/decorators/is-phone.decorator";
 import {
   IsBoolean,
   IsDate,
@@ -8,6 +9,7 @@ import {
   IsOptional,
   IsString,
   IsUUID,
+  Min,
 } from "@i18n-class-validator";
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { ZodCurrency } from "@postgress-db/schema/general";
@@ -127,8 +129,10 @@ export class OrderEntity implements IOrder {
   })
   guestName: string | null;
 
-  @IsString()
   @IsOptional()
+  @IsPhoneNumber({
+    isOptional: true,
+  })
   @Expose()
   @ApiPropertyOptional({
     description: "Guest phone number",
@@ -137,6 +141,7 @@ export class OrderEntity implements IOrder {
   guestPhone: string | null;
 
   @IsInt()
+  @Min(1)
   @IsOptional()
   @Expose()
   @ApiPropertyOptional({
