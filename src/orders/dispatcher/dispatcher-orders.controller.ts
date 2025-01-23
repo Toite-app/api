@@ -54,4 +54,20 @@ export class DispatcherOrdersController {
       },
     };
   }
+
+  @Get("delayed")
+  @Serializable(DispatcherOrdersPaginatedEntity)
+  async findManyDelayed(): Promise<DispatcherOrdersPaginatedEntity> {
+    const data = await this.dispatcherOrdersService.findManyDelayed();
+
+    return {
+      data,
+      meta: {
+        offset: 0,
+        size: 10,
+        page: 1,
+        total: 10,
+      },
+    };
+  }
 }

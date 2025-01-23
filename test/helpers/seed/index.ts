@@ -14,6 +14,7 @@ interface SeedVariantData {
     active: number;
     archived: number;
     removed: number;
+    delayed: number;
   };
 }
 
@@ -28,6 +29,7 @@ const variants: Record<SeedVariant, SeedVariantData> = {
       active: 10_000,
       removed: 10_000,
       archived: 80_000,
+      delayed: 1_000,
     },
   },
 };
