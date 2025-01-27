@@ -9,13 +9,29 @@ import {
   ApiOkResponse,
   ApiOperation,
 } from "@nestjs/swagger";
+import { AddOrderDishDto } from "src/orders/@/dtos/add-order-dish.dto";
 import { CreateOrderDto } from "src/orders/@/dtos/create-order.dto";
 import { OrderEntity } from "src/orders/@/entities/order.entity";
-import { OrdersService } from "src/orders/@/orders.service";
+import { OrderDishesService } from "src/orders/@/services/order-dishes.service";
+import { OrdersService } from "src/orders/@/services/orders.service";
 
 @Controller("orders")
 export class OrdersController {
-  constructor(private readonly ordersService: OrdersService) {}
+  constructor(
+    private readonly ordersService: OrdersService,
+    private readonly orderDishesService: OrderDishesService,
+  ) {}
+
+  @Post()
+  @Serializable(OrderEntity)
+  @ApiOperation({ summary: "Creates a new order" })
+  @ApiCreatedResponse({
+    description: "Order has been successfully created",
+    type: OrderEntity,
+  })
+  async create(@Body() dto: CreateOrderDto) {
+    return this.ordersService.create(dto);
+  }
 
   @Get(":id")
   @Serializable(OrderEntity)
@@ -40,14 +56,25 @@ export class OrdersController {
     return await this.ordersService.findById(id);
   }
 
-  @Post()
+  @Post(":id/dishes")
   @Serializable(OrderEntity)
-  @ApiOperation({ summary: "Creates a new order" })
-  @ApiCreatedResponse({
-    description: "Order has been successfully created",
+  @ApiOperation({ summary: "Adds a dish to the order" })
+  @ApiOkResponse({
+    description: "Dish has been successfully added to the order",
     type: OrderEntity,
   })
-  async create(@Body() dto: CreateOrderDto) {
-    return this.ordersService.create(dto);
+  @ApiNotFoundResponse({
+    description: "Order with this id doesn't exist",
+  })
+  @ApiBadRequestResponse({
+    description: "Dish with this id doesn't exist",
+  })
+  async addDish(
+    @Param("id") orderId: string,
+    @Body() payload: AddOrderDishDto,
+  ) {
+    await this.orderDishesService.addDish(orderId, payload);
+
+    return this.ordersService.findById(orderId);
   }
 }
