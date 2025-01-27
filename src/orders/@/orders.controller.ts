@@ -1,11 +1,5 @@
 import { Controller } from "@core/decorators/controller.decorator";
-import { FilterParams, IFilters } from "@core/decorators/filter.decorator";
-import {
-  IPagination,
-  PaginationParams,
-} from "@core/decorators/pagination.decorator";
 import { Serializable } from "@core/decorators/serializable.decorator";
-import { ISorting, SortingParams } from "@core/decorators/sorting.decorator";
 import { BadRequestException } from "@core/errors/exceptions/bad-request.exception";
 import { Body, Get, Param, Post } from "@nestjs/common";
 import {
@@ -18,8 +12,6 @@ import {
 import { CreateOrderDto } from "src/orders/@/dtos/create-order.dto";
 import { OrderEntity } from "src/orders/@/entities/order.entity";
 import { OrdersService } from "src/orders/@/orders.service";
-
-import { OrdersPaginatedDto } from "./dtos/orders-paginated.dto";
 
 @Controller("orders")
 export class OrdersController {

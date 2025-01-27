@@ -62,5 +62,9 @@
   "dish-categories": {
     "failed-to-create-dish-category": "Failed to create dish category",
     "with-this-id-doesnt-exist": "Dish category with this id doesn't exist"
+  },
+  "orders": {
+    "table-number-is-required": "Table number is required",
+    "phone-number-is-required": "Phone number is required"
   }
 }

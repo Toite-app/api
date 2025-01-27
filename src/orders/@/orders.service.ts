@@ -1,64 +1,25 @@
 import { IFilters } from "@core/decorators/filter.decorator";
-import { IPagination } from "@core/decorators/pagination.decorator";
-import { ISorting } from "@core/decorators/sorting.decorator";
+import { BadRequestException } from "@core/errors/exceptions/bad-request.exception";
 import { NotFoundException } from "@core/errors/exceptions/not-found.exception";
 import { Inject, Injectable } from "@nestjs/common";
 import { DrizzleUtils } from "@postgress-db/drizzle-utils";
 import { Schema } from "@postgress-db/drizzle.module";
-import { dishes } from "@postgress-db/schema/dishes";
-import { orderDishes } from "@postgress-db/schema/order-dishes";
 import { orderNumberBroneering, orders } from "@postgress-db/schema/orders";
-import { restaurants } from "@postgress-db/schema/restaurants";
-import { and, asc, count, desc, eq, inArray, sql } from "drizzle-orm";
+import { count, desc } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
-import { AnyPgSelect, PgSelectPrepare } from "drizzle-orm/pg-core";
 import { PG_CONNECTION } from "src/constants";
 import { GuestsService } from "src/guests/guests.service";
 import { CreateOrderDto } from "src/orders/@/dtos/create-order.dto";
-import { KitchenOrderDishDto } from "src/orders/@/dtos/kitchen-order-dish.dto";
+import { UpdateOrderDto } from "src/orders/@/dtos/update-order.dto";
 import { OrderEntity } from "src/orders/@/entities/order.entity";
 
 @Injectable()
 export class OrdersService {
-  private readonly findByIdQuery: PgSelectPrepare<AnyPgSelect>;
-
   constructor(
     @Inject(PG_CONNECTION)
     private readonly pg: NodePgDatabase<Schema>,
     private readonly guestsService: GuestsService,
-  ) {
-    this.findByIdQuery = this.pg
-      .select({
-        id: orders.id,
-        number: orders.number,
-        tableNumber: orders.tableNumber,
-        type: orders.type,
-        status: orders.status,
-        currency: orders.currency,
-        from: orders.from,
-        note: orders.note,
-        guestName: orders.guestName,
-        guestPhone: orders.guestPhone,
-        guestsAmount: orders.guestsAmount,
-        subtotal: orders.subtotal,
-        discountAmount: orders.discountAmount,
-        surchargeAmount: orders.surchargeAmount,
-        bonusUsed: orders.bonusUsed,
-        total: orders.total,
-        isHiddenForGuest: orders.isHiddenForGuest,
-        isRemoved: orders.isRemoved,
-        createdAt: orders.createdAt,
-        updatedAt: orders.updatedAt,
-        removedAt: orders.removedAt,
-        delayedTo: orders.delayedTo,
-        restaurantId: orders.restaurantId,
-        guestId: orders.guestId,
-      })
-      .from(orders)
-      .where(eq(orders.id, sql.placeholder("id")))
-      .limit(1)
-      .prepare("find_order_by_id");
-  }
+  ) {}
 
   private async generateOrderNumber() {
     // get last broneering
@@ -79,7 +40,33 @@ export class OrdersService {
     return number;
   }
 
+  public async checkDto(dto: UpdateOrderDto) {
+    // Table number is required for banquet and hall
+    if (
+      (!dto.tableNumber || dto.tableNumber === "") &&
+      (dto.type === "banquet" || dto.type === "hall")
+    ) {
+      throw new BadRequestException("errors.orders.table-number-is-required", {
+        property: "tableNumber",
+      });
+    }
+
+    // Phone number is required for delivery, takeaway and banquet
+    if (
+      (!dto.guestPhone || dto.guestPhone === "") &&
+      (dto.type === "delivery" ||
+        dto.type === "takeaway" ||
+        dto.type === "banquet")
+    ) {
+      throw new BadRequestException("errors.orders.phone-number-is-required", {
+        property: "guestPhone",
+      });
+    }
+  }
+
   async create(dto: CreateOrderDto): Promise<OrderEntity> {
+    await this.checkDto(dto);
+
     const {
       type,
       guestName,
@@ -94,7 +81,7 @@ export class OrdersService {
     const number = await this.generateOrderNumber();
     const guest = await this.guestsService.findByPhoneNumber(guestPhone);
 
-    const [order] = await this.pg
+    const [createdOrder] = await this.pg
       .insert(orders)
       .values({
         number,
@@ -113,10 +100,11 @@ export class OrdersService {
         guestName: guestName ?? guest?.name,
         guestPhone,
       })
-      .returning();
+      .returning({
+        id: orders.id,
+      });
 
-    // @ts-expect-errorsafas
-    return order;
+    return this.findById(createdOrder.id);
   }
 
   public async getTotalCount(filters?: IFilters): Promise<number> {
@@ -133,121 +121,32 @@ export class OrdersService {
     return await query.then((res) => res[0].value);
   }
 
-  public async findMany(options?: {
-    pagination?: IPagination;
-    sorting?: ISorting;
-    filters?: IFilters;
-  }): Promise<OrderEntity[]> {
-    const { pagination, sorting, filters } = options ?? {};
-
-    const query = this.pg
-      .select({
-        // Order fields
-        id: orders.id,
-        number: orders.number,
-        tableNumber: orders.tableNumber,
-        type: orders.type,
-        status: orders.status,
-        currency: orders.currency,
-        from: orders.from,
-        note: orders.note,
-        guestName: orders.guestName,
-        guestPhone: orders.guestPhone,
-        guestsAmount: orders.guestsAmount,
-        subtotal: orders.subtotal,
-        discountAmount: orders.discountAmount,
-        surchargeAmount: orders.surchargeAmount,
-        bonusUsed: orders.bonusUsed,
-        total: orders.total,
-        isHiddenForGuest: orders.isHiddenForGuest,
-        isRemoved: orders.isRemoved,
-        isArchived: orders.isArchived,
-        createdAt: orders.createdAt,
-        updatedAt: orders.updatedAt,
-        removedAt: orders.removedAt,
-        delayedTo: orders.delayedTo,
-        restaurantId: orders.restaurantId,
-        guestId: orders.guestId,
-
-        // Restaurant name
-        restaurantName: restaurants.name,
-      })
-      .from(orders)
-      .where(and(eq(orders.isArchived, false), eq(orders.isRemoved, false)))
-      .leftJoin(restaurants, eq(orders.restaurantId, restaurants.id))
-      .leftJoin(orderDishes, eq(orders.id, orderDishes.orderId))
-      .groupBy(orders.id, restaurants.name);
-
-    // if (filters) {
-    //   query.where(DrizzleUtils.buildFilterConditions(orders, filters));
-    // }
-
-    query.orderBy(desc(orders.createdAt));
-    // if (sorting) {
-    //   query.orderBy(
-    //     sorting.sortOrder === "asc"
-    //       ? asc(sql.identifier(sorting.sortBy))
-    //       : desc(sql.identifier(sorting.sortBy)),
-    //   );
-    // }
-
-    const results = await query
-      .limit(pagination?.size ?? 10)
-      .offset(pagination?.offset ?? 0);
-
-    return results.map((order) => ({
+  public attachRestaurantsName<
+    T extends { restaurant?: { name?: string | null } | null },
+  >(orders: Array<T>): Array<T & { restaurantName: string | null }> {
+    return orders.map((order) => ({
       ...order,
-      orderDishes: [],
-      // createdAt: new Date(order.createdAt),
+      restaurantName: order.restaurant?.name ?? null,
     }));
   }
 
   public async findById(id: string): Promise<OrderEntity> {
-    const [result] = await this.pg
-      .select({
-        // Order fields
-        id: orders.id,
-        number: orders.number,
-        tableNumber: orders.tableNumber,
-        type: orders.type,
-        status: orders.status,
-        currency: orders.currency,
-        from: orders.from,
-        note: orders.note,
-        guestName: orders.guestName,
-        guestPhone: orders.guestPhone,
-        guestsAmount: orders.guestsAmount,
-        subtotal: orders.subtotal,
-        discountAmount: orders.discountAmount,
-        surchargeAmount: orders.surchargeAmount,
-        bonusUsed: orders.bonusUsed,
-        total: orders.total,
-        isHiddenForGuest: orders.isHiddenForGuest,
-        isRemoved: orders.isRemoved,
-        isArchived: orders.isArchived,
-        createdAt: orders.createdAt,
-        updatedAt: orders.updatedAt,
-        removedAt: orders.removedAt,
-        delayedTo: orders.delayedTo,
-        restaurantId: orders.restaurantId,
-        guestId: orders.guestId,
+    const order = await this.pg.query.orders.findFirst({
+      where: (orders, { eq }) => eq(orders.id, id),
+      with: {
+        restaurant: {
+          columns: {
+            name: true,
+          },
+        },
+        orderDishes: true,
+      },
+    });
 
-        // Restaurant name
-        restaurantName: restaurants.name,
-      })
-      .from(orders)
-      .leftJoin(restaurants, eq(orders.restaurantId, restaurants.id))
-      .leftJoin(orderDishes, eq(orders.id, orderDishes.orderId))
-      .where(eq(orders.id, id))
-      .groupBy(orders.id, restaurants.name);
-
-    if (!result) {
+    if (!order) {
       throw new NotFoundException("errors.orders.with-this-id-doesnt-exist");
     }
 
-    return {
-      ...result,
-      orderDishes: [],
-    };
+    return this.attachRestaurantsName([order])[0];
   }
 }

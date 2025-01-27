@@ -57,5 +57,9 @@
   "dish-categories": {
     "failed-to-create-dish-category": "Roogade kategooria loomine ebaõnnestus",
     "with-this-id-doesnt-exist": "Sellise id-ga roogade kategooriat ei eksisteeri"
+  },
+  "orders": {
+    "table-number-is-required": "Nõutav on number",
+    "phone-number-is-required": "Nõutav on telefoninumber"
   }
 }
