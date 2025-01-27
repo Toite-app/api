@@ -73,7 +73,7 @@ export class OrdersController {
     @Param("id") orderId: string,
     @Body() payload: AddOrderDishDto,
   ) {
-    await this.orderDishesService.addDish(orderId, payload);
+    await this.orderDishesService.addToOrder(orderId, payload);
 
     return this.ordersService.findById(orderId);
   }
