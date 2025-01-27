@@ -60,5 +60,9 @@
   "dish-categories": {
     "failed-to-create-dish-category": "Не удалось создать категорию блюд",
     "with-this-id-doesnt-exist": "Категория блюд с таким id не существует"
+  },
+  "orders": {
+    "table-number-is-required": "Необходимо указать номер стола",
+    "phone-number-is-required": "Необходимо указать номер телефона"
   }
 }
