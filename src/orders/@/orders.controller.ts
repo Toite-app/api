@@ -1,7 +1,7 @@
 import { Controller } from "@core/decorators/controller.decorator";
 import { Serializable } from "@core/decorators/serializable.decorator";
 import { BadRequestException } from "@core/errors/exceptions/bad-request.exception";
-import { Body, Get, Param, Post, Put } from "@nestjs/common";
+import { Body, Delete, Get, Param, Patch, Post } from "@nestjs/common";
 import {
   ApiBadRequestResponse,
   ApiCreatedResponse,
@@ -79,7 +79,7 @@ export class OrdersController {
     return this.ordersService.findById(orderId);
   }
 
-  @Put(":id/dishes/:orderDishId")
+  @Patch(":id/dishes/:orderDishId")
   @Serializable(OrderEntity)
   @ApiOperation({ summary: "Updates a dish in the order" })
   @ApiOkResponse({
@@ -96,6 +96,25 @@ export class OrdersController {
     @Body() payload: UpdateOrderDishDto,
   ) {
     await this.orderDishesService.update(orderDishId, payload);
+
+    return this.ordersService.findById(orderId);
+  }
+
+  @Delete(":id/dishes/:orderDishId")
+  @ApiOperation({ summary: "Removes a dish from the order" })
+  @ApiOkResponse({
+    description: "Dish has been successfully removed from the order",
+    type: OrderEntity,
+  })
+  @ApiNotFoundResponse({
+    description: "Order with this id doesn't exist",
+  })
+  @ApiBadRequestResponse()
+  async removeDish(
+    @Param("id") orderId: string,
+    @Param("orderDishId") orderDishId: string,
+  ) {
+    await this.orderDishesService.remove(orderDishId);
 
     return this.ordersService.findById(orderId);
   }
