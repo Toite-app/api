@@ -1,7 +1,7 @@
 import { Controller } from "@core/decorators/controller.decorator";
 import { Serializable } from "@core/decorators/serializable.decorator";
 import { BadRequestException } from "@core/errors/exceptions/bad-request.exception";
-import { Body, Get, Param, Post } from "@nestjs/common";
+import { Body, Get, Param, Post, Put } from "@nestjs/common";
 import {
   ApiBadRequestResponse,
   ApiCreatedResponse,
@@ -11,6 +11,7 @@ import {
 } from "@nestjs/swagger";
 import { AddOrderDishDto } from "src/orders/@/dtos/add-order-dish.dto";
 import { CreateOrderDto } from "src/orders/@/dtos/create-order.dto";
+import { UpdateOrderDishDto } from "src/orders/@/dtos/update-order-dish.dto";
 import { OrderEntity } from "src/orders/@/entities/order.entity";
 import { OrderDishesService } from "src/orders/@/services/order-dishes.service";
 import { OrdersService } from "src/orders/@/services/orders.service";
@@ -74,6 +75,27 @@ export class OrdersController {
     @Body() payload: AddOrderDishDto,
   ) {
     await this.orderDishesService.addToOrder(orderId, payload);
+
+    return this.ordersService.findById(orderId);
+  }
+
+  @Put(":id/dishes/:orderDishId")
+  @Serializable(OrderEntity)
+  @ApiOperation({ summary: "Updates a dish in the order" })
+  @ApiOkResponse({
+    description: "Dish has been successfully updated in the order",
+    type: OrderEntity,
+  })
+  @ApiNotFoundResponse({
+    description: "Order with this id doesn't exist",
+  })
+  @ApiBadRequestResponse()
+  async updateDish(
+    @Param("id") orderId: string,
+    @Param("orderDishId") orderDishId: string,
+    @Body() payload: UpdateOrderDishDto,
+  ) {
+    await this.orderDishesService.update(orderDishId, payload);
 
     return this.ordersService.findById(orderId);
   }
