@@ -3,9 +3,11 @@ import { NotFoundException } from "@core/errors/exceptions/not-found.exception";
 import { Inject, Injectable } from "@nestjs/common";
 import { Schema } from "@postgress-db/drizzle.module";
 import { orderDishes } from "@postgress-db/schema/order-dishes";
+import { eq } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { PG_CONNECTION } from "src/constants";
 import { AddOrderDishDto } from "src/orders/@/dtos/add-order-dish.dto";
+import { UpdateOrderDishDto } from "src/orders/@/dtos/update-order-dish.dto";
 
 @Injectable()
 export class OrderDishesService {
@@ -38,6 +40,18 @@ export class OrderDishesService {
     }
 
     return order;
+  }
+
+  public async getOrderDish(orderDishId: string) {
+    const orderDish = await this.pg.query.orderDishes.findFirst({
+      where: (orderDishes, { eq }) => eq(orderDishes.id, orderDishId),
+    });
+
+    if (!orderDish) {
+      throw new NotFoundException("errors.order-dishes.order-dish-not-found");
+    }
+
+    return orderDish;
   }
 
   public async getDishForRestaurant(dishId: string, restaurantId: string) {
@@ -136,5 +150,24 @@ export class OrderDishesService {
       });
 
     return orderDish;
+  }
+
+  public async update(orderDishId: string, payload: UpdateOrderDishDto) {
+    const { quantity } = payload;
+
+    const orderDish = await this.getOrderDish(orderDishId);
+
+    if (orderDish.status !== "pending") {
+      throw new BadRequestException(
+        "errors.order-dishes.cant-update-not-pending-order-dish",
+      );
+    }
+
+    await this.pg
+      .update(orderDishes)
+      .set({
+        quantity,
+      })
+      .where(eq(orderDishes.id, orderDishId));
   }
 }

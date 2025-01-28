@@ -72,6 +72,8 @@
     "restaurant-not-assigned": "Please assign restaurant to this order",
     "dish-not-found": "Dish not found",
     "dish-not-assigned": "Dish not assigned to this restaurant",
-    "dish-already-in-order": "Dish already in order"
+    "dish-already-in-order": "Dish already in order",
+    "order-dish-not-found": "Order dish not found",
+    "cant-update-not-pending-order-dish": "You can't update not pending order dish"
   }
 }
