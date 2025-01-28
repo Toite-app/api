@@ -74,6 +74,9 @@
     "dish-not-assigned": "Dish not assigned to this restaurant",
     "dish-already-in-order": "Dish already in order",
     "order-dish-not-found": "Order dish not found",
-    "cant-update-not-pending-order-dish": "You can't update not pending order dish"
+    "cant-update-not-pending-order-dish": "You can't update not pending order dish",
+    "cant-set-zero-quantity": "You can't set zero quantity. If you want to remove dish from order, use remove endpoint",
+    "is-removed": "You can't do anything with removed dish",
+    "already-removed": "Dish already removed"
   }
 }

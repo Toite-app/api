@@ -155,6 +155,12 @@ export class OrderDishesService {
   public async update(orderDishId: string, payload: UpdateOrderDishDto) {
     const { quantity } = payload;
 
+    if (quantity <= 0) {
+      throw new BadRequestException(
+        "errors.order-dishes.cant-set-zero-quantity",
+      );
+    }
+
     const orderDish = await this.getOrderDish(orderDishId);
 
     if (orderDish.status !== "pending") {
@@ -163,11 +169,28 @@ export class OrderDishesService {
       );
     }
 
+    if (orderDish.isRemoved) {
+      throw new BadRequestException("errors.order-dishes.is-removed");
+    }
+
     await this.pg
       .update(orderDishes)
       .set({
         quantity,
       })
+      .where(eq(orderDishes.id, orderDishId));
+  }
+
+  public async remove(orderDishId: string) {
+    const orderDish = await this.getOrderDish(orderDishId);
+
+    if (orderDish.isRemoved) {
+      throw new BadRequestException("errors.order-dishes.already-removed");
+    }
+
+    await this.pg
+      .update(orderDishes)
+      .set({ isRemoved: true, removedAt: new Date() })
       .where(eq(orderDishes.id, orderDishId));
   }
 }
