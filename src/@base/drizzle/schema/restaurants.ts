@@ -11,7 +11,7 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 
-import { dayOfWeekEnum } from "./general";
+import { currencyEnum, dayOfWeekEnum } from "./general";
 import { workers } from "./workers";
 
 export const restaurants = pgTable("restaurants", {
@@ -31,6 +31,12 @@ export const restaurants = pgTable("restaurants", {
 
   // Timezone of the restaurant //
   timezone: text("timezone").notNull().default("Europe/Tallinn"),
+
+  // Currency of the restaurant //
+  currency: currencyEnum("currency").notNull().default("EUR"),
+
+  // Country code of the restaurant (used for mobile phone default and etc.) //
+  countryCode: text("countryCode").notNull().default("EE"),
 
   // Is the restaurant enabled? //
   isEnabled: boolean("isEnabled").notNull().default(false),

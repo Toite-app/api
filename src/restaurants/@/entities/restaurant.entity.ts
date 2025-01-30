@@ -1,5 +1,6 @@
 import {
   IsBoolean,
+  IsEnum,
   IsISO8601,
   IsLatitude,
   IsOptional,
@@ -7,6 +8,7 @@ import {
   IsUUID,
 } from "@i18n-class-validator";
 import { ApiProperty } from "@nestjs/swagger";
+import { ZodCurrency } from "@postgress-db/schema/general";
 import { IRestaurant } from "@postgress-db/schema/restaurants";
 import { Expose } from "class-transformer";
 
@@ -70,6 +72,23 @@ export class RestaurantEntity implements IRestaurant {
     example: "Europe/Tallinn",
   })
   timezone: string;
+
+  @IsEnum(ZodCurrency.Enum)
+  @Expose()
+  @ApiProperty({
+    description: "Currency of the restaurant",
+    enum: ZodCurrency.Enum,
+    example: "EUR",
+  })
+  currency: typeof ZodCurrency._type;
+
+  @IsString()
+  @Expose()
+  @ApiProperty({
+    description: "Country code of the restaurant",
+    example: "EE",
+  })
+  countryCode: string;
 
   @IsBoolean()
   @Expose()
