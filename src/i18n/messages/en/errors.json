@@ -64,6 +64,7 @@
     "with-this-id-doesnt-exist": "Dish category with this id doesn't exist"
   },
   "orders": {
+    "with-this-id-doesnt-exist": "Order with this id doesn't exist",
     "table-number-is-required": "Table number is required",
     "phone-number-is-required": "Phone number is required",
     "restaurant-is-required-for-banquet-or-hall": "Restaurant is required for banquet or hall",
