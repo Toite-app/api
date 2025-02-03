@@ -167,14 +167,20 @@ export class OrdersService {
       delayedTo,
       note,
       guestPhone,
-      guestName,
       guestsAmount,
       type,
     } = dto;
 
+    let guestName =
+      dto.guestName && dto.guestName.length > 0 ? dto.guestName : null;
+
     const guest = await this.guestsService.findByPhoneNumber(
       guestPhone ?? order.guestPhone,
     );
+
+    if (!guestName && guest) {
+      guestName = guest.name;
+    }
 
     const [updatedOrder] = await this.pg
       .update(orders)
@@ -185,6 +191,7 @@ export class OrdersService {
         ...(note ? { note } : {}),
         ...(guest ? { guestId: guest.id } : {}),
         ...(guestName ? { guestName } : {}),
+        ...(guestPhone ? { guestPhone } : {}),
         ...(guestsAmount ? { guestsAmount } : {}),
         ...(type ? { type } : {}),
       })
