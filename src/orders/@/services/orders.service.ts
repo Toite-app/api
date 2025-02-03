@@ -40,15 +40,53 @@ export class OrdersService {
     return number;
   }
 
+  public async checkTableNumber(restaurantId: string, tableNumber: string) {
+    const order = await this.pg.query.orders.findFirst({
+      where: (orders, { eq, and, inArray }) =>
+        and(
+          eq(orders.tableNumber, tableNumber),
+          eq(orders.restaurantId, restaurantId),
+          inArray(orders.status, ["pending", "cooking", "ready", "paid"]),
+        ),
+      columns: {
+        id: true,
+      },
+    });
+
+    if (order) {
+      throw new BadRequestException(
+        "errors.orders.table-number-is-already-taken",
+        {
+          property: "tableNumber",
+        },
+      );
+    }
+  }
+
   public async checkDto(dto: UpdateOrderDto) {
-    // Table number is required for banquet and hall
-    if (
-      (!dto.tableNumber || dto.tableNumber === "") &&
-      (dto.type === "banquet" || dto.type === "hall")
-    ) {
-      throw new BadRequestException("errors.orders.table-number-is-required", {
-        property: "tableNumber",
-      });
+    if (dto.type === "banquet" || dto.type === "hall") {
+      // Table number is required for banquet and hall
+      if (!dto.tableNumber || dto.tableNumber === "") {
+        throw new BadRequestException(
+          "errors.orders.table-number-is-required",
+          {
+            property: "tableNumber",
+          },
+        );
+      }
+
+      if (!dto.restaurantId) {
+        throw new BadRequestException(
+          "errors.orders.restaurant-is-required-for-banquet-or-hall",
+          {
+            property: "restaurantId",
+          },
+        );
+      }
+
+      if (dto.restaurantId) {
+        await this.checkTableNumber(dto.restaurantId, dto.tableNumber);
+      }
     }
 
     // Phone number is required for delivery, takeaway and banquet

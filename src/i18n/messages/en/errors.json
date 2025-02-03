@@ -65,7 +65,9 @@
   },
   "orders": {
     "table-number-is-required": "Table number is required",
-    "phone-number-is-required": "Phone number is required"
+    "phone-number-is-required": "Phone number is required",
+    "restaurant-is-required-for-banquet-or-hall": "Restaurant is required for banquet or hall",
+    "table-number-is-already-taken": "Table number is already taken"
   },
   "order-dishes": {
     "order-not-found": "Order not found",
