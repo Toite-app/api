@@ -5,7 +5,7 @@ import { Inject, Injectable } from "@nestjs/common";
 import { DrizzleUtils } from "@postgress-db/drizzle-utils";
 import { Schema } from "@postgress-db/drizzle.module";
 import { orderNumberBroneering, orders } from "@postgress-db/schema/orders";
-import { count, desc } from "drizzle-orm";
+import { count, desc, eq } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { PG_CONNECTION } from "src/constants";
 import { GuestsService } from "src/guests/guests.service";
@@ -143,6 +143,55 @@ export class OrdersService {
       });
 
     return this.findById(createdOrder.id);
+  }
+
+  async update(id: string, dto: UpdateOrderDto): Promise<OrderEntity> {
+    await this.checkDto(dto);
+
+    const order = await this.pg.query.orders.findFirst({
+      where: (orders, { eq }) => eq(orders.id, id),
+      columns: {
+        id: true,
+        guestId: true,
+        guestName: true,
+        guestPhone: true,
+      },
+    });
+
+    if (!order) {
+      throw new NotFoundException("errors.orders.with-this-id-doesnt-exist");
+    }
+    const {
+      tableNumber,
+      restaurantId,
+      delayedTo,
+      note,
+      guestPhone,
+      guestName,
+      guestsAmount,
+      type,
+    } = dto;
+
+    const guest = await this.guestsService.findByPhoneNumber(
+      guestPhone ?? order.guestPhone,
+    );
+
+    const [updatedOrder] = await this.pg
+      .update(orders)
+      .set({
+        ...(tableNumber ? { tableNumber } : {}),
+        ...(restaurantId ? { restaurantId } : {}),
+        ...(delayedTo ? { delayedTo: new Date(delayedTo) } : {}),
+        ...(note ? { note } : {}),
+        ...(guest ? { guestId: guest.id } : {}),
+        ...(guestName ? { guestName } : {}),
+        ...(guestsAmount ? { guestsAmount } : {}),
+        ...(type ? { type } : {}),
+      })
+      .where(eq(orders.id, id))
+      .returning({ id: orders.id });
+
+    return this.findById(updatedOrder.id);
   }
 
   public async getTotalCount(filters?: IFilters): Promise<number> {

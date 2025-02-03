@@ -12,6 +12,7 @@ import {
 import { AddOrderDishDto } from "src/orders/@/dtos/add-order-dish.dto";
 import { CreateOrderDto } from "src/orders/@/dtos/create-order.dto";
 import { UpdateOrderDishDto } from "src/orders/@/dtos/update-order-dish.dto";
+import { UpdateOrderDto } from "src/orders/@/dtos/update-order.dto";
 import { OrderEntity } from "src/orders/@/entities/order.entity";
 import { OrderDishesService } from "src/orders/@/services/order-dishes.service";
 import { OrdersService } from "src/orders/@/services/orders.service";
@@ -55,6 +56,21 @@ export class OrdersController {
     }
 
     return await this.ordersService.findById(id);
+  }
+
+  @Patch(":id")
+  @Serializable(OrderEntity)
+  @ApiOperation({ summary: "Updates an order" })
+  @ApiOkResponse({
+    description: "Order has been successfully updated",
+    type: OrderEntity,
+  })
+  @ApiNotFoundResponse({
+    description: "Order with this id doesn't exist",
+  })
+  @ApiBadRequestResponse()
+  async update(@Param("id") id: string, @Body() dto: UpdateOrderDto) {
+    return this.ordersService.update(id, dto);
   }
 
   @Post(":id/dishes")
