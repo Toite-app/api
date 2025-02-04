@@ -16,6 +16,7 @@ import {
   QueryResolver,
 } from "nestjs-i18n";
 import { ZodValidationPipe } from "nestjs-zod";
+import { EncryptionModule } from "src/@base/encryption/encryption.module";
 import { S3Module } from "src/@base/s3/s3.module";
 import { AddressesModule } from "src/addresses/addresses.module";
 import { DishCategoriesModule } from "src/dish-categories/dish-categories.module";
@@ -55,6 +56,7 @@ import { WorkersModule } from "./workers/workers.module";
         url: env.REDIS_URL,
       },
     }),
+    EncryptionModule,
     TimezonesModule,
     AuthModule,
     WorkersModule,
