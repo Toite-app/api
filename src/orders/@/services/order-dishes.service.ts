@@ -8,15 +8,14 @@ import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { PG_CONNECTION } from "src/constants";
 import { AddOrderDishDto } from "src/orders/@/dtos/add-order-dish.dto";
 import { UpdateOrderDishDto } from "src/orders/@/dtos/update-order-dish.dto";
-
-import { OrdersService } from "./orders.service";
+import { OrdersQueueProducer } from "src/orders/@queue/orders-queue.producer";
 
 @Injectable()
 export class OrderDishesService {
   constructor(
     @Inject(PG_CONNECTION)
     private readonly pg: NodePgDatabase<Schema>,
-    private readonly ordersService: OrdersService,
+    private readonly ordersProducer: OrdersQueueProducer,
   ) {}
 
   private async getOrder(orderId: string) {
@@ -152,7 +151,7 @@ export class OrderDishesService {
         id: orderDishes.id,
       });
 
-    await this.ordersService.recalculatePrices(orderId);
+    await this.ordersProducer.recalculatePrices(orderId);
 
     return orderDish;
   }
@@ -185,7 +184,7 @@ export class OrderDishesService {
       })
       .where(eq(orderDishes.id, orderDishId));
 
-    await this.ordersService.recalculatePrices(orderDish.orderId);
+    await this.ordersProducer.recalculatePrices(orderDish.orderId);
   }
 
   public async remove(orderDishId: string) {
@@ -200,6 +199,6 @@ export class OrderDishesService {
       .set({ isRemoved: true, removedAt: new Date() })
       .where(eq(orderDishes.id, orderDishId));
 
-    await this.ordersService.recalculatePrices(orderDish.orderId);
+    await this.ordersProducer.recalculatePrices(orderDish.orderId);
   }
 }

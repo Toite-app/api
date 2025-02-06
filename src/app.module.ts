@@ -3,6 +3,7 @@ import * as path from "path";
 import env from "@core/env";
 import { RolesGuard } from "@core/guards/roles.guard";
 import { RedisModule } from "@liaoliaots/nestjs-redis";
+import { BullModule } from "@nestjs/bullmq";
 import { Module } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { APP_GUARD, APP_PIPE } from "@nestjs/core";
@@ -53,7 +54,13 @@ import { WorkersModule } from "./workers/workers.module";
     }),
     RedisModule.forRoot({
       config: {
-        url: env.REDIS_URL,
+        url: `${env.REDIS_URL}/1`,
+      },
+    }),
+    BullModule.forRoot({
+      prefix: "toite",
+      connection: {
+        url: `${env.REDIS_URL}/2`,
       },
     }),
     EncryptionModule,

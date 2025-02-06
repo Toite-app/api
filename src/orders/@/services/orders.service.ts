@@ -142,7 +142,9 @@ export class OrdersService {
         id: orders.id,
       });
 
-    return this.findById(createdOrder.id);
+    const order = await this.findById(createdOrder.id);
+    // await this.ordersProducer.orderUpdate("create", order);
+    return order;
   }
 
   async update(id: string, dto: UpdateOrderDto): Promise<OrderEntity> {
@@ -198,7 +200,9 @@ export class OrdersService {
       .where(eq(orders.id, id))
       .returning({ id: orders.id });
 
-    return this.findById(updatedOrder.id);
+    const updatedOrderEntity = await this.findById(updatedOrder.id);
+    // await this.ordersProducer.orderUpdate("update", updatedOrderEntity);
+    return updatedOrderEntity;
   }
 
   public async getTotalCount(filters?: IFilters): Promise<number> {
@@ -213,48 +217,6 @@ export class OrdersService {
     }
 
     return await query.then((res) => res[0].value);
-  }
-
-  public async recalculatePrices(orderId: string) {
-    const orderDishes = await this.pg.query.orderDishes.findMany({
-      where: (orderDishes, { eq, and, gt }) =>
-        and(
-          eq(orderDishes.orderId, orderId),
-          eq(orderDishes.isRemoved, false),
-          gt(orderDishes.quantity, 0),
-        ),
-      columns: {
-        price: true,
-        quantity: true,
-        finalPrice: true,
-        surchargeAmount: true,
-        discountAmount: true,
-      },
-    });
-
-    const prices = orderDishes.reduce(
-      (acc, dish) => {
-        acc.subtotal += Number(dish.price) * Number(dish.quantity);
-        acc.surchargeAmount +=
-          Number(dish.surchargeAmount) * Number(dish.quantity);
-        acc.discountAmount +=
-          Number(dish.discountAmount) * Number(dish.quantity);
-        acc.total += Number(dish.finalPrice) * Number(dish.quantity);
-
-        return acc;
-      },
-      { subtotal: 0, surchargeAmount: 0, discountAmount: 0, total: 0 },
-    );
-
-    await this.pg
-      .update(orders)
-      .set({
-        subtotal: prices.subtotal.toString(),
-        surchargeAmount: prices.surchargeAmount.toString(),
-        discountAmount: prices.discountAmount.toString(),
-        total: prices.total.toString(),
-      })
-      .where(eq(orders.id, orderId));
   }
 
   public attachRestaurantsName<
