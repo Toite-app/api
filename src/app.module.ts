@@ -32,6 +32,7 @@ import { AuthModule } from "./auth/auth.module";
 import { SessionAuthGuard } from "./auth/guards/session-auth.guard";
 import { RestaurantsModule } from "./restaurants/restaurants.module";
 import { WorkersModule } from "./workers/workers.module";
+import { SocketModule } from './socket/socket.module';
 
 @Module({
   imports: [
@@ -88,6 +89,7 @@ import { WorkersModule } from "./workers/workers.module";
         AcceptLanguageResolver,
       ],
     }),
+    SocketModule,
   ],
   providers: [
     {
