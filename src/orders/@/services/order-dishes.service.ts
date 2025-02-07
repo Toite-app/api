@@ -3,11 +3,12 @@ import { NotFoundException } from "@core/errors/exceptions/not-found.exception";
 import { Inject, Injectable } from "@nestjs/common";
 import { Schema } from "@postgress-db/drizzle.module";
 import { orderDishes } from "@postgress-db/schema/order-dishes";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { PG_CONNECTION } from "src/constants";
 import { AddOrderDishDto } from "src/orders/@/dtos/add-order-dish.dto";
 import { UpdateOrderDishDto } from "src/orders/@/dtos/update-order-dish.dto";
+import { OrderPricesService } from "src/orders/@/services/order-prices.service";
 import { OrdersQueueProducer } from "src/orders/@queue/orders-queue.producer";
 
 @Injectable()
@@ -16,19 +17,26 @@ export class OrderDishesService {
     @Inject(PG_CONNECTION)
     private readonly pg: NodePgDatabase<Schema>,
     private readonly ordersProducer: OrdersQueueProducer,
+    private readonly orderPricesService: OrderPricesService,
   ) {}
 
-  private async getOrder(orderId: string) {
-    const order = await this.pg.query.orders.findFirst({
+  private readonly getOrderStatement = this.pg.query.orders
+    .findFirst({
       where: (orders, { eq, and }) =>
         and(
-          eq(orders.id, orderId),
+          eq(orders.id, sql.placeholder("orderId")),
           eq(orders.isRemoved, false),
           eq(orders.isArchived, false),
         ),
       columns: {
         restaurantId: true,
       },
+    })
+    .prepare(`${OrderDishesService.name}_getOrder`);
+
+  private async getOrder(orderId: string) {
+    const order = await this.getOrderStatement.execute({
+      orderId,
     });
 
     if (!order) {
@@ -151,7 +159,7 @@ export class OrderDishesService {
         id: orderDishes.id,
       });
 
-    await this.ordersProducer.recalculatePrices(orderId);
+    await this.orderPricesService.calculateOrderTotals(orderId);
 
     return orderDish;
   }
@@ -184,7 +192,7 @@ export class OrderDishesService {
       })
       .where(eq(orderDishes.id, orderDishId));
 
-    await this.ordersProducer.recalculatePrices(orderDish.orderId);
+    await this.orderPricesService.calculateOrderTotals(orderDish.orderId);
   }
 
   public async remove(orderDishId: string) {
@@ -199,6 +207,6 @@ export class OrderDishesService {
       .set({ isRemoved: true, removedAt: new Date() })
       .where(eq(orderDishes.id, orderDishId));
 
-    await this.ordersProducer.recalculatePrices(orderDish.orderId);
+    await this.orderPricesService.calculateOrderTotals(orderDish.orderId);
   }
 }
