@@ -5,7 +5,7 @@ import { Inject, Injectable } from "@nestjs/common";
 import { DrizzleUtils } from "@postgress-db/drizzle-utils";
 import { Schema } from "@postgress-db/drizzle.module";
 import { orderNumberBroneering, orders } from "@postgress-db/schema/orders";
-import { count, desc, eq } from "drizzle-orm";
+import { count, desc, eq, sql } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { PG_CONNECTION } from "src/constants";
 import { GuestsService } from "src/guests/guests.service";
@@ -40,17 +40,24 @@ export class OrdersService {
     return number;
   }
 
-  public async checkTableNumber(restaurantId: string, tableNumber: string) {
-    const order = await this.pg.query.orders.findFirst({
+  private readonly checkTableNumberStatement = this.pg.query.orders
+    .findFirst({
       where: (orders, { eq, and, inArray }) =>
         and(
-          eq(orders.tableNumber, tableNumber),
-          eq(orders.restaurantId, restaurantId),
+          eq(orders.tableNumber, sql.placeholder("tableNumber")),
+          eq(orders.restaurantId, sql.placeholder("restaurantId")),
           inArray(orders.status, ["pending", "cooking", "ready", "paid"]),
         ),
       columns: {
         id: true,
       },
+    })
+    .prepare(`${OrdersService.name}_checkTableNumber`);
+
+  public async checkTableNumber(restaurantId: string, tableNumber: string) {
+    const order = await this.checkTableNumberStatement.execute({
+      restaurantId,
+      tableNumber,
     });
 
     if (order) {
