@@ -12,6 +12,7 @@ import { GuestsService } from "src/guests/guests.service";
 import { CreateOrderDto } from "src/orders/@/dtos/create-order.dto";
 import { UpdateOrderDto } from "src/orders/@/dtos/update-order.dto";
 import { OrderEntity } from "src/orders/@/entities/order.entity";
+import { OrdersQueueProducer } from "src/orders/@queue/orders-queue.producer";
 
 @Injectable()
 export class OrdersService {
@@ -19,6 +20,7 @@ export class OrdersService {
     @Inject(PG_CONNECTION)
     private readonly pg: NodePgDatabase<Schema>,
     private readonly guestsService: GuestsService,
+    private readonly ordersQueueProducer: OrdersQueueProducer,
   ) {}
 
   private async generateOrderNumber() {
@@ -54,13 +56,17 @@ export class OrdersService {
     })
     .prepare(`${OrdersService.name}_checkTableNumber`);
 
-  public async checkTableNumber(restaurantId: string, tableNumber: string) {
+  public async checkTableNumber(
+    restaurantId: string,
+    tableNumber: string,
+    orderId?: string,
+  ) {
     const order = await this.checkTableNumberStatement.execute({
       restaurantId,
       tableNumber,
     });
 
-    if (order) {
+    if (order && order.id !== orderId) {
       throw new BadRequestException(
         "errors.orders.table-number-is-already-taken",
         {
@@ -70,7 +76,7 @@ export class OrdersService {
     }
   }
 
-  public async checkDto(dto: UpdateOrderDto) {
+  public async checkDto(dto: UpdateOrderDto, orderId?: string) {
     if (dto.type === "banquet" || dto.type === "hall") {
       // Table number is required for banquet and hall
       if (!dto.tableNumber || dto.tableNumber === "") {
@@ -92,7 +98,7 @@ export class OrdersService {
       }
 
       if (dto.restaurantId) {
-        await this.checkTableNumber(dto.restaurantId, dto.tableNumber);
+        await this.checkTableNumber(dto.restaurantId, dto.tableNumber, orderId);
       }
     }
 
@@ -150,12 +156,18 @@ export class OrdersService {
       });
 
     const order = await this.findById(createdOrder.id);
-    // await this.ordersProducer.orderUpdate("create", order);
+
+    await this.ordersQueueProducer.crudUpdate({
+      action: "CREATE",
+      orderId: createdOrder.id,
+      order,
+    });
+
     return order;
   }
 
   async update(id: string, dto: UpdateOrderDto): Promise<OrderEntity> {
-    await this.checkDto(dto);
+    await this.checkDto(dto, id);
 
     const order = await this.pg.query.orders.findFirst({
       where: (orders, { eq }) => eq(orders.id, id),
@@ -208,7 +220,13 @@ export class OrdersService {
       .returning({ id: orders.id });
 
     const updatedOrderEntity = await this.findById(updatedOrder.id);
-    // await this.ordersProducer.orderUpdate("update", updatedOrderEntity);
+
+    await this.ordersQueueProducer.crudUpdate({
+      action: "UPDATE",
+      orderId: id,
+      order: updatedOrderEntity,
+    });
+
     return updatedOrderEntity;
   }
 

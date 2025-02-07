@@ -27,6 +27,8 @@ export const workerRoleEnum = pgEnum("workerRoleEnum", [
 
 export const ZodWorkerRole = z.enum(workerRoleEnum.enumValues);
 
+export type IRole = (typeof workerRoleEnum.enumValues)[number];
+
 export const workers = pgTable("workers", {
   id: uuid("id").defaultRandom().primaryKey(),
   name: text("name").notNull().default("N/A"),

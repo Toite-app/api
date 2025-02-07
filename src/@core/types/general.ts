@@ -9,3 +9,9 @@ export enum DayOfWeekEnum {
 }
 
 export type DayOfWeek = keyof typeof DayOfWeekEnum;
+
+export enum CrudAction {
+  CREATE = "CREATE",
+  UPDATE = "UPDATE",
+  DELETE = "DELETE",
+}
