@@ -10,6 +10,6 @@ export class SocketService {
   constructor(private readonly socketGateway: SocketGateway) {}
 
   public async getClients() {
-    return await this.socketGateway.getAllConnectedClients();
+    return await this.socketGateway.getClients();
   }
 }
