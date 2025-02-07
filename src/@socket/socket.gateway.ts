@@ -9,7 +9,11 @@ import {
 import Redis from "ioredis";
 import { Socket } from "socket.io";
 import { RedisChannels } from "src/@base/redis/channels";
-import { GatewayClient, GatewayClients } from "src/@socket/socket.types";
+import {
+  GatewayClient,
+  GatewayClients,
+  GatewayWorker,
+} from "src/@socket/socket.types";
 import { AuthService } from "src/auth/services/auth.service";
 
 import { SocketUtils } from "./socket.utils";
@@ -23,7 +27,6 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   // Gateway ID for synchronization between gateways
   private readonly gatewayId: string;
-  private readonly sharedGatewaysDataKey = `${SocketUtils.commonGatewaysIdentifier}:shared`;
 
   // Redis instances for synchronization between gateways
   private publisherRedis: Redis;
@@ -35,8 +38,9 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
   private readonly REDIS_CLIENTS_TTL = 5; // seconds
 
   // Local state of the gateway
-  private clients: GatewayClients = [];
-  private clientsSocketMap: Map<string, Socket> = new Map();
+  private localClients: GatewayClients = [];
+  private localClientsSocketMap: Map<string, Socket> = new Map();
+  private localWorkersMap: Map<string, GatewayWorker> = new Map();
 
   constructor(private readonly authService: AuthService) {
     this.gatewayId = SocketUtils.generateGatewayId();
@@ -87,7 +91,13 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
       await this.publisherRedis.setex(
         `${this.gatewayId}:clients`,
         this.REDIS_CLIENTS_TTL,
-        JSON.stringify(this.clients),
+        JSON.stringify(this.localClients),
+      );
+
+      await this.publisherRedis.setex(
+        `${this.gatewayId}:workers`,
+        this.REDIS_CLIENTS_TTL,
+        JSON.stringify(Object.fromEntries(this.localWorkersMap.entries())),
       );
     } catch (error) {
       this.logger.error(error);
@@ -154,13 +164,18 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
     try {
       const worker = await this._getWorker(socket);
 
-      this.clients.push({
+      this.localClients.push({
         clientId: socket.id,
         workerId: worker.id,
         gatewayId: this.gatewayId,
       } satisfies GatewayClient);
 
-      this.clientsSocketMap.set(socket.id, socket);
+      this.localClientsSocketMap.set(socket.id, socket);
+
+      this.localWorkersMap.set(worker.id, {
+        id: worker.id,
+        role: worker.role,
+      } satisfies GatewayWorker);
 
       socket.emit("connected", worker);
     } catch (error) {
@@ -175,11 +190,11 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
    */
   async handleDisconnect(socket: Socket) {
     try {
-      this.clients = this.clients.filter(
+      this.localClients = this.localClients.filter(
         (client) => client.clientId !== socket.id,
       );
 
-      this.clientsSocketMap.delete(socket.id);
+      this.localClientsSocketMap.delete(socket.id);
     } catch (error) {
       this.logger.error(error);
       socket.disconnect(true);
