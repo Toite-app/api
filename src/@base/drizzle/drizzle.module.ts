@@ -37,6 +37,20 @@ export const schema = {
 };
 
 export type Schema = typeof schema;
+export type DrizzleDatabase = NodePgDatabase<Schema>;
+export type DrizzleTransaction = Parameters<
+  Parameters<DrizzleDatabase["transaction"]>[0]
+>[0];
+
+export interface PgTransactionConfig {
+  isolationLevel?:
+    | "read uncommitted"
+    | "read committed"
+    | "repeatable read"
+    | "serializable";
+  accessMode?: "read only" | "read write";
+  deferrable?: boolean;
+}
 
 @Module({
   providers: [
