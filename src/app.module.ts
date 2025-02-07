@@ -18,6 +18,7 @@ import {
 } from "nestjs-i18n";
 import { ZodValidationPipe } from "nestjs-zod";
 import { EncryptionModule } from "src/@base/encryption/encryption.module";
+import { RedisChannels } from "src/@base/redis/channels";
 import { S3Module } from "src/@base/s3/s3.module";
 import { SocketModule } from "src/@socket/socket.module";
 import { AddressesModule } from "src/addresses/addresses.module";
@@ -55,13 +56,13 @@ import { WorkersModule } from "./workers/workers.module";
     }),
     RedisModule.forRoot({
       config: {
-        url: `${env.REDIS_URL}/1`,
+        url: `${env.REDIS_URL}/${RedisChannels.COMMON}`,
       },
     }),
     BullModule.forRoot({
       prefix: "toite",
       connection: {
-        url: `${env.REDIS_URL}/2`,
+        url: `${env.REDIS_URL}/${RedisChannels.BULLMQ}`,
       },
     }),
     EncryptionModule,
