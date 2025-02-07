@@ -51,49 +51,5 @@ export class OrdersQueueProcessor extends WorkerHost {
    */
   private async recalculatePrices(data: RecalculatePricesJobDto) {
     const { orderId } = data;
-
-    const orderDishes = await this.pg.query.orderDishes.findMany({
-      where: (orderDishes, { eq, and, gt }) =>
-        and(
-          eq(orderDishes.orderId, orderId),
-          eq(orderDishes.isRemoved, false),
-          gt(orderDishes.quantity, 0),
-        ),
-      columns: {
-        price: true,
-        quantity: true,
-        finalPrice: true,
-        surchargeAmount: true,
-        discountAmount: true,
-      },
-    });
-
-    if (!orderDishes.length) {
-      this.logger.warn(`No dishes found for order ${orderId}`);
-      return;
-    }
-
-    const prices = orderDishes.reduce(
-      (acc, dish) => {
-        acc.subtotal += Number(dish.price) * Number(dish.quantity);
-        acc.surchargeAmount +=
-          Number(dish.surchargeAmount) * Number(dish.quantity);
-        acc.discountAmount +=
-          Number(dish.discountAmount) * Number(dish.quantity);
-        acc.total += Number(dish.finalPrice) * Number(dish.quantity);
-        return acc;
-      },
-      { subtotal: 0, surchargeAmount: 0, discountAmount: 0, total: 0 },
-    );
-
-    await this.pg
-      .update(orders)
-      .set({
-        subtotal: prices.subtotal.toString(),
-        surchargeAmount: prices.surchargeAmount.toString(),
-        discountAmount: prices.discountAmount.toString(),
-        total: prices.total.toString(),
-      })
-      .where(eq(orders.id, orderId));
   }
 }
