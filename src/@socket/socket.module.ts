@@ -1,6 +1,6 @@
 import { Module } from "@nestjs/common";
+import { SocketGateway } from "src/@socket/socket.gateway";
 import { AuthModule } from "src/auth/auth.module";
-import { SocketGateway } from "src/socket/socket.gateway";
 
 import { SocketService } from "./socket.service";
 
