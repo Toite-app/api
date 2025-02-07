@@ -7,7 +7,9 @@ import { eq } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { PG_CONNECTION } from "src/constants";
 import { OrderQueueJobName, ORDERS_QUEUE } from "src/orders/@queue";
+import { OrderCrudUpdateJobDto } from "src/orders/@queue/dto/crud-update.job";
 import { RecalculatePricesJobDto } from "src/orders/@queue/dto/recalculate-prices-job.dto";
+import { OrdersSocketNotifier } from "src/orders/@queue/services/orders-socket-notifier.service";
 
 @Processor(ORDERS_QUEUE, {})
 export class OrdersQueueProcessor extends WorkerHost {
@@ -16,6 +18,7 @@ export class OrdersQueueProcessor extends WorkerHost {
   constructor(
     @Inject(PG_CONNECTION)
     private readonly pg: NodePgDatabase<Schema>,
+    private readonly ordersSocketNotifier: OrdersSocketNotifier,
   ) {
     super();
   }
@@ -31,6 +34,11 @@ export class OrdersQueueProcessor extends WorkerHost {
         // Recalculate prices of the order
         case OrderQueueJobName.RECALCULATE_PRICES: {
           await this.recalculatePrices(data as RecalculatePricesJobDto);
+          break;
+        }
+
+        case OrderQueueJobName.CRUD_UPDATE: {
+          await this.crudUpdate(data as OrderCrudUpdateJobDto);
           break;
         }
 
@@ -51,5 +59,11 @@ export class OrdersQueueProcessor extends WorkerHost {
    */
   private async recalculatePrices(data: RecalculatePricesJobDto) {
     const { orderId } = data;
+  }
+
+  private async crudUpdate(data: OrderCrudUpdateJobDto) {
+    // log
+    // notify users
+    await this.ordersSocketNotifier.handle(data.order);
   }
 }

@@ -2,6 +2,7 @@ import { InjectQueue } from "@nestjs/bullmq";
 import { Injectable, Logger } from "@nestjs/common";
 import { JobsOptions, Queue } from "bullmq";
 import { OrderQueueJobName, ORDERS_QUEUE } from "src/orders/@queue";
+import { OrderCrudUpdateJobDto } from "src/orders/@queue/dto/crud-update.job";
 import { RecalculatePricesJobDto } from "src/orders/@queue/dto/recalculate-prices-job.dto";
 
 @Injectable()
@@ -24,11 +25,10 @@ export class OrdersQueueProducer {
 
   /**
    * When order is: created, updated, removed
-   * This job should be triggered. It's main task to:
-   * - 1
-   * - 2
    */
-  public async handleUpdate() {}
+  public async crudUpdate(payload: OrderCrudUpdateJobDto) {
+    return this.addJob(OrderQueueJobName.CRUD_UPDATE, payload);
+  }
 
   /**
    * This producer creates a job that recalculates prices of the order based on the order dishes
