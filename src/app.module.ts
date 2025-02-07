@@ -19,6 +19,7 @@ import {
 import { ZodValidationPipe } from "nestjs-zod";
 import { EncryptionModule } from "src/@base/encryption/encryption.module";
 import { S3Module } from "src/@base/s3/s3.module";
+import { SocketModule } from "src/@socket/socket.module";
 import { AddressesModule } from "src/addresses/addresses.module";
 import { DishCategoriesModule } from "src/dish-categories/dish-categories.module";
 import { DishesModule } from "src/dishes/dishes.module";
@@ -32,7 +33,6 @@ import { AuthModule } from "./auth/auth.module";
 import { SessionAuthGuard } from "./auth/guards/session-auth.guard";
 import { RestaurantsModule } from "./restaurants/restaurants.module";
 import { WorkersModule } from "./workers/workers.module";
-import { SocketModule } from './socket/socket.module';
 
 @Module({
   imports: [
