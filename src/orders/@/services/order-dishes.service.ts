@@ -143,23 +143,29 @@ export class OrderDishesService {
 
     const price = Number(dish.price);
 
-    const [orderDish] = await this.pg
-      .insert(orderDishes)
-      .values({
-        orderId,
-        dishId: payload.dishId,
-        name: dish.name,
-        status: "pending",
-        quantity,
-        isAdditional,
-        price: String(price),
-        finalPrice: String(price),
-      })
-      .returning({
-        id: orderDishes.id,
+    const orderDish = await this.pg.transaction(async (tx) => {
+      const [orderDish] = await tx
+        .insert(orderDishes)
+        .values({
+          orderId,
+          dishId: payload.dishId,
+          name: dish.name,
+          status: "pending",
+          quantity,
+          isAdditional,
+          price: String(price),
+          finalPrice: String(price),
+        })
+        .returning({
+          id: orderDishes.id,
+        });
+
+      await this.orderPricesService.calculateOrderTotals(orderId, {
+        tx,
       });
 
-    await this.orderPricesService.calculateOrderTotals(orderId);
+      return orderDish;
+    });
 
     return orderDish;
   }
@@ -185,14 +191,18 @@ export class OrderDishesService {
       throw new BadRequestException("errors.order-dishes.is-removed");
     }
 
-    await this.pg
-      .update(orderDishes)
-      .set({
-        quantity,
-      })
-      .where(eq(orderDishes.id, orderDishId));
+    await this.pg.transaction(async (tx) => {
+      await tx
+        .update(orderDishes)
+        .set({
+          quantity,
+        })
+        .where(eq(orderDishes.id, orderDishId));
 
-    await this.orderPricesService.calculateOrderTotals(orderDish.orderId);
+      await this.orderPricesService.calculateOrderTotals(orderDish.orderId, {
+        tx,
+      });
+    });
   }
 
   public async remove(orderDishId: string) {
@@ -202,11 +212,15 @@ export class OrderDishesService {
       throw new BadRequestException("errors.order-dishes.already-removed");
     }
 
-    await this.pg
-      .update(orderDishes)
-      .set({ isRemoved: true, removedAt: new Date() })
-      .where(eq(orderDishes.id, orderDishId));
+    await this.pg.transaction(async (tx) => {
+      await tx
+        .update(orderDishes)
+        .set({ isRemoved: true, removedAt: new Date() })
+        .where(eq(orderDishes.id, orderDishId));
 
-    await this.orderPricesService.calculateOrderTotals(orderDish.orderId);
+      await this.orderPricesService.calculateOrderTotals(orderDish.orderId, {
+        tx,
+      });
+    });
   }
 }
