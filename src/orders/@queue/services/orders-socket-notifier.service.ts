@@ -1,7 +1,10 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { IRole } from "@postgress-db/schema/workers";
 import { SocketService } from "src/@socket/socket.service";
-import { ConnectedClient, ConnectedClients } from "src/@socket/socket.types";
+import {
+  ConnectedClient,
+  RedisConnectedClients,
+} from "src/@socket/socket.types";
 import { OrderEntity } from "src/orders/@/entities/order.entity";
 
 type workerId = string;
@@ -12,7 +15,7 @@ export class OrdersSocketNotifier {
 
   constructor(private readonly socketService: SocketService) {}
 
-  private makeWorkersByRoleMap(clients: ConnectedClients) {
+  private makeWorkersByRoleMap(clients: RedisConnectedClients) {
     const workersByRoleMap: Record<
       IRole,
       Record<workerId, Omit<ConnectedClient, "socket" | "clientId">>
@@ -61,7 +64,9 @@ export class OrdersSocketNotifier {
    * @param order
    */
   public async handle(order: OrderEntity) {
-    const clients = this.socketService.getClients();
+    const clients = await this.socketService.getClients();
     const workersByRoleMap = this.makeWorkersByRoleMap(clients);
+
+    console.log(clients);
   }
 }

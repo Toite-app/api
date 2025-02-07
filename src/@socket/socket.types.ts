@@ -16,3 +16,12 @@ export type ConnectedClients = Record<
   userId,
   Record<clientId, ConnectedClient>
 >;
+
+export type RedisConnectedClient = Omit<ConnectedClient, "socket"> & {
+  gatewayId: string;
+};
+
+export type RedisConnectedClients = Record<
+  userId,
+  Record<clientId, RedisConnectedClient>
+>;
