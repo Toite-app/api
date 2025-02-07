@@ -1,9 +1,14 @@
+import env from "@core/env";
 import { parse as parseCookie } from "cookie";
 import { Socket } from "socket.io";
 import { AUTH_COOKIES } from "src/auth/auth.types";
 import { v4 as uuidv4 } from "uuid";
 
 export class SocketUtils {
+  public static get commonGatewaysIdentifier() {
+    return `socket-gateway(${env.NODE_ENV})`;
+  }
+
   public static generateGatewayId() {
     const gatewayId = uuidv4()
       .replaceAll("-", "")
@@ -12,7 +17,7 @@ export class SocketUtils {
       .replaceAll(":", "")
       .replaceAll(".", "");
 
-    return `SOCKET_GATEWAY_${gatewayId}`;
+    return `${SocketUtils.commonGatewaysIdentifier}:${gatewayId}`;
   }
 
   public static getClientAuthCookie(socket: Socket): string | null {

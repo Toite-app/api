@@ -9,150 +9,44 @@ import {
 import Redis from "ioredis";
 import { Socket } from "socket.io";
 import { RedisChannels } from "src/@base/redis/channels";
-import { SocketUtils } from "src/@socket/socket.utils";
+import { GatewayClient, GatewayClients } from "src/@socket/socket.types";
 import { AuthService } from "src/auth/services/auth.service";
 
-import { ConnectedClients, RedisConnectedClients } from "./socket.types";
+import { SocketUtils } from "./socket.utils";
 
 @WebSocketGateway()
 export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
-  // Instance of the socket server
   @WebSocketServer()
   private server: Socket;
 
   private readonly logger = new Logger(SocketGateway.name);
 
   // Gateway ID for synchronization between gateways
-  private gatewayId: string;
+  private readonly gatewayId: string;
+  private readonly sharedGatewaysDataKey = `${SocketUtils.commonGatewaysIdentifier}:shared`;
 
-  // For synchronization between gateways
+  // Redis instances for synchronization between gateways
   private publisherRedis: Redis;
   private subscriberRedis: Redis;
+
+  // Discovery interval
   private discoveryInterval: NodeJS.Timeout;
-
-  // Local state for gateway
-  public readonly connectedClients: ConnectedClients = {};
-  public readonly clientIdToWorkerIdMap: Map<string, string> = new Map();
-
+  private readonly DISCOVERY_INTERVAL = 1000; // milliseconds
   private readonly REDIS_CLIENTS_TTL = 5; // seconds
+
+  // Local state of the gateway
+  private clients: GatewayClients = [];
+  private clientsSocketMap: Map<string, Socket> = new Map();
 
   constructor(private readonly authService: AuthService) {
     this.gatewayId = SocketUtils.generateGatewayId();
   }
 
-  async onModuleInit() {
-    this.publisherRedis = this.getRedisClient();
-    this.subscriberRedis = this.getRedisClient();
-
-    this.subscriberRedis.subscribe(this.gatewayId);
-    this.subscriberRedis.on("message", (channel, message) => {
-      // console.log(channel, message);
-      this.logger.debug(channel, message);
-    });
-
-    await this.startChannelDiscovery();
-  }
-
-  async onModuleDestroy() {
-    if (this.discoveryInterval) {
-      clearInterval(this.discoveryInterval);
-    }
-
-    await Promise.all([
-      this.publisherRedis?.disconnect(),
-      this.subscriberRedis?.disconnect(),
-    ]);
-  }
-
-  private async startChannelDiscovery() {
-    await this.updateDiscoveryStatus();
-
-    this.discoveryInterval = setInterval(async () => {
-      await this.updateDiscoveryStatus();
-    }, 1000);
-  }
-
-  private async updateDiscoveryStatus() {
-    try {
-      const clientsToSync: RedisConnectedClients = {};
-
-      // Convert local clients to redis format (without socket)
-      Object.entries(this.connectedClients).forEach(([workerId, clients]) => {
-        clientsToSync[workerId] = {};
-        Object.entries(clients).forEach(([clientId, client]) => {
-          const { socket, ...clientWithoutSocket } = client;
-
-          socket;
-
-          clientsToSync[workerId][clientId] = {
-            ...clientWithoutSocket,
-            gatewayId: this.gatewayId,
-          };
-        });
-      });
-
-      // Save to Redis with TTL
-      await this.publisherRedis.setex(
-        `${this.gatewayId}:clients`,
-        this.REDIS_CLIENTS_TTL,
-        JSON.stringify(clientsToSync),
-      );
-    } catch (error) {
-      this.logger.error("Failed to update discovery status:", error);
-    }
-  }
-
-  public async getAllConnectedClients(): Promise<RedisConnectedClients> {
-    try {
-      // Get all gateway keys
-      const gatewayKeys = await this.publisherRedis.keys("*:clients");
-
-      // Fetch all clients data from Redis
-      const clientsData = await Promise.all(
-        gatewayKeys.map(async (key) => {
-          const data = await this.publisherRedis.get(key);
-          return data ? JSON.parse(data) : {};
-        }),
-      );
-
-      // Merge all clients with local clients
-      const allClients: RedisConnectedClients = {};
-
-      // First add local clients
-      Object.entries(this.connectedClients).forEach(([workerId, clients]) => {
-        allClients[workerId] = {};
-        Object.entries(clients).forEach(([clientId, client]) => {
-          const { socket, ...clientWithoutSocket } = client;
-
-          socket;
-
-          allClients[workerId][clientId] = {
-            ...clientWithoutSocket,
-            gatewayId: this.gatewayId,
-          };
-        });
-      });
-
-      // Then merge with Redis clients
-      clientsData.forEach((gatewayClients) => {
-        Object.entries(gatewayClients).forEach(
-          ([workerId, clients]: [string, any]) => {
-            if (!allClients[workerId]) {
-              allClients[workerId] = {};
-            }
-            Object.assign(allClients[workerId], clients);
-          },
-        );
-      });
-
-      return allClients;
-    } catch (error) {
-      this.logger.error("Failed to get all connected clients:", error);
-      return {};
-    }
-  }
-
-  private getRedisClient() {
+  /**
+   * Get a Redis client
+   * @returns Redis client
+   */
+  private _getRedis() {
     const client = new Redis(`${env.REDIS_URL}/${RedisChannels.SOCKET}`, {
       maxRetriesPerRequest: 3,
       enableReadyCheck: true,
@@ -163,89 +57,132 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
     });
 
     client.on("error", (error) => {
-      console.error("Redis client error:", error);
+      this.logger.error("Redis client error:", error);
     });
 
     return client;
   }
 
-  async handleConnection(socket: Socket): Promise<void> {
+  async onModuleInit() {
+    this.publisherRedis = this._getRedis();
+    this.subscriberRedis = this._getRedis();
+
+    this.subscriberRedis.subscribe(this.gatewayId);
+    this.subscriberRedis.on("message", (channel, message) => {
+      this.logger.debug(channel, message);
+    });
+
+    await this._updateDiscovery();
+
+    this.discoveryInterval = setInterval(async () => {
+      await this._updateDiscovery();
+    }, this.DISCOVERY_INTERVAL);
+  }
+
+  /**
+   * Update the discovery status in Redis
+   */
+  private async _updateDiscovery() {
     try {
-      const clientId = socket.id;
-      const signed = SocketUtils.getClientAuthCookie(socket);
-      const httpAgent = SocketUtils.getUserAgent(socket);
-      const clientIp = SocketUtils.getClientIp(socket);
+      await this.publisherRedis.setex(
+        `${this.gatewayId}:clients`,
+        this.REDIS_CLIENTS_TTL,
+        JSON.stringify(this.clients),
+      );
+    } catch (error) {
+      this.logger.error(error);
+    }
+  }
 
-      if (!signed) {
-        throw new Error("No signed cookie found");
-      }
+  /**
+   * Get a worker for the socket connection
+   * @param socket - The socket connection
+   * @returns The worker
+   */
+  private async _getWorker(socket: Socket) {
+    const signed = SocketUtils.getClientAuthCookie(socket);
+    const httpAgent = SocketUtils.getUserAgent(socket);
+    const clientIp = SocketUtils.getClientIp(socket);
 
-      const session = await this.authService.validateSession(signed, {
-        httpAgent,
-        ip: clientIp,
-      });
+    if (!signed) {
+      throw new Error("No signed cookie found");
+    }
 
-      if (!session) {
-        throw new Error("Invalid session");
-      }
+    const session = await this.authService.validateSession(signed, {
+      httpAgent,
+      ip: clientIp,
+    });
 
-      if (!session.worker) {
-        throw new Error("Invalid session");
-      }
+    if (!session) {
+      throw new Error("Invalid session");
+    }
 
-      if (session.worker.isBlocked) {
-        throw new Error("Worker is blocked");
-      }
+    if (!session.worker) {
+      throw new Error("Invalid session");
+    }
 
-      if (!this.connectedClients[session.workerId]) {
-        this.connectedClients[session.workerId] = {};
-      }
+    if (session.worker.isBlocked) {
+      throw new Error("Worker is blocked");
+    }
 
-      this.connectedClients[session.workerId][clientId] = {
-        clientId,
-        socket,
-        session: {
-          id: session.id,
-          isActive: session.isActive,
-          previousId: session.previousId,
-        },
-        worker: {
-          id: session.workerId,
-          isBlocked: session.worker.isBlocked,
-          restaurantId: session.worker.restaurantId,
-          role: session.worker.role,
-        },
-      };
+    return session.worker;
+  }
 
-      this.clientIdToWorkerIdMap.set(clientId, session.workerId);
+  /**
+   * Get all clients from all gateways
+   * @returns All clients
+   */
+  public async getClients() {
+    const gatewayKeys = await this.publisherRedis.keys(
+      `${this.gatewayId}:clients`,
+    );
 
-      socket.emit("connected", session.worker);
+    const clientsRaw = await this.publisherRedis.mget(gatewayKeys);
 
-      // Trigger immediate sync after successful connection
-      await this.updateDiscoveryStatus();
+    const clients: GatewayClients = clientsRaw
+      .filter(Boolean)
+      .map((client) => JSON.parse(String(client)));
+
+    return clients;
+  }
+
+  /**
+   * Handle a new connection
+   * @param socket - The socket connection
+   */
+  async handleConnection(socket: Socket) {
+    try {
+      const worker = await this._getWorker(socket);
+
+      this.clients.push({
+        clientId: socket.id,
+        workerId: worker.id,
+        gatewayId: this.gatewayId,
+      } satisfies GatewayClient);
+
+      this.clientsSocketMap.set(socket.id, socket);
+
+      socket.emit("connected", worker);
     } catch (error) {
       this.logger.error(error);
       socket.disconnect(true);
     }
   }
 
-  async handleDisconnect(socket: Socket): Promise<void> {
-    const clientId = socket.id;
-    const workerId = this.clientIdToWorkerIdMap.get(clientId);
+  /**
+   * Handle a disconnection
+   * @param socket - The socket connection
+   */
+  async handleDisconnect(socket: Socket) {
+    try {
+      this.clients = this.clients.filter(
+        (client) => client.clientId !== socket.id,
+      );
 
-    if (!workerId) {
-      return;
+      this.clientsSocketMap.delete(socket.id);
+    } catch (error) {
+      this.logger.error(error);
+      socket.disconnect(true);
     }
-
-    delete this.connectedClients[workerId][clientId];
-
-    if (Object.keys(this.connectedClients[workerId]).length === 0) {
-      delete this.connectedClients[workerId];
-    }
-
-    this.clientIdToWorkerIdMap.delete(clientId);
-
-    // Trigger immediate sync after client disconnection
-    await this.updateDiscoveryStatus();
   }
 }
