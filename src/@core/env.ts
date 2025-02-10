@@ -57,6 +57,8 @@ export const envSchema = z.object({
     ENDPOINT: z.string().url(),
     REGION: z.string(),
   }),
+
+  DEV_SECRET_KEY: z.string(),
 });
 
 const env = envSchema.parse({
@@ -81,6 +83,7 @@ const env = envSchema.parse({
     ENDPOINT: process.env.S3_ENDPOINT,
     REGION: process.env.S3_REGION,
   },
+  DEV_SECRET_KEY: process.env.DEV_SECRET_KEY,
 });
 
 export default env;

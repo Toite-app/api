@@ -12,6 +12,7 @@ import { RedisChannels } from "src/@base/redis/channels";
 import {
   GatewayClient,
   GatewayClients,
+  GatewayMessage,
   GatewayWorker,
 } from "src/@socket/socket.types";
 import { AuthService } from "src/auth/services/auth.service";
@@ -71,9 +72,9 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.publisherRedis = this._getRedis();
     this.subscriberRedis = this._getRedis();
 
-    this.subscriberRedis.subscribe(`${this.gatewayId}:messages`);
+    this.subscriberRedis.subscribe(`${this.gatewayId}-messages`);
     this.subscriberRedis.on("message", (channel, message) => {
-      this.logger.debug(channel, message);
+      this._handleMessage(JSON.parse(message) as GatewayMessage[]);
     });
 
     await this._updateDiscovery();
@@ -81,6 +82,38 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.discoveryInterval = setInterval(async () => {
       await this._updateDiscovery();
     }, this.DISCOVERY_INTERVAL);
+  }
+
+  /**
+   * Handle a message from Redis
+   * @param messages - The messages to handle
+   */
+  private async _handleMessage(messages: GatewayMessage[]) {
+    try {
+      // Group messages by clientId for efficient socket emission
+      const messagesByClient = messages.reduce(
+        (acc, message) => {
+          if (!acc[message.clientId]) {
+            acc[message.clientId] = [];
+          }
+          acc[message.clientId].push(message);
+          return acc;
+        },
+        {} as Record<string, GatewayMessage[]>,
+      );
+
+      // Emit messages for each client
+      Object.entries(messagesByClient).forEach(([clientId, clientMessages]) => {
+        const socket = this.localClientsSocketMap.get(clientId);
+        if (socket) {
+          clientMessages.forEach((message) => {
+            socket.emit(message.event, message.data);
+          });
+        }
+      });
+    } catch (error) {
+      this.logger.error(error);
+    }
   }
 
   /**
@@ -104,12 +137,32 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
   }
 
+  private async _getDesiredWorker(socket: Socket) {
+    if (env.NODE_ENV !== "development") {
+      return null;
+    }
+
+    const desiredWorkerId = SocketUtils.getDesiredWorkerId(socket);
+
+    if (!desiredWorkerId) {
+      return null;
+    }
+
+    return await this.authService.getAuthWorker(desiredWorkerId);
+  }
+
   /**
    * Get a worker for the socket connection
    * @param socket - The socket connection
    * @returns The worker
    */
   private async _getWorker(socket: Socket) {
+    const desiredWorker = await this._getDesiredWorker(socket);
+
+    if (desiredWorker) {
+      return desiredWorker;
+    }
+
     const signed = SocketUtils.getClientAuthCookie(socket);
     const httpAgent = SocketUtils.getUserAgent(socket);
     const clientIp = SocketUtils.getClientIp(socket);
@@ -144,7 +197,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
    */
   public async getClients(): Promise<GatewayClient[]> {
     const gatewayKeys = await this.publisherRedis.keys(
-      `${this.gatewayId}:clients`,
+      `${SocketUtils.commonGatewaysIdentifier}:*:clients`,
     );
 
     const clientsRaw = await this.publisherRedis.mget(gatewayKeys);
@@ -162,7 +215,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
    */
   public async getWorkers(): Promise<Record<string, GatewayWorker>> {
     const gatewayKeys = await this.publisherRedis.keys(
-      `${this.gatewayId}:workers`,
+      `${SocketUtils.commonGatewaysIdentifier}:*:workers`,
     );
 
     const workersRaw = await this.publisherRedis.mget(gatewayKeys);
@@ -196,30 +249,51 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   public async emit(recipients: GatewayClient[], event: string, data: any) {
-    this.logger.log(recipients, event, data);
-    recipients.forEach((recipient) => {
-      const localSocket = this.localClientsSocketMap.get(recipient.clientId);
+    // Group recipients by gateway for batch publishing
+    const recipientsByGateway = recipients.reduce(
+      (acc, recipient) => {
+        if (!acc[recipient.gatewayId]) {
+          acc[recipient.gatewayId] = [];
+        }
+        acc[recipient.gatewayId].push(recipient);
+        return acc;
+      },
+      {} as Record<string, GatewayClient[]>,
+    );
 
-      // If the client is local, emit the event to the client
+    // Handle local emissions
+    const localRecipients = recipientsByGateway[this.gatewayId] ?? [];
+    localRecipients.forEach((recipient) => {
+      const localSocket = this.localClientsSocketMap.get(recipient.clientId);
       if (localSocket) {
         localSocket.emit(event, data);
-      } else {
-        if (recipient.gatewayId === this.gatewayId) {
-          this.logger.error(
-            `Event ${event} emmited to recipient ${recipient.clientId} but the recipient is not local`,
-          );
-        } else {
-          // If the client is not local we should emit the event to the redis
-          this.publisherRedis.publish(
-            `${recipient.gatewayId}:messages`,
-            JSON.stringify({
-              event,
-              data,
-            }),
-          );
-        }
       }
     });
+
+    // Create batched messages for each gateway
+    const pipeline = this.publisherRedis.pipeline();
+
+    Object.entries(recipientsByGateway).forEach(
+      ([gatewayId, gatewayRecipients]) => {
+        if (gatewayId === this.gatewayId) return;
+
+        const messages: GatewayMessage[] = gatewayRecipients.map(
+          (recipient) => ({
+            clientId: recipient.clientId,
+            event,
+            data,
+          }),
+        );
+
+        pipeline.publish(`${gatewayId}-messages`, JSON.stringify(messages));
+      },
+    );
+
+    try {
+      await pipeline.exec();
+    } catch (error) {
+      this.logger.error("Error publishing messages:", error);
+    }
   }
 
   /**

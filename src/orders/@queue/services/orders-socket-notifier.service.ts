@@ -65,7 +65,6 @@ export class OrdersSocketNotifier {
     // const clients = await this.socketService.getClients();
     const workers = await this.socketService.getWorkers();
 
-    this.logger.log(workers);
     // const workersByRoleMap = this.makeWorkersByRoleMap(clients);
     await this.socketService.emit(
       {

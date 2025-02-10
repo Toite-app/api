@@ -1,7 +1,9 @@
 import { UnauthorizedException } from "@core/errors/exceptions/unauthorized.exception";
 import { Inject, Injectable } from "@nestjs/common";
 import { schema } from "@postgress-db/drizzle.module";
+import { workers } from "@postgress-db/schema/workers";
 import * as argon2 from "argon2";
+import { eq } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { SignInDto } from "src/auth/dto/req/sign-in.dto";
 import { PG_CONNECTION } from "src/constants";
@@ -61,5 +63,27 @@ export class AuthService {
     },
   ) {
     return this.sessionsService.validateSession(signed, options);
+  }
+
+  public async getAuthWorker(workerId: string) {
+    const [worker] = await this.pg
+      .select({
+        id: workers.id,
+        name: workers.name,
+        login: workers.login,
+        role: workers.role,
+        isBlocked: workers.isBlocked,
+        hiredAt: workers.hiredAt,
+        firedAt: workers.firedAt,
+        onlineAt: workers.onlineAt,
+        createdAt: workers.createdAt,
+        updatedAt: workers.updatedAt,
+        restaurantId: workers.restaurantId,
+      })
+      .from(workers)
+      .where(eq(workers.id, workerId))
+      .limit(1);
+
+    return worker;
   }
 }
