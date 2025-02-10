@@ -12,4 +12,8 @@ export class SocketService {
   public async getClients() {
     return await this.socketGateway.getClients();
   }
+
+  public async getWorkers() {
+    return await this.socketGateway.getWorkers();
+  }
 }

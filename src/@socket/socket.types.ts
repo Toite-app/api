@@ -4,8 +4,11 @@ export interface GatewayClient {
   clientId: string;
   gatewayId: string;
   workerId: string;
+  connectedAt: Date;
 }
 
 export type GatewayClients = GatewayClient[];
 
-export type GatewayWorker = Pick<IWorker, "role" | "id">;
+export type GatewayWorker = Pick<IWorker, "role" | "id" | "restaurantId"> & {
+  connectedAt: Date;
+};
