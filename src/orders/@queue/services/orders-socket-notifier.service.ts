@@ -62,10 +62,20 @@ export class OrdersSocketNotifier {
    * @param order
    */
   public async handle(order: OrderEntity) {
-    const clients = await this.socketService.getClients();
+    // const clients = await this.socketService.getClients();
     const workers = await this.socketService.getWorkers();
-    // const workersByRoleMap = this.makeWorkersByRoleMap(clients);
 
-    console.log(clients);
+    this.logger.log(workers);
+    // const workersByRoleMap = this.makeWorkersByRoleMap(clients);
+    await this.socketService.emit(
+      {
+        workerIds: Object.keys(workers),
+        clientIds: undefined,
+      },
+      "order-updated",
+      {
+        orderId: order.id,
+      },
+    );
   }
 }

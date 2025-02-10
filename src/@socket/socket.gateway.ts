@@ -71,7 +71,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.publisherRedis = this._getRedis();
     this.subscriberRedis = this._getRedis();
 
-    this.subscriberRedis.subscribe(this.gatewayId);
+    this.subscriberRedis.subscribe(`${this.gatewayId}:messages`);
     this.subscriberRedis.on("message", (channel, message) => {
       this.logger.debug(channel, message);
     });
@@ -142,16 +142,16 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
    * Get all clients from all gateways
    * @returns All clients
    */
-  public async getClients() {
+  public async getClients(): Promise<GatewayClient[]> {
     const gatewayKeys = await this.publisherRedis.keys(
       `${this.gatewayId}:clients`,
     );
 
     const clientsRaw = await this.publisherRedis.mget(gatewayKeys);
 
-    const clients: GatewayClients = clientsRaw
+    const clients: GatewayClient[] = clientsRaw
       .filter(Boolean)
-      .map((client) => JSON.parse(String(client)));
+      .flatMap((client) => JSON.parse(String(client)));
 
     return clients;
   }
@@ -160,16 +160,22 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
    * Get all workers from all gateways
    * @returns All workers
    */
-  public async getWorkers() {
+  public async getWorkers(): Promise<Record<string, GatewayWorker>> {
     const gatewayKeys = await this.publisherRedis.keys(
       `${this.gatewayId}:workers`,
     );
 
     const workersRaw = await this.publisherRedis.mget(gatewayKeys);
 
-    const workers: GatewayWorker[] = workersRaw
-      .filter(Boolean)
-      .map((worker) => JSON.parse(String(worker)));
+    const workers: GatewayWorker[] = Object.values(
+      workersRaw
+        .filter(Boolean)
+        .flatMap((workers) =>
+          Object.values(
+            JSON.parse(String(workers)) as Record<string, GatewayWorker>,
+          ),
+        ),
+    );
 
     return workers.reduce(
       (acc, worker) => {
@@ -187,6 +193,33 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
       },
       {} as Record<string, GatewayWorker>,
     );
+  }
+
+  public async emit(recipients: GatewayClient[], event: string, data: any) {
+    this.logger.log(recipients, event, data);
+    recipients.forEach((recipient) => {
+      const localSocket = this.localClientsSocketMap.get(recipient.clientId);
+
+      // If the client is local, emit the event to the client
+      if (localSocket) {
+        localSocket.emit(event, data);
+      } else {
+        if (recipient.gatewayId === this.gatewayId) {
+          this.logger.error(
+            `Event ${event} emmited to recipient ${recipient.clientId} but the recipient is not local`,
+          );
+        } else {
+          // If the client is not local we should emit the event to the redis
+          this.publisherRedis.publish(
+            `${recipient.gatewayId}:messages`,
+            JSON.stringify({
+              event,
+              data,
+            }),
+          );
+        }
+      }
+    });
   }
 
   /**
