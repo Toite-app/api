@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { SocketGateway } from "src/@socket/socket.gateway";
-import { SocketEmitTo } from "src/@socket/socket.types";
+import { GatewayClient, SocketEmitTo } from "src/@socket/socket.types";
 
 @Injectable()
 export class SocketService {
@@ -14,7 +14,11 @@ export class SocketService {
     return await this.socketGateway.getWorkers();
   }
 
-  public async emit(to: SocketEmitTo, event: string, data: any) {
+  public async emit(recipients: GatewayClient[], event: string, data: any) {
+    return await this.socketGateway.emit(recipients, event, data);
+  }
+
+  public async emitTo(to: SocketEmitTo, event: string, data: any) {
     const clients = await this.getClients();
 
     const findClientIdsSet = new Set(to.clientIds);

@@ -182,6 +182,7 @@ export class OrdersService {
     if (!order) {
       throw new NotFoundException("errors.orders.with-this-id-doesnt-exist");
     }
+
     const {
       tableNumber,
       restaurantId,

@@ -1,9 +1,12 @@
 import { Injectable, Logger } from "@nestjs/common";
-import { IRole } from "@postgress-db/schema/workers";
+import { plainToClass } from "class-transformer";
 import { SocketService } from "src/@socket/socket.service";
+import { GatewayWorker } from "src/@socket/socket.types";
 import { OrderEntity } from "src/orders/@/entities/order.entity";
 
-type workerId = string;
+export enum OrderSocketEvents {
+  ORDER_UPDATE = "order:update",
+}
 
 @Injectable()
 export class OrdersSocketNotifier {
@@ -11,49 +14,44 @@ export class OrdersSocketNotifier {
 
   constructor(private readonly socketService: SocketService) {}
 
-  // private makeWorkersByRoleMap(clients: RedisConnectedClients) {
-  //   const workersByRoleMap: Record<
-  //     IRole,
-  //     Record<workerId, Omit<RedisConnectedClient, "socket">>
-  //   > = {
-  //     SYSTEM_ADMIN: {},
-  //     CHIEF_ADMIN: {},
-  //     ADMIN: {},
-  //     KITCHENER: {},
-  //     WAITER: {},
-  //     CASHIER: {},
-  //     DISPATCHER: {},
-  //     COURIER: {},
-  //   };
-
-  //   Object.entries(clients).forEach(([, clientObject]) => {
-  //     // WTF user connected with no clients?
-  //     if (Object.keys(clientObject).length === 0) {
-  //       return;
+  // private _getSharedRecipients(
+  //   workers: GatewayWorker[],
+  //   restaurantId?: string | null,
+  // ) {
+  //   return workers.filter((worker) => {
+  //     if (
+  //       worker.role === "SYSTEM_ADMIN" ||
+  //       worker.role === "CHIEF_ADMIN" ||
+  //       (restaurantId &&
+  //         worker.role === "ADMIN" &&
+  //         worker.restaurantId === restaurantId) ||
+  //       (worker.role === "DISPATCHER" && !worker.restaurantId)
+  //     ) {
+  //       return true;
   //     }
-
-  //     const [, client] = Object.entries(clientObject)[0];
-
-  //     const { worker, session } = client;
-
-  //     if (!workersByRoleMap?.[worker.role]) {
-  //       workersByRoleMap[worker.role] = {};
-  //     }
-
-  //     // if worker already exists, skip
-  //     if (!!workersByRoleMap[worker.role]?.[worker.id]) {
-  //       return;
-  //     }
-
-  //     workersByRoleMap[worker.role][worker.id] = {
-  //       clientId: client.clientId,
-  //       gatewayId: client.gatewayId,
-  //       worker,
-  //       session,
-  //     };
   //   });
+  // }
 
-  //   return workersByRoleMap;
+  // private async _notifyDefaultOrder(
+  //   order: OrderEntity,
+  //   workers: GatewayWorker[],
+  // ) {
+  //   const recipientWorkers = [
+  //     ...this._getSharedRecipients(workers, order.restaurantId),
+  //   ];
+
+  //   this.socketService.emitTo(
+  //     {
+  //       workerIds: recipientWorkers.map((worker) => worker.id),
+  //       clientIds: undefined,
+  //     },
+  //     OrderSocketEvents.ORDER_UPDATE,
+  //     {
+  //       order: plainToClass(OrderEntity, order, {
+  //         excludeExtraneousValues: true,
+  //       }),
+  //     },
+  //   );
   // }
 
   /**
@@ -62,19 +60,16 @@ export class OrdersSocketNotifier {
    * @param order
    */
   public async handle(order: OrderEntity) {
-    // const clients = await this.socketService.getClients();
     const workers = await this.socketService.getWorkers();
 
+    // await this._notifyDefaultOrder(order, Object.values(workers));
+
     // const workersByRoleMap = this.makeWorkersByRoleMap(clients);
-    await this.socketService.emit(
-      {
-        workerIds: Object.keys(workers),
-        clientIds: undefined,
-      },
-      "order-updated",
-      {
-        orderId: order.id,
-      },
-    );
+    // await this.socketService.emit(
+    //   {
+    //     workerIds: Object.keys(workers),
+    //     clientIds: undefined,
+    //   },
+    // );
   }
 }
