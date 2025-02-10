@@ -1,9 +1,6 @@
-import env from "@core/env";
 import { Injectable } from "@nestjs/common";
-import Redis from "ioredis";
-import { RedisChannels } from "src/@base/redis/channels";
 import { SocketGateway } from "src/@socket/socket.gateway";
-import { v4 as uuidv4 } from "uuid";
+import { SocketEmitTo } from "src/@socket/socket.types";
 
 @Injectable()
 export class SocketService {
@@ -15,5 +12,22 @@ export class SocketService {
 
   public async getWorkers() {
     return await this.socketGateway.getWorkers();
+  }
+
+  public async emit(to: SocketEmitTo, event: string, data: any) {
+    const clients = await this.getClients();
+
+    const findClientIdsSet = new Set(to.clientIds);
+    const findWorkerIdsSet = new Set(to.workerIds);
+
+    // Get array of recipients (clients) that will receive the message
+    const recipients = clients.filter((client) => {
+      if (to?.clientIds && findClientIdsSet.has(client.clientId)) return true;
+      if (to?.workerIds && findWorkerIdsSet.has(client.workerId)) return true;
+
+      return false;
+    });
+
+    return await this.socketGateway.emit(recipients, event, data);
   }
 }
