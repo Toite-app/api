@@ -63,6 +63,7 @@ export class OrdersSocketNotifier {
    */
   public async handle(order: OrderEntity) {
     const clients = await this.socketService.getClients();
+    const workers = await this.socketService.getWorkers();
     // const workersByRoleMap = this.makeWorkersByRoleMap(clients);
 
     console.log(clients);

@@ -157,17 +157,52 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   /**
+   * Get all workers from all gateways
+   * @returns All workers
+   */
+  public async getWorkers() {
+    const gatewayKeys = await this.publisherRedis.keys(
+      `${this.gatewayId}:workers`,
+    );
+
+    const workersRaw = await this.publisherRedis.mget(gatewayKeys);
+
+    const workers: GatewayWorker[] = workersRaw
+      .filter(Boolean)
+      .map((worker) => JSON.parse(String(worker)));
+
+    return workers.reduce(
+      (acc, worker) => {
+        if (
+          acc?.[worker.id] &&
+          new Date(worker.connectedAt).getTime() <
+            new Date(acc[worker.id].connectedAt).getTime()
+        ) {
+          return acc;
+        }
+
+        acc[worker.id] = worker;
+
+        return acc;
+      },
+      {} as Record<string, GatewayWorker>,
+    );
+  }
+
+  /**
    * Handle a new connection
    * @param socket - The socket connection
    */
   async handleConnection(socket: Socket) {
     try {
       const worker = await this._getWorker(socket);
+      const connectedAt = new Date();
 
       this.localClients.push({
         clientId: socket.id,
         workerId: worker.id,
         gatewayId: this.gatewayId,
+        connectedAt,
       } satisfies GatewayClient);
 
       this.localClientsSocketMap.set(socket.id, socket);
@@ -175,6 +210,8 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
       this.localWorkersMap.set(worker.id, {
         id: worker.id,
         role: worker.role,
+        restaurantId: worker.restaurantId,
+        connectedAt,
       } satisfies GatewayWorker);
 
       socket.emit("connected", worker);
