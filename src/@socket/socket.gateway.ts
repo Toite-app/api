@@ -1,8 +1,11 @@
 import env from "@core/env";
 import { Logger } from "@nestjs/common";
 import {
+  ConnectedSocket,
+  MessageBody,
   OnGatewayConnection,
   OnGatewayDisconnect,
+  SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
 } from "@nestjs/websockets";
@@ -12,8 +15,11 @@ import { RedisChannels } from "src/@base/redis/channels";
 import {
   GatewayClient,
   GatewayClients,
+  GatewayClientSubscription,
+  GatewayIncomingMessage,
   GatewayMessage,
   GatewayWorker,
+  IncomingSubscription,
 } from "src/@socket/socket.types";
 import { AuthService } from "src/auth/services/auth.service";
 
@@ -42,6 +48,8 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
   private localClients: GatewayClients = [];
   private localClientsSocketMap: Map<string, Socket> = new Map();
   private localWorkersMap: Map<string, GatewayWorker> = new Map();
+  private localSubscriptionsMap: Map<string, GatewayClientSubscription[]> =
+    new Map();
 
   constructor(private readonly authService: AuthService) {
     this.gatewayId = SocketUtils.generateGatewayId();
@@ -121,17 +129,29 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
    */
   private async _updateDiscovery() {
     try {
-      await this.publisherRedis.setex(
+      const pipeline = this.publisherRedis.pipeline();
+
+      pipeline.setex(
         `${this.gatewayId}:clients`,
         this.REDIS_CLIENTS_TTL,
         JSON.stringify(this.localClients),
       );
 
-      await this.publisherRedis.setex(
+      pipeline.setex(
         `${this.gatewayId}:workers`,
         this.REDIS_CLIENTS_TTL,
         JSON.stringify(Object.fromEntries(this.localWorkersMap.entries())),
       );
+
+      pipeline.setex(
+        `${this.gatewayId}:subscriptions`,
+        this.REDIS_CLIENTS_TTL,
+        JSON.stringify(
+          Object.fromEntries(this.localSubscriptionsMap.entries()),
+        ),
+      );
+
+      await pipeline.exec();
     } catch (error) {
       this.logger.error(error);
     }
@@ -248,6 +268,31 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
     );
   }
 
+  /**
+   * Get all subscriptions from all gateways
+   * @returns All subscriptions
+   */
+  public async getSubscriptions(): Promise<GatewayClientSubscription[]> {
+    const gatewayKeys = await this.publisherRedis.keys(
+      `${SocketUtils.commonGatewaysIdentifier}:*:subscriptions`,
+    );
+
+    const subscriptionsRaw = await this.publisherRedis.mget(gatewayKeys);
+
+    const subscriptions = subscriptionsRaw
+      .flatMap((raw) =>
+        Object.values(
+          JSON.parse(String(raw)) as Record<
+            string,
+            GatewayClientSubscription[]
+          >,
+        ),
+      )
+      .flat();
+
+    return subscriptions;
+  }
+
   public async emit(recipients: GatewayClient[], event: string, data: any) {
     // Group recipients by gateway for batch publishing
     const recipientsByGateway = recipients.reduce(
@@ -339,9 +384,69 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
       );
 
       this.localClientsSocketMap.delete(socket.id);
+      this.localSubscriptionsMap.delete(socket.id);
     } catch (error) {
       this.logger.error(error);
       socket.disconnect(true);
+    }
+  }
+
+  /**
+   * Handle a subscription
+   * @param incomingData - The incoming data
+   * @param socket - The socket connection
+   */
+  @SubscribeMessage(GatewayIncomingMessage.SUBSCRIPTION)
+  async handleSubscription(
+    @MessageBody() incomingData: IncomingSubscription,
+    @ConnectedSocket() socket: Socket,
+  ) {
+    const clientId = socket.id;
+
+    const { id, type, data, action } = incomingData;
+
+    try {
+      let subscriptions = this.localSubscriptionsMap.get(clientId) ?? [];
+
+      switch (type) {
+        case "ORDER": {
+          if (action === "subscribe") {
+            subscriptions.push({
+              id,
+              clientId,
+              type,
+              data: {
+                orderId: data.orderId,
+              },
+            } satisfies GatewayClientSubscription);
+          } else if (action === "unsubscribe") {
+            subscriptions = subscriptions.filter(
+              (subscription) => subscription.id !== id,
+            );
+          }
+          break;
+        }
+
+        default: {
+          throw new Error("Invalid subscription type");
+        }
+      }
+
+      this.localSubscriptionsMap.set(clientId, subscriptions);
+
+      socket.emit("subscription", {
+        id,
+        action,
+        success: true,
+      });
+    } catch (error) {
+      this.logger.error(error);
+
+      socket.emit("subscription", {
+        id,
+        action,
+        success: false,
+      });
     }
   }
 }
