@@ -14,8 +14,28 @@ export class SocketService {
     return await this.socketGateway.getWorkers();
   }
 
-  public async emit(recipients: GatewayClient[], event: string, data: any) {
-    return await this.socketGateway.emit(recipients, event, data);
+  public async getSubscriptions() {
+    return await this.socketGateway.getSubscriptions();
+  }
+
+  public async emit(
+    messages: { recipient: GatewayClient; event: string; data: any }[],
+  ) {
+    return await this.socketGateway.emit(messages);
+  }
+
+  public async emitToMultiple(
+    recipients: GatewayClient[],
+    event: string,
+    data: any,
+  ) {
+    return await this.socketGateway.emit(
+      recipients.map((recipient) => ({
+        recipient,
+        event,
+        data,
+      })),
+    );
   }
 
   public async emitTo(to: SocketEmitTo, event: string, data: any) {
@@ -32,6 +52,6 @@ export class SocketService {
       return false;
     });
 
-    return await this.socketGateway.emit(recipients, event, data);
+    return await this.emitToMultiple(recipients, event, data);
   }
 }

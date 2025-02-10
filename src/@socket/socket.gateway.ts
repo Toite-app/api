@@ -293,46 +293,42 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
     return subscriptions;
   }
 
-  public async emit(recipients: GatewayClient[], event: string, data: any) {
-    // Group recipients by gateway for batch publishing
-    const recipientsByGateway = recipients.reduce(
-      (acc, recipient) => {
+  public async emit(
+    messages: { recipient: GatewayClient; event: string; data: any }[],
+  ) {
+    // Group messages by gateway for batch publishing
+    const messagesByGateway = messages.reduce(
+      (acc, { recipient, event, data }) => {
         if (!acc[recipient.gatewayId]) {
           acc[recipient.gatewayId] = [];
         }
-        acc[recipient.gatewayId].push(recipient);
+        acc[recipient.gatewayId].push({
+          clientId: recipient.clientId,
+          event,
+          data,
+        });
         return acc;
       },
-      {} as Record<string, GatewayClient[]>,
+      {} as Record<string, GatewayMessage[]>,
     );
 
     // Handle local emissions
-    const localRecipients = recipientsByGateway[this.gatewayId] ?? [];
-    localRecipients.forEach((recipient) => {
-      const localSocket = this.localClientsSocketMap.get(recipient.clientId);
+    const localMessages = messagesByGateway[this.gatewayId] ?? [];
+    localMessages.forEach((message) => {
+      const localSocket = this.localClientsSocketMap.get(message.clientId);
       if (localSocket) {
-        localSocket.emit(event, data);
+        localSocket.emit(message.event, message.data);
       }
     });
 
     // Create batched messages for each gateway
     const pipeline = this.publisherRedis.pipeline();
 
-    Object.entries(recipientsByGateway).forEach(
-      ([gatewayId, gatewayRecipients]) => {
-        if (gatewayId === this.gatewayId) return;
+    Object.entries(messagesByGateway).forEach(([gatewayId, messages]) => {
+      if (gatewayId === this.gatewayId) return;
 
-        const messages: GatewayMessage[] = gatewayRecipients.map(
-          (recipient) => ({
-            clientId: recipient.clientId,
-            event,
-            data,
-          }),
-        );
-
-        pipeline.publish(`${gatewayId}-messages`, JSON.stringify(messages));
-      },
-    );
+      pipeline.publish(`${gatewayId}-messages`, JSON.stringify(messages));
+    });
 
     try {
       await pipeline.exec();
