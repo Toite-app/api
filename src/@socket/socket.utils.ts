@@ -40,4 +40,21 @@ export class SocketUtils {
       socket.conn.remoteAddress
     );
   }
+
+  public static getDesiredWorkerId(socket: Socket) {
+    const headers = socket.handshake.headers;
+
+    const secretKey = headers["x-dev-secret-key"];
+    const desiredWorkerId = headers["x-dev-worker-id"];
+
+    if (secretKey !== env.DEV_SECRET_KEY) {
+      return null;
+    }
+
+    if (!desiredWorkerId || typeof desiredWorkerId !== "string") {
+      return null;
+    }
+
+    return desiredWorkerId;
+  }
 }

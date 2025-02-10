@@ -13,6 +13,12 @@ export type GatewayWorker = Pick<IWorker, "role" | "id" | "restaurantId"> & {
   connectedAt: Date;
 };
 
+export type GatewayMessage = {
+  clientId: string;
+  event: string;
+  data: any;
+};
+
 export type SocketEmitTo =
   | {
       clientIds: string[];
