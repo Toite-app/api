@@ -1,4 +1,5 @@
 import { IWorker } from "@postgress-db/schema/workers";
+import { OrderEntity } from "src/orders/@/entities/order.entity";
 
 export enum GatewayIncomingMessage {
   SUBSCRIPTION = "subscription",
@@ -56,3 +57,18 @@ export type SocketEmitTo =
       clientIds: undefined;
       workerIds: string[];
     };
+
+export enum SocketEventType {
+  SUBSCRIPTION_UPDATE = "subscription:update",
+}
+
+export type SocketOrderUpdateEvent = {
+  id: string;
+  type: "ORDER";
+  order: OrderEntity;
+};
+
+export interface SocketEvent {
+  type: `${SocketEventType}`;
+  data: SocketOrderUpdateEvent;
+}
