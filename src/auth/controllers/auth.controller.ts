@@ -21,6 +21,7 @@ import {
   ApiUnauthorizedResponse,
 } from "@nestjs/swagger";
 import { IWorker } from "@postgress-db/schema/workers";
+import { EnableAuditLog } from "src/@base/audit-logs/decorators/audit-logs.decorator";
 import { Serializable } from "src/@core/decorators/serializable.decorator";
 import { WorkerEntity } from "src/workers/entities/worker.entity";
 
@@ -51,6 +52,7 @@ export class AuthController {
   }
 
   @Public()
+  @EnableAuditLog()
   @Post("sign-in")
   @HttpCode(HttpStatus.OK)
   @Serializable(WorkerEntity)

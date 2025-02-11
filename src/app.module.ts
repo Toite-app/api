@@ -6,7 +6,7 @@ import { RedisModule } from "@liaoliaots/nestjs-redis";
 import { BullModule } from "@nestjs/bullmq";
 import { Module } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
-import { APP_GUARD, APP_PIPE } from "@nestjs/core";
+import { APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from "@nestjs/core";
 import { MongooseModule } from "@nestjs/mongoose";
 import { ThrottlerModule } from "@nestjs/throttler";
 import { NestjsFormDataModule } from "nestjs-form-data";
@@ -17,6 +17,8 @@ import {
   QueryResolver,
 } from "nestjs-i18n";
 import { ZodValidationPipe } from "nestjs-zod";
+import { AuditLogsInterceptor } from "src/@base/audit-logs/audit-logs.interceptor";
+import { AuditLogsModule } from "src/@base/audit-logs/audit-logs.module";
 import { EncryptionModule } from "src/@base/encryption/encryption.module";
 import { RedisChannels } from "src/@base/redis/channels";
 import { S3Module } from "src/@base/s3/s3.module";
@@ -47,6 +49,7 @@ import { WorkersModule } from "./workers/workers.module";
       ],
     }),
     DrizzleModule,
+    AuditLogsModule,
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -104,6 +107,10 @@ import { WorkersModule } from "./workers/workers.module";
     {
       provide: APP_GUARD,
       useClass: RolesGuard,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: AuditLogsInterceptor,
     },
   ],
 })

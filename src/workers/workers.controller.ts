@@ -27,6 +27,7 @@ import {
   WorkerRole,
   workerRoleRank,
 } from "@postgress-db/schema/workers";
+import { EnableAuditLog } from "src/@base/audit-logs/decorators/audit-logs.decorator";
 
 import { CreateWorkerDto, UpdateWorkerDto } from "./dto/req/put-worker.dto";
 import { WorkersPaginatedDto } from "./dto/res/workers-paginated.dto";
@@ -39,6 +40,7 @@ import { WorkersService } from "./workers.service";
 export class WorkersController {
   constructor(private readonly workersService: WorkersService) {}
 
+  @EnableAuditLog({ onlyErrors: true })
   @Get()
   @ApiOperation({ summary: "Gets workers that created in system" })
   @Serializable(WorkersPaginatedDto)
@@ -79,6 +81,7 @@ export class WorkersController {
   }
 
   // TODO: add validation of ADMIN restaurant id
+  @EnableAuditLog({ onlyErrors: true })
   @Post()
   @Roles("SYSTEM_ADMIN", "CHIEF_ADMIN", "ADMIN")
   @Serializable(WorkerEntity)
@@ -113,6 +116,7 @@ export class WorkersController {
     return await this.workersService.create(data);
   }
 
+  @EnableAuditLog({ onlyErrors: true })
   @Get(":id")
   @Serializable(WorkerEntity)
   @ApiOperation({ summary: "Gets a worker by id" })
@@ -143,6 +147,7 @@ export class WorkersController {
   }
 
   // TODO: add validation of ADMIN restaurant id
+  @EnableAuditLog()
   @Put(":id")
   @Roles("SYSTEM_ADMIN", "CHIEF_ADMIN", "ADMIN")
   @Serializable(WorkerEntity)
