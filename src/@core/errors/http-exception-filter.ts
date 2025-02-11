@@ -1,5 +1,6 @@
 // import { ValidationError } from "@i18n-class-validator";
 import { ErrorInstance } from "@core/errors/index.types";
+import { Request } from "@core/interfaces/request";
 import {
   ArgumentsHost,
   Catch,
@@ -60,11 +61,11 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
   catch(exception: HttpException, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
-    const request = ctx.getRequest();
+    const request = ctx.getRequest() as Request;
     const response = ctx.getResponse();
     const statusCode = exception.getStatus();
 
-    const timestamp = new Date().getTime();
+    const timestamp = request.timestamp ?? new Date().getTime();
     const error = this.getError(exception);
 
     const validationErrors = [
@@ -76,6 +77,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
     response.status(statusCode).json({
       statusCode,
+      ...(request?.requestId ? { requestId: request.requestId } : {}),
       path: request.url,
       timestamp,
       message,
