@@ -53,6 +53,11 @@ export class AuditLogsInterceptor implements NestInterceptor {
   }
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+    const request = context.switchToHttp().getRequest<Request>();
+    const timestamp = Date.now();
+
+    request.timestamp = timestamp;
+
     const isEnabled = this.reflector.get<boolean>(
       IS_AUDIT_LOG_ENABLED,
       context.getHandler(),
@@ -68,7 +73,6 @@ export class AuditLogsInterceptor implements NestInterceptor {
         context.getHandler(),
       ) ?? {};
 
-    const request = context.switchToHttp().getRequest<Request>();
     const startTime = Date.now();
     request.requestId = request?.requestId ?? uuidv4();
 

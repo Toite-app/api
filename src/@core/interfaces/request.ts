@@ -26,6 +26,7 @@ export type RequestSession = Pick<
 
 export interface Request extends Req {
   requestId?: string;
+  timestamp?: number;
   worker?: RequestWorker | null;
   session?: RequestSession | null;
   user?: {
