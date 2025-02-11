@@ -25,6 +25,11 @@ export type RequestSession = Pick<
 };
 
 export interface Request extends Req {
+  requestId?: string;
   worker?: RequestWorker | null;
   session?: RequestSession | null;
+  user?: {
+    id: string;
+    [key: string]: any;
+  };
 }
