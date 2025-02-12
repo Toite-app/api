@@ -3,7 +3,7 @@ import { Inject, Logger } from "@nestjs/common";
 import { Schema } from "@postgress-db/drizzle.module";
 import { Job } from "bullmq";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
-import { SnapshotsService } from "src/@base/snapshots/snapshots.service";
+import { SnapshotsProducer } from "src/@base/snapshots/snapshots.producer";
 import { PG_CONNECTION } from "src/constants";
 import { OrderQueueJobName, ORDERS_QUEUE } from "src/orders/@queue";
 import { OrderCrudUpdateJobDto } from "src/orders/@queue/dto/crud-update.job";
@@ -18,7 +18,7 @@ export class OrdersQueueProcessor extends WorkerHost {
     @Inject(PG_CONNECTION)
     private readonly pg: NodePgDatabase<Schema>,
     private readonly ordersSocketNotifier: OrdersSocketNotifier,
-    private readonly snapshotsService: SnapshotsService,
+    private readonly snapshotsProducer: SnapshotsProducer,
   ) {
     super();
   }
@@ -59,11 +59,12 @@ export class OrdersQueueProcessor extends WorkerHost {
    */
   private async recalculatePrices(data: RecalculatePricesJobDto) {
     const { orderId } = data;
+    orderId;
   }
 
   private async crudUpdate(data: OrderCrudUpdateJobDto) {
     // make snapshot
-    await this.snapshotsService.create({
+    await this.snapshotsProducer.create({
       model: "ORDERS",
       action: data.action,
       data: data.order,

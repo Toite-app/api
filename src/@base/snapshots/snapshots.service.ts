@@ -25,7 +25,7 @@ export class SnapshotsService {
   /**
    * Determines the action to be taken based on the payload and previous snapshot
    */
-  private async determinateAction(
+  determinateAction(
     payload: CreateSnapshotPayload,
     previousSnapshot: SnapshotDocument | null,
   ) {
@@ -41,7 +41,7 @@ export class SnapshotsService {
   /**
    * Gets the previous snapshot for the document
    */
-  private async getPreviousSnapshot(documentId: string, model: string) {
+  async getPreviousSnapshot(documentId: string, model: string) {
     return await this.snapshotModel
       .findOne({ documentId, model })
       .sort({ createdAt: -1 })
@@ -51,7 +51,7 @@ export class SnapshotsService {
   /**
    * Calculates changes between two snapshots
    */
-  private calculateChanges(oldData: any, newData: any): SnapshotChange[] {
+  calculateChanges(oldData: any, newData: any): SnapshotChange[] {
     const { changedPaths } = deepCompare(oldData, newData);
 
     return changedPaths.map((path) => ({
@@ -70,7 +70,7 @@ export class SnapshotsService {
    * @param workerId ID of the worker
    * @returns Worker or null if worker is not found
    */
-  private async getWorker(workerId?: string | null) {
+  async getWorker(workerId?: string | null) {
     if (!workerId) return null;
 
     const worker = await this.pg.query.workers.findFirst({
@@ -91,33 +91,5 @@ export class SnapshotsService {
     });
 
     return worker ?? null;
-  }
-
-  /**
-   * Creates a snapshot
-   */
-  async create(payload: CreateSnapshotPayload) {
-    const { model, data, documentId, workerId } = payload;
-
-    const previousSnapshot = await this.getPreviousSnapshot(documentId, model);
-    const action = await this.determinateAction(payload, previousSnapshot);
-    const worker = await this.getWorker(workerId);
-
-    const changes =
-      action === CrudAction.UPDATE
-        ? this.calculateChanges(previousSnapshot?.data ?? null, data)
-        : [];
-
-    const snapshot = new this.snapshotModel({
-      model,
-      data,
-      documentId,
-      action,
-      worker,
-      workerId: workerId ?? null,
-      changes,
-    });
-
-    return await snapshot.save();
   }
 }
