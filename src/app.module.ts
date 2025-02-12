@@ -22,6 +22,7 @@ import { AuditLogsModule } from "src/@base/audit-logs/audit-logs.module";
 import { EncryptionModule } from "src/@base/encryption/encryption.module";
 import { RedisChannels } from "src/@base/redis/channels";
 import { S3Module } from "src/@base/s3/s3.module";
+import { SnapshotsModule } from "src/@base/snapshots/snapshots.module";
 import { SocketModule } from "src/@socket/socket.module";
 import { AddressesModule } from "src/addresses/addresses.module";
 import { DishCategoriesModule } from "src/dish-categories/dish-categories.module";
@@ -49,6 +50,7 @@ import { WorkersModule } from "./workers/workers.module";
       ],
     }),
     DrizzleModule,
+    SnapshotsModule,
     AuditLogsModule,
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
