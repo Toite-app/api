@@ -1,11 +1,15 @@
 import { CrudAction } from "@core/types/general";
+import { deepCompare } from "@core/utils/deep-compare";
 import { Inject, Injectable } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { schema } from "@postgress-db/drizzle.module";
 import { eq } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { Model } from "mongoose";
-import { CreateSnapshotPayload } from "src/@base/snapshots/types";
+import {
+  CreateSnapshotPayload,
+  SnapshotChange,
+} from "src/@base/snapshots/types";
 import { PG_CONNECTION } from "src/constants";
 
 import { Snapshot, SnapshotDocument } from "./schemas/snapshot.schema";
@@ -19,24 +23,46 @@ export class SnapshotsService {
   ) {}
 
   /**
-   * Determines the action to be taken based on the payload
-   * @param payload Payload to determine the action
-   * @returns Action to be taken
+   * Determines the action to be taken based on the payload and previous snapshot
    */
-  private async determinateAction(payload: CreateSnapshotPayload) {
-    const { documentId, model, data } = payload;
+  private async determinateAction(
+    payload: CreateSnapshotPayload,
+    previousSnapshot: SnapshotDocument | null,
+  ) {
+    const { data } = payload;
 
     if (payload.action) return payload.action;
     if (data === null) return CrudAction.DELETE;
+    if (!previousSnapshot) return CrudAction.CREATE;
 
-    const document = await this.snapshotModel.findOne({
-      documentId,
-      model,
-    });
+    return CrudAction.UPDATE;
+  }
 
-    if (document) return CrudAction.UPDATE;
+  /**
+   * Gets the previous snapshot for the document
+   */
+  private async getPreviousSnapshot(documentId: string, model: string) {
+    return await this.snapshotModel
+      .findOne({ documentId, model })
+      .sort({ createdAt: -1 })
+      .exec();
+  }
 
-    return CrudAction.CREATE;
+  /**
+   * Calculates changes between two snapshots
+   */
+  private calculateChanges(oldData: any, newData: any): SnapshotChange[] {
+    const { changedPaths } = deepCompare(oldData, newData);
+
+    return changedPaths.map((path) => ({
+      path,
+      oldValue: path
+        .split(".")
+        .reduce((obj, key) => obj?.[key.replace(/\[\d+\]/, "")], oldData),
+      newValue: path
+        .split(".")
+        .reduce((obj, key) => obj?.[key.replace(/\[\d+\]/, "")], newData),
+    }));
   }
 
   /**
@@ -69,14 +95,18 @@ export class SnapshotsService {
 
   /**
    * Creates a snapshot
-   * @param payload Payload to create the snapshot
-   * @returns Created snapshot
    */
   async create(payload: CreateSnapshotPayload) {
     const { model, data, documentId, workerId } = payload;
 
-    const action = await this.determinateAction(payload);
+    const previousSnapshot = await this.getPreviousSnapshot(documentId, model);
+    const action = await this.determinateAction(payload, previousSnapshot);
     const worker = await this.getWorker(workerId);
+
+    const changes =
+      action === CrudAction.UPDATE
+        ? this.calculateChanges(previousSnapshot?.data ?? null, data)
+        : [];
 
     const snapshot = new this.snapshotModel({
       model,
@@ -85,6 +115,7 @@ export class SnapshotsService {
       action,
       worker,
       workerId: workerId ?? null,
+      changes,
     });
 
     return await snapshot.save();

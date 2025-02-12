@@ -2,7 +2,7 @@ import { CrudAction } from "@core/types/general";
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { IWorker } from "@postgress-db/schema/workers";
 
-import { SnapshotModel } from "../types";
+import { SnapshotChange, SnapshotModel } from "../types";
 
 export type SnapshotDocument = Snapshot & Document;
 
@@ -43,6 +43,12 @@ export class Snapshot {
    */
   @Prop({ required: false, type: Object })
   worker: Omit<IWorker, "passwordHash"> | null;
+
+  /**
+   * Array of changes that were made in this snapshot
+   */
+  @Prop({ required: false, type: Array })
+  changes: SnapshotChange[];
 
   createdAt: Date;
   updatedAt: Date;
