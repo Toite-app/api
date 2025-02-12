@@ -33,8 +33,10 @@ export class OrdersController {
     description: "Order has been successfully created",
     type: OrderEntity,
   })
-  async create(@Body() dto: CreateOrderDto) {
-    return this.ordersService.create(dto);
+  async create(@Body() dto: CreateOrderDto, @Worker() worker: RequestWorker) {
+    return this.ordersService.create(dto, {
+      workerId: worker.id,
+    });
   }
 
   @Get(":id")
