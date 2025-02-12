@@ -5,5 +5,5 @@ export class OrderCrudUpdateJobDto {
   orderId: string;
   order: OrderEntity;
   action: `${CrudAction}`;
-  calledByUserId?: string;
+  calledByWorkerId?: string;
 }
