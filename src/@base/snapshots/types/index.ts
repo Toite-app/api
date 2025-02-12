@@ -12,3 +12,9 @@ export type CreateSnapshotPayload = {
   data: any;
   workerId?: string | null;
 };
+
+export interface SnapshotChange {
+  path: string;
+  oldValue: any;
+  newValue: any;
+}
