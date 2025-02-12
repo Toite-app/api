@@ -1,5 +1,11 @@
 import { CrudAction } from "@core/types/general";
 
+export const SNAPSHOTS_QUEUE = "snapshots";
+
+export enum SnapshotQueueJobName {
+  CREATE_SNAPSHOT = "create-snapshot",
+}
+
 export enum SnapshotModel {
   RESTAURANTS = "RESTAURANTS",
   ORDERS = "ORDERS",
