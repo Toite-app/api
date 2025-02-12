@@ -1,6 +1,8 @@
 import { Controller } from "@core/decorators/controller.decorator";
 import { Serializable } from "@core/decorators/serializable.decorator";
+import { Worker } from "@core/decorators/worker.decorator";
 import { BadRequestException } from "@core/errors/exceptions/bad-request.exception";
+import { RequestWorker } from "@core/interfaces/request";
 import { Body, Delete, Get, Param, Patch, Post } from "@nestjs/common";
 import {
   ApiBadRequestResponse,
@@ -69,8 +71,14 @@ export class OrdersController {
     description: "Order with this id doesn't exist",
   })
   @ApiBadRequestResponse()
-  async update(@Param("id") id: string, @Body() dto: UpdateOrderDto) {
-    return this.ordersService.update(id, dto);
+  async update(
+    @Param("id") id: string,
+    @Body() dto: UpdateOrderDto,
+    @Worker() worker: RequestWorker,
+  ) {
+    return this.ordersService.update(id, dto, {
+      workerId: worker.id,
+    });
   }
 
   @Post(":id/dishes")

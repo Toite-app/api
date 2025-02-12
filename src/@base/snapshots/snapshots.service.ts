@@ -18,9 +18,15 @@ export class SnapshotsService {
     @Inject(PG_CONNECTION) private readonly pg: NodePgDatabase<typeof schema>,
   ) {}
 
+  /**
+   * Determines the action to be taken based on the payload
+   * @param payload Payload to determine the action
+   * @returns Action to be taken
+   */
   private async determinateAction(payload: CreateSnapshotPayload) {
     const { documentId, model, data } = payload;
 
+    if (payload.action) return payload.action;
     if (data === null) return CrudAction.DELETE;
 
     const document = await this.snapshotModel.findOne({
@@ -33,6 +39,11 @@ export class SnapshotsService {
     return CrudAction.CREATE;
   }
 
+  /**
+   * Gets worker by id
+   * @param workerId ID of the worker
+   * @returns Worker or null if worker is not found
+   */
   private async getWorker(workerId?: string | null) {
     if (!workerId) return null;
 
@@ -56,10 +67,15 @@ export class SnapshotsService {
     return worker ?? null;
   }
 
+  /**
+   * Creates a snapshot
+   * @param payload Payload to create the snapshot
+   * @returns Created snapshot
+   */
   async create(payload: CreateSnapshotPayload) {
     const { model, data, documentId, workerId } = payload;
 
-    const action = payload?.action ?? (await this.determinateAction(payload));
+    const action = await this.determinateAction(payload);
     const worker = await this.getWorker(workerId);
 
     const snapshot = new this.snapshotModel({

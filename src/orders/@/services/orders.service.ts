@@ -166,7 +166,11 @@ export class OrdersService {
     return order;
   }
 
-  async update(id: string, dto: UpdateOrderDto): Promise<OrderEntity> {
+  async update(
+    id: string,
+    dto: UpdateOrderDto,
+    opts?: { workerId?: string },
+  ): Promise<OrderEntity> {
     await this.checkDto(dto, id);
 
     const order = await this.pg.query.orders.findFirst({
@@ -226,6 +230,7 @@ export class OrdersService {
       action: "UPDATE",
       orderId: id,
       order: updatedOrderEntity,
+      calledByWorkerId: opts?.workerId,
     });
 
     return updatedOrderEntity;
