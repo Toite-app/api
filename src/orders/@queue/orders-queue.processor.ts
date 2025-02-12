@@ -2,9 +2,11 @@ import { Processor, WorkerHost } from "@nestjs/bullmq";
 import { Inject, Logger } from "@nestjs/common";
 import { Schema } from "@postgress-db/drizzle.module";
 import { Job } from "bullmq";
+import { plainToClass } from "class-transformer";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { SnapshotsProducer } from "src/@base/snapshots/snapshots.producer";
 import { PG_CONNECTION } from "src/constants";
+import { OrderSnapshotEntity } from "src/orders/@/entities/order-snapshot.entity";
 import { OrderQueueJobName, ORDERS_QUEUE } from "src/orders/@queue";
 import { OrderCrudUpdateJobDto } from "src/orders/@queue/dto/crud-update.job";
 import { RecalculatePricesJobDto } from "src/orders/@queue/dto/recalculate-prices-job.dto";
@@ -67,7 +69,9 @@ export class OrdersQueueProcessor extends WorkerHost {
     await this.snapshotsProducer.create({
       model: "ORDERS",
       action: data.action,
-      data: data.order,
+      data: plainToClass(OrderSnapshotEntity, data.order, {
+        excludeExtraneousValues: true,
+      }),
       documentId: data.orderId,
       workerId: data.calledByWorkerId,
     });
