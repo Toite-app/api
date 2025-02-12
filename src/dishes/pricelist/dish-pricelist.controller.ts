@@ -6,6 +6,7 @@ import { ApiOperation, ApiResponse } from "@nestjs/swagger";
 import { DishPricelistService } from "./dish-pricelist.service";
 import { UpdateDishPricelistDto } from "./dto/update-dish-pricelist.dto";
 import DishPricelistItemEntity from "./entities/dish-pricelist-item.entity";
+import { EnableAuditLog } from "src/@base/audit-logs/decorators/audit-logs.decorator";
 
 @Controller("dishes/:id/pricelist", {
   tags: ["dishes"],
@@ -13,6 +14,7 @@ import DishPricelistItemEntity from "./entities/dish-pricelist-item.entity";
 export class DishPricelistController {
   constructor(private readonly dishPricelistService: DishPricelistService) {}
 
+  @EnableAuditLog({ onlyErrors: true })
   @Get()
   @Serializable(DishPricelistItemEntity)
   @ApiOperation({ summary: "Get dish pricelist" })
@@ -25,6 +27,7 @@ export class DishPricelistController {
     return this.dishPricelistService.getPricelist(dishId);
   }
 
+  @EnableAuditLog()
   @Put(":restaurantId")
   @Serializable(DishPricelistItemEntity)
   @ApiOperation({ summary: "Update dish pricelist for restaurant" })

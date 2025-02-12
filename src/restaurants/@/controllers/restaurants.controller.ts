@@ -15,6 +15,7 @@ import {
   ApiOperation,
   ApiUnauthorizedResponse,
 } from "@nestjs/swagger";
+import { EnableAuditLog } from "src/@base/audit-logs/decorators/audit-logs.decorator";
 
 import { CreateRestaurantDto } from "../dto/create-restaurant.dto";
 import { UpdateRestaurantDto } from "../dto/update-restaurant.dto";
@@ -28,6 +29,7 @@ import { RestaurantsService } from "../services/restaurants.service";
 export class RestaurantsController {
   constructor(private readonly restaurantsService: RestaurantsService) {}
 
+  @EnableAuditLog({ onlyErrors: true })
   @Get()
   @ApiOperation({
     summary: "Gets restaurants that created in system",
@@ -50,6 +52,7 @@ export class RestaurantsController {
     };
   }
 
+  @EnableAuditLog()
   @Post()
   @Roles("SYSTEM_ADMIN", "CHIEF_ADMIN")
   @Serializable(RestaurantEntity)
@@ -83,6 +86,7 @@ export class RestaurantsController {
     return await this.restaurantsService.findById(id);
   }
 
+  @EnableAuditLog()
   @Put(":id")
   @Roles("SYSTEM_ADMIN", "CHIEF_ADMIN")
   @Serializable(RestaurantEntity)
@@ -106,6 +110,7 @@ export class RestaurantsController {
     return await this.restaurantsService.update(id, dto);
   }
 
+  @EnableAuditLog()
   @Delete(":id")
   @Roles("SYSTEM_ADMIN")
   @ApiOperation({

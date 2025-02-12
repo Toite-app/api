@@ -11,6 +11,7 @@ import {
   ApiOkResponse,
   ApiOperation,
 } from "@nestjs/swagger";
+import { EnableAuditLog } from "src/@base/audit-logs/decorators/audit-logs.decorator";
 import { AddOrderDishDto } from "src/orders/@/dtos/add-order-dish.dto";
 import { CreateOrderDto } from "src/orders/@/dtos/create-order.dto";
 import { UpdateOrderDishDto } from "src/orders/@/dtos/update-order-dish.dto";
@@ -26,6 +27,7 @@ export class OrdersController {
     private readonly orderDishesService: OrderDishesService,
   ) {}
 
+  @EnableAuditLog()
   @Post()
   @Serializable(OrderEntity)
   @ApiOperation({ summary: "Creates a new order" })
@@ -39,6 +41,7 @@ export class OrdersController {
     });
   }
 
+  @EnableAuditLog({ onlyErrors: true })
   @Get(":id")
   @Serializable(OrderEntity)
   @ApiOperation({ summary: "Gets order by id" })
@@ -62,6 +65,7 @@ export class OrdersController {
     return await this.ordersService.findById(id);
   }
 
+  @EnableAuditLog()
   @Patch(":id")
   @Serializable(OrderEntity)
   @ApiOperation({ summary: "Updates an order" })
@@ -83,6 +87,7 @@ export class OrdersController {
     });
   }
 
+  @EnableAuditLog()
   @Post(":id/dishes")
   @Serializable(OrderEntity)
   @ApiOperation({ summary: "Adds a dish to the order" })
@@ -105,6 +110,7 @@ export class OrdersController {
     return this.ordersService.findById(orderId);
   }
 
+  @EnableAuditLog()
   @Patch(":id/dishes/:orderDishId")
   @Serializable(OrderEntity)
   @ApiOperation({ summary: "Updates a dish in the order" })
@@ -126,6 +132,7 @@ export class OrdersController {
     return this.ordersService.findById(orderId);
   }
 
+  @EnableAuditLog()
   @Delete(":id/dishes/:orderDishId")
   @ApiOperation({ summary: "Removes a dish from the order" })
   @ApiOkResponse({

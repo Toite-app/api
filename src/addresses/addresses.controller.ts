@@ -7,6 +7,7 @@ import {
   ApiResponse,
   ApiUnauthorizedResponse,
 } from "@nestjs/swagger";
+import { EnableAuditLog } from "src/@base/audit-logs/decorators/audit-logs.decorator";
 
 import { GetSuggestionsDto } from "./dto/get-suggestions.dto";
 import { AddressSuggestion } from "./entities/suggestion.entity";
@@ -18,6 +19,7 @@ import { AddressesService } from "./services/addresses.service";
 export class AddressesController {
   constructor(private readonly addressesService: AddressesService) {}
 
+  @EnableAuditLog({ onlyErrors: true })
   @Get("suggestions")
   @ApiOperation({
     summary: "Get address suggestions",

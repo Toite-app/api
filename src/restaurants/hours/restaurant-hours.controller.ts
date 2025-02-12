@@ -9,6 +9,7 @@ import {
   ApiOperation,
   OmitType,
 } from "@nestjs/swagger";
+import { EnableAuditLog } from "src/@base/audit-logs/decorators/audit-logs.decorator";
 
 import {
   CreateRestaurantHoursDto,
@@ -30,6 +31,7 @@ export class RestaurantHoursController {
     private readonly restaurantHoursService: RestaurantHoursService,
   ) {}
 
+  @EnableAuditLog({ onlyErrors: true })
   @Get()
   @Serializable(RestaurantHoursEntity)
   @ApiOperation({ summary: "Gets restaurant hours" })
@@ -41,6 +43,7 @@ export class RestaurantHoursController {
     return await this.restaurantHoursService.findMany(id);
   }
 
+  @EnableAuditLog()
   @Post()
   @Roles("SYSTEM_ADMIN", "CHIEF_ADMIN")
   @ApiOperation({ summary: "Creates restaurant hours" })
@@ -60,6 +63,7 @@ export class RestaurantHoursController {
     });
   }
 
+  @EnableAuditLog()
   @Put(":hoursId")
   @Roles("SYSTEM_ADMIN", "CHIEF_ADMIN")
   @Serializable(RestaurantHoursEntity)
@@ -77,6 +81,7 @@ export class RestaurantHoursController {
     return await this.restaurantHoursService.update(id, dto);
   }
 
+  @EnableAuditLog()
   @Delete(":hoursId")
   @Roles("SYSTEM_ADMIN", "CHIEF_ADMIN")
   @ApiOperation({ summary: "Deletes restaurant hours" })

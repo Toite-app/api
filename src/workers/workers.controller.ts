@@ -81,7 +81,7 @@ export class WorkersController {
   }
 
   // TODO: add validation of ADMIN restaurant id
-  @EnableAuditLog({ onlyErrors: true })
+  @EnableAuditLog()
   @Post()
   @Roles("SYSTEM_ADMIN", "CHIEF_ADMIN", "ADMIN")
   @Serializable(WorkerEntity)

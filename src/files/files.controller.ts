@@ -11,6 +11,7 @@ import {
 } from "@nestjs/swagger";
 import { IWorker } from "@postgress-db/schema/workers";
 import { FormDataRequest } from "nestjs-form-data";
+import { EnableAuditLog } from "src/@base/audit-logs/decorators/audit-logs.decorator";
 import { UploadFormDataDto } from "src/files/dto/upload-form-data.dto";
 import { FileEntity } from "src/files/entitites/file.entity";
 import { FilesService } from "src/files/files.service";
@@ -21,6 +22,7 @@ import { FilesService } from "src/files/files.service";
 export class FilesController {
   constructor(private readonly filesService: FilesService) {}
 
+  @EnableAuditLog()
   @Post("upload")
   @FormDataRequest()
   @Serializable(FileEntity)
@@ -36,6 +38,7 @@ export class FilesController {
     });
   }
 
+  @EnableAuditLog()
   @Delete(":id")
   @ApiOperation({ summary: "Deletes a file" })
   @ApiOkResponse({

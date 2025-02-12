@@ -18,6 +18,7 @@ import {
   ApiOperation,
   ApiUnauthorizedResponse,
 } from "@nestjs/swagger";
+import { EnableAuditLog } from "src/@base/audit-logs/decorators/audit-logs.decorator";
 
 import { DishCategoriesService } from "./dish-categories.service";
 import { CreateDishCategoryDto } from "./dtos/create-dish-category.dto";
@@ -31,6 +32,7 @@ import { DishCategoryEntity } from "./entities/dish-category.entity";
 export class DishCategoriesController {
   constructor(private readonly dishCategoriesService: DishCategoriesService) {}
 
+  @EnableAuditLog({ onlyErrors: true })
   @Get()
   @ApiOperation({
     summary: "Gets dish categories that are available in system",
@@ -72,6 +74,7 @@ export class DishCategoriesController {
     };
   }
 
+  @EnableAuditLog()
   @Post()
   @Serializable(DishCategoryEntity)
   @ApiOperation({ summary: "Creates a new dish category" })
@@ -90,6 +93,7 @@ export class DishCategoriesController {
     return category;
   }
 
+  @EnableAuditLog({ onlyErrors: true })
   @Get(":id")
   @Serializable(DishCategoryEntity)
   @ApiOperation({ summary: "Gets a dish category by id" })
@@ -117,6 +121,7 @@ export class DishCategoriesController {
     return category;
   }
 
+  @EnableAuditLog()
   @Put(":id")
   @Serializable(DishCategoryEntity)
   @ApiOperation({ summary: "Updates a dish category by id" })
