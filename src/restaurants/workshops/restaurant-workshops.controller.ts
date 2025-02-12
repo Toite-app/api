@@ -9,6 +9,7 @@ import {
   ApiOperation,
   OmitType,
 } from "@nestjs/swagger";
+import { EnableAuditLog } from "src/@base/audit-logs/decorators/audit-logs.decorator";
 
 import { UpdateRestaurantWorkshopWorkersDto } from "./dto/put-restaurant-workshop-workers.dto";
 import { WorkshopWorkerEntity } from "./entity/restaurant-workshop-worker.entity";
@@ -32,6 +33,7 @@ export class RestaurantWorkshopsController {
     private readonly restaurantWorkshopsService: RestaurantWorkshopsService,
   ) {}
 
+  @EnableAuditLog({ onlyErrors: true })
   @Get()
   @Serializable(RestaurantWorkshopDto)
   @ApiOperation({ summary: "Gets restaurant workshops" })
@@ -43,6 +45,7 @@ export class RestaurantWorkshopsController {
     return await this.restaurantWorkshopsService.findMany(id);
   }
 
+  @EnableAuditLog()
   @Post()
   @Roles("SYSTEM_ADMIN", "CHIEF_ADMIN")
   @ApiOperation({ summary: "Creates restaurant workshop" })
@@ -62,6 +65,7 @@ export class RestaurantWorkshopsController {
     });
   }
 
+  @EnableAuditLog()
   @Put(":workshopId")
   @Roles("SYSTEM_ADMIN", "CHIEF_ADMIN")
   @Serializable(RestaurantWorkshopDto)
@@ -79,6 +83,7 @@ export class RestaurantWorkshopsController {
     return await this.restaurantWorkshopsService.update(id, dto);
   }
 
+  @EnableAuditLog({ onlyErrors: true })
   @Get(":workshopId/workers")
   @Serializable(WorkshopWorkerEntity)
   @ApiOperation({ summary: "Gets workshop workers" })
@@ -90,6 +95,7 @@ export class RestaurantWorkshopsController {
     return await this.restaurantWorkshopsService.getWorkers(id);
   }
 
+  @EnableAuditLog()
   @Put(":workshopId/workers")
   @Roles("SYSTEM_ADMIN", "CHIEF_ADMIN")
   @ApiOperation({ summary: "Updates workshop workers" })
@@ -107,6 +113,7 @@ export class RestaurantWorkshopsController {
     return;
   }
 
+  @EnableAuditLog()
   @Delete(":workshopId")
   @Roles("SYSTEM_ADMIN", "CHIEF_ADMIN")
   @ApiOperation({ summary: "Deletes restaurant workshop" })

@@ -11,6 +11,7 @@ import {
 } from "@nestjs/swagger";
 import { IWorker } from "@postgress-db/schema/workers";
 import { FormDataRequest } from "nestjs-form-data";
+import { EnableAuditLog } from "src/@base/audit-logs/decorators/audit-logs.decorator";
 
 import { DishImageEntity } from "../@/entities/dish-image.entity";
 
@@ -26,6 +27,7 @@ import { UploadDishImageDto } from "./dto/upload-dish-image.dto";
 export class DishImagesController {
   constructor(private readonly dishImagesService: DishImagesService) {}
 
+  @EnableAuditLog()
   @Post()
   @FormDataRequest()
   @Serializable(DishImageEntity)
@@ -45,6 +47,7 @@ export class DishImagesController {
     });
   }
 
+  @EnableAuditLog()
   @Put(":imageId")
   @Serializable(DishImageEntity)
   @ApiOperation({ summary: "Update dish image details" })
@@ -63,6 +66,7 @@ export class DishImagesController {
     });
   }
 
+  @EnableAuditLog()
   @Delete(":imageId")
   @ApiOperation({ summary: "Delete an image from dish" })
   @ApiOkResponse({

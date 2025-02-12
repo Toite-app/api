@@ -4,6 +4,7 @@ import { Serializable } from "@core/decorators/serializable.decorator";
 import { Get, Query } from "@nestjs/common";
 import { ApiOkResponse, ApiOperation } from "@nestjs/swagger";
 import { OrderTypeEnum } from "@postgress-db/schema/orders";
+import { EnableAuditLog } from "src/@base/audit-logs/decorators/audit-logs.decorator";
 import { DispatcherOrdersService } from "src/orders/dispatcher/dispatcher-orders.service";
 import { DispatcherOrdersPaginatedEntity } from "src/orders/dispatcher/entities/dispatcher-orders-paginated.entity";
 
@@ -15,6 +16,7 @@ export class DispatcherOrdersController {
     private readonly dispatcherOrdersService: DispatcherOrdersService,
   ) {}
 
+  @EnableAuditLog({ onlyErrors: true })
   @Get()
   @Serializable(DispatcherOrdersPaginatedEntity)
   @ApiOperation({
@@ -47,6 +49,7 @@ export class DispatcherOrdersController {
     };
   }
 
+  @EnableAuditLog({ onlyErrors: true })
   @Get("attention-required")
   @Serializable(DispatcherOrdersPaginatedEntity)
   @ApiOperation({
@@ -79,6 +82,7 @@ export class DispatcherOrdersController {
     };
   }
 
+  @EnableAuditLog({ onlyErrors: true })
   @Get("delayed")
   @Serializable(DispatcherOrdersPaginatedEntity)
   @ApiOperation({

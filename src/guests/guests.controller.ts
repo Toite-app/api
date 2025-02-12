@@ -18,6 +18,7 @@ import {
   ApiOperation,
   ApiUnauthorizedResponse,
 } from "@nestjs/swagger";
+import { EnableAuditLog } from "src/@base/audit-logs/decorators/audit-logs.decorator";
 
 import { CreateGuestDto } from "./dtos/create-guest.dto";
 import { UpdateGuestDto } from "./dtos/update-guest.dto";
@@ -31,6 +32,7 @@ import { GuestsService } from "./guests.service";
 export class GuestsController {
   constructor(private readonly guestsService: GuestsService) {}
 
+  @EnableAuditLog({ onlyErrors: true })
   @Get()
   @ApiOperation({
     summary: "Gets guests that available in system",
@@ -73,6 +75,7 @@ export class GuestsController {
     };
   }
 
+  @EnableAuditLog()
   @Post()
   @Serializable(GuestEntity)
   @ApiOperation({ summary: "Creates a new guest" })
@@ -87,6 +90,7 @@ export class GuestsController {
     return guest;
   }
 
+  @EnableAuditLog({ onlyErrors: true })
   @Get(":id")
   @Serializable(GuestEntity)
   @ApiOperation({ summary: "Gets a guest by id" })
@@ -116,6 +120,7 @@ export class GuestsController {
     return guest;
   }
 
+  @EnableAuditLog()
   @Put(":id")
   @Serializable(GuestEntity)
   @ApiOperation({ summary: "Updates a guest by id" })

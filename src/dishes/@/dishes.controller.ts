@@ -29,6 +29,7 @@ import { CreateDishDto } from "./dtos/create-dish.dto";
 import { UpdateDishDto } from "./dtos/update-dish.dto";
 import { DishEntity } from "./entities/dish.entity";
 import { DishesPaginatedDto } from "./entities/dishes-paginated.entity";
+import { EnableAuditLog } from "src/@base/audit-logs/decorators/audit-logs.decorator";
 
 @Controller("dishes")
 @ApiForbiddenResponse({ description: "Forbidden" })
@@ -36,6 +37,7 @@ import { DishesPaginatedDto } from "./entities/dishes-paginated.entity";
 export class DishesController {
   constructor(private readonly dishesService: DishesService) {}
 
+  @EnableAuditLog({ onlyErrors: true })
   @Get()
   @ApiOperation({
     summary: "Gets dishes that are available in system",
@@ -90,6 +92,7 @@ export class DishesController {
     };
   }
 
+  @EnableAuditLog()
   @Post()
   @Serializable(DishEntity)
   @ApiOperation({ summary: "Creates a new dish" })
@@ -104,6 +107,7 @@ export class DishesController {
     return dish;
   }
 
+  @EnableAuditLog({ onlyErrors: true })
   @Get(":id")
   @Serializable(DishEntity)
   @ApiOperation({ summary: "Gets a dish by id" })
@@ -133,6 +137,7 @@ export class DishesController {
     return dish;
   }
 
+  @EnableAuditLog()
   @Put(":id")
   @Serializable(DishEntity)
   @ApiOperation({ summary: "Updates a dish by id" })
