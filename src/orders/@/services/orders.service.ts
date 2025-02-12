@@ -115,7 +115,10 @@ export class OrdersService {
     }
   }
 
-  async create(dto: CreateOrderDto): Promise<OrderEntity> {
+  async create(
+    dto: CreateOrderDto,
+    opts?: { workerId?: string },
+  ): Promise<OrderEntity> {
     await this.checkDto(dto);
 
     const {
@@ -161,6 +164,7 @@ export class OrdersService {
       action: "CREATE",
       orderId: createdOrder.id,
       order,
+      calledByWorkerId: opts?.workerId,
     });
 
     return order;
