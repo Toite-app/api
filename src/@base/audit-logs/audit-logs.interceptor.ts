@@ -11,7 +11,7 @@ import { I18nContext } from "nestjs-i18n";
 import { Observable, tap } from "rxjs";
 import { v4 as uuidv4 } from "uuid";
 
-import { AuditLogsService } from "./audit-logs.service";
+import { AuditLogsProducer } from "./audit-logs.producer";
 import {
   AUDIT_LOG_OPTIONS,
   AuditLogOptions,
@@ -22,7 +22,7 @@ import {
 export class AuditLogsInterceptor implements NestInterceptor {
   constructor(
     private readonly reflector: Reflector,
-    private readonly auditLogsService: AuditLogsService,
+    private readonly auditLogsProducer: AuditLogsProducer,
   ) {}
 
   public readonly sensitiveFields = ["password", "token", "refreshToken"];
@@ -97,7 +97,7 @@ export class AuditLogsInterceptor implements NestInterceptor {
 
           const duration = Date.now() - startTime;
 
-          this.auditLogsService.create({
+          this.auditLogsProducer.create({
             method: request.method,
             url: request.url,
             params,
@@ -121,7 +121,7 @@ export class AuditLogsInterceptor implements NestInterceptor {
           const duration = Date.now() - startTime;
           const i18n = I18nContext.current();
 
-          this.auditLogsService.create({
+          this.auditLogsProducer.create({
             method: request.method,
             url: request.url,
             params,
