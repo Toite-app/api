@@ -2,6 +2,7 @@ import { Injectable, Logger } from "@nestjs/common";
 import { plainToClass } from "class-transformer";
 import { SocketService } from "src/@socket/socket.service";
 import {
+  ClientSubscriptionType,
   GatewayClient,
   SocketEventType,
   SocketOrderUpdateEvent,
@@ -35,8 +36,10 @@ export class OrdersSocketNotifier {
 
     subscriptions.forEach((subscription) => {
       if (
-        subscription.type === "ORDER" &&
-        subscription.data.orderId === order.id
+        (subscription.type === ClientSubscriptionType.ORDER &&
+          subscription.data.orderId === order.id) ||
+        (subscription.type === ClientSubscriptionType.MULTIPLE_ORDERS &&
+          subscription.data.orderIds.includes(order.id))
       ) {
         const recipient = clientsMap.get(subscription.clientId);
         if (!recipient) return;
