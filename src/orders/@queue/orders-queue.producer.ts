@@ -2,7 +2,10 @@ import { InjectQueue } from "@nestjs/bullmq";
 import { Injectable, Logger } from "@nestjs/common";
 import { JobsOptions, Queue } from "bullmq";
 import { OrderQueueJobName, ORDERS_QUEUE } from "src/orders/@queue";
-import { OrderCrudUpdateJobDto } from "src/orders/@queue/dto/crud-update.job";
+import {
+  OrderCrudUpdateJobDto,
+  OrderDishCrudUpdateJobDto,
+} from "src/orders/@queue/dto/crud-update.job";
 import { RecalculatePricesJobDto } from "src/orders/@queue/dto/recalculate-prices-job.dto";
 
 @Injectable()
@@ -28,6 +31,13 @@ export class OrdersQueueProducer {
    */
   public async crudUpdate(payload: OrderCrudUpdateJobDto) {
     return this.addJob(OrderQueueJobName.CRUD_UPDATE, payload);
+  }
+
+  /**
+   * When order dish is: created, updated, removed
+   */
+  public async dishCrudUpdate(payload: OrderDishCrudUpdateJobDto) {
+    return this.addJob(OrderQueueJobName.DISH_CRUD_UPDATE, payload);
   }
 
   /**

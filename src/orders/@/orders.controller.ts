@@ -104,8 +104,11 @@ export class OrdersController {
   async addDish(
     @Param("id") orderId: string,
     @Body() payload: AddOrderDishDto,
+    @Worker() worker: RequestWorker,
   ) {
-    await this.orderDishesService.addToOrder(orderId, payload);
+    await this.orderDishesService.addToOrder(orderId, payload, {
+      workerId: worker.id,
+    });
 
     return this.ordersService.findById(orderId);
   }
@@ -126,8 +129,11 @@ export class OrdersController {
     @Param("id") orderId: string,
     @Param("orderDishId") orderDishId: string,
     @Body() payload: UpdateOrderDishDto,
+    @Worker() worker: RequestWorker,
   ) {
-    await this.orderDishesService.update(orderDishId, payload);
+    await this.orderDishesService.update(orderDishId, payload, {
+      workerId: worker.id,
+    });
 
     return this.ordersService.findById(orderId);
   }
@@ -146,8 +152,11 @@ export class OrdersController {
   async removeDish(
     @Param("id") orderId: string,
     @Param("orderDishId") orderDishId: string,
+    @Worker() worker: RequestWorker,
   ) {
-    await this.orderDishesService.remove(orderDishId);
+    await this.orderDishesService.remove(orderDishId, {
+      workerId: worker.id,
+    });
 
     return this.ordersService.findById(orderId);
   }
