@@ -9,6 +9,7 @@ export enum SnapshotQueueJobName {
 export enum SnapshotModel {
   RESTAURANTS = "RESTAURANTS",
   ORDERS = "ORDERS",
+  ORDER_DISHES = "ORDER_DISHES",
 }
 
 export type CreateSnapshotPayload = {

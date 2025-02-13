@@ -6,9 +6,13 @@ import { plainToClass } from "class-transformer";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { SnapshotsProducer } from "src/@base/snapshots/snapshots.producer";
 import { PG_CONNECTION } from "src/constants";
+import { OrderDishSnapshotEntity } from "src/orders/@/entities/order-dish-snapshot.entity";
 import { OrderSnapshotEntity } from "src/orders/@/entities/order-snapshot.entity";
 import { OrderQueueJobName, ORDERS_QUEUE } from "src/orders/@queue";
-import { OrderCrudUpdateJobDto } from "src/orders/@queue/dto/crud-update.job";
+import {
+  OrderCrudUpdateJobDto,
+  OrderDishCrudUpdateJobDto,
+} from "src/orders/@queue/dto/crud-update.job";
 import { RecalculatePricesJobDto } from "src/orders/@queue/dto/recalculate-prices-job.dto";
 import { OrdersSocketNotifier } from "src/orders/@queue/services/orders-socket-notifier.service";
 
@@ -41,6 +45,11 @@ export class OrdersQueueProcessor extends WorkerHost {
 
         case OrderQueueJobName.CRUD_UPDATE: {
           await this.crudUpdate(data as OrderCrudUpdateJobDto);
+          break;
+        }
+
+        case OrderQueueJobName.DISH_CRUD_UPDATE: {
+          await this.dishCrudUpdate(data as OrderDishCrudUpdateJobDto);
           break;
         }
 
@@ -78,5 +87,18 @@ export class OrdersQueueProcessor extends WorkerHost {
 
     // notify users
     await this.ordersSocketNotifier.handle(data.order);
+  }
+
+  private async dishCrudUpdate(data: OrderDishCrudUpdateJobDto) {
+    // make snapshot
+    await this.snapshotsProducer.create({
+      model: "ORDER_DISHES",
+      action: data.action,
+      data: plainToClass(OrderDishSnapshotEntity, data.orderDish, {
+        excludeExtraneousValues: true,
+      }),
+      documentId: data.orderDishId,
+      workerId: data.calledByWorkerId,
+    });
   }
 }

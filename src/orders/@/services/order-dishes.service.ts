@@ -130,7 +130,11 @@ export class OrderDishesService {
     return true;
   }
 
-  public async addToOrder(orderId: string, payload: AddOrderDishDto) {
+  public async addToOrder(
+    orderId: string,
+    payload: AddOrderDishDto,
+    opts?: { workerId?: string },
+  ) {
     const { dishId, quantity } = payload;
 
     const order = await this.getOrder(orderId);
@@ -156,9 +160,7 @@ export class OrderDishesService {
           price: String(price),
           finalPrice: String(price),
         })
-        .returning({
-          id: orderDishes.id,
-        });
+        .returning();
 
       await this.orderPricesService.calculateOrderTotals(orderId, {
         tx,
@@ -167,10 +169,21 @@ export class OrderDishesService {
       return orderDish;
     });
 
+    await this.ordersProducer.dishCrudUpdate({
+      action: "CREATE",
+      orderDishId: orderDish.id,
+      orderDish,
+      calledByWorkerId: opts?.workerId,
+    });
+
     return orderDish;
   }
 
-  public async update(orderDishId: string, payload: UpdateOrderDishDto) {
+  public async update(
+    orderDishId: string,
+    payload: UpdateOrderDishDto,
+    opts?: { workerId?: string },
+  ) {
     const { quantity } = payload;
 
     if (quantity <= 0) {
@@ -191,36 +204,60 @@ export class OrderDishesService {
       throw new BadRequestException("errors.order-dishes.is-removed");
     }
 
-    await this.pg.transaction(async (tx) => {
-      await tx
+    const updatedOrderDish = await this.pg.transaction(async (tx) => {
+      const [updatedOrderDish] = await tx
         .update(orderDishes)
         .set({
           quantity,
         })
-        .where(eq(orderDishes.id, orderDishId));
+        .where(eq(orderDishes.id, orderDishId))
+        .returning();
 
       await this.orderPricesService.calculateOrderTotals(orderDish.orderId, {
         tx,
       });
+
+      return updatedOrderDish;
     });
+
+    await this.ordersProducer.dishCrudUpdate({
+      action: "UPDATE",
+      orderDishId: orderDish.id,
+      orderDish: updatedOrderDish,
+      calledByWorkerId: opts?.workerId,
+    });
+
+    return updatedOrderDish;
   }
 
-  public async remove(orderDishId: string) {
+  public async remove(orderDishId: string, opts?: { workerId?: string }) {
     const orderDish = await this.getOrderDish(orderDishId);
 
     if (orderDish.isRemoved) {
       throw new BadRequestException("errors.order-dishes.already-removed");
     }
 
-    await this.pg.transaction(async (tx) => {
-      await tx
+    const removedOrderDish = await this.pg.transaction(async (tx) => {
+      const [removedOrderDish] = await tx
         .update(orderDishes)
         .set({ isRemoved: true, removedAt: new Date() })
-        .where(eq(orderDishes.id, orderDishId));
+        .where(eq(orderDishes.id, orderDishId))
+        .returning();
 
       await this.orderPricesService.calculateOrderTotals(orderDish.orderId, {
         tx,
       });
+
+      return removedOrderDish;
     });
+
+    await this.ordersProducer.dishCrudUpdate({
+      action: "DELETE",
+      orderDishId: orderDish.id,
+      orderDish: removedOrderDish,
+      calledByWorkerId: opts?.workerId,
+    });
+
+    return removedOrderDish;
   }
 }
