@@ -13,6 +13,7 @@ import Redis from "ioredis";
 import { Socket } from "socket.io";
 import { RedisChannels } from "src/@base/redis/channels";
 import {
+  ClientSubscriptionType,
   GatewayClient,
   GatewayClients,
   GatewayClientSubscription,
@@ -405,7 +406,25 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
       let subscriptions = this.localSubscriptionsMap.get(clientId) ?? [];
 
       switch (type) {
-        case "ORDER": {
+        case ClientSubscriptionType.MULTIPLE_ORDERS: {
+          if (action === "subscribe") {
+            subscriptions.push({
+              id,
+              clientId,
+              type,
+              data: {
+                orderIds: data.orderIds,
+              },
+            } satisfies GatewayClientSubscription);
+          } else if (action === "unsubscribe") {
+            subscriptions = subscriptions.filter(
+              (subscription) => subscription.id !== id,
+            );
+          }
+
+          break;
+        }
+        case ClientSubscriptionType.ORDER: {
           if (action === "subscribe") {
             subscriptions.push({
               id,
