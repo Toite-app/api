@@ -8,12 +8,27 @@ import {
   SocketOrderUpdateEvent,
 } from "src/@socket/socket.types";
 import { OrderEntity } from "src/orders/@/entities/order.entity";
+import { OrdersService } from "src/orders/@/services/orders.service";
 
 @Injectable()
 export class OrdersSocketNotifier {
   private readonly logger = new Logger(OrdersSocketNotifier.name);
 
-  constructor(private readonly socketService: SocketService) {}
+  constructor(
+    private readonly socketService: SocketService,
+    private readonly ordersService: OrdersService,
+  ) {}
+
+  public async handleById(orderId: string) {
+    const order = await this.ordersService.findById(orderId);
+
+    if (!order) {
+      this.logger.error(`Order with id ${orderId} not found`);
+      return;
+    }
+
+    await this.handle(order);
+  }
 
   /**
    * ! WE SHOULD NOTIFY USERS ONLY IF ORDER HAVE CHANGED DATA
