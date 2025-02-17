@@ -242,6 +242,15 @@ export class OrderEntity implements IOrder {
   @IsOptional()
   @Expose()
   @ApiPropertyOptional({
+    description: "Date when order was completed",
+    example: null,
+  })
+  completedAt: Date | null;
+
+  @IsDate()
+  @IsOptional()
+  @Expose()
+  @ApiPropertyOptional({
     description: "Removal timestamp",
     example: null,
   })

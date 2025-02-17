@@ -108,6 +108,7 @@ export const orders = pgTable(
     // Default timestamps
     createdAt: timestamp("createdAt").notNull().defaultNow(),
     updatedAt: timestamp("updatedAt").notNull().defaultNow(),
+    completedAt: timestamp("completedAt"),
     removedAt: timestamp("removedAt"),
     delayedTo: timestamp("delayedTo"),
   },
