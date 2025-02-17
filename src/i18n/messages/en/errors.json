@@ -81,5 +81,8 @@
     "cant-set-zero-quantity": "You can't set zero quantity. If you want to remove dish from order, use remove endpoint",
     "is-removed": "You can't do anything with removed dish",
     "already-removed": "Dish already removed"
+  },
+  "order-actions": {
+    "no-dishes-is-pending": "No dishes are pending"
   }
 }
