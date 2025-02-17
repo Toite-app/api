@@ -3,6 +3,7 @@ import { DrizzleModule } from "@postgress-db/drizzle.module";
 import { GuestsModule } from "src/guests/guests.module";
 import { OrderActionsController } from "src/orders/@/order-actions.controller";
 import { OrdersController } from "src/orders/@/orders.controller";
+import { OrderActionsService } from "src/orders/@/services/order-actions.service";
 import { OrderDishesService } from "src/orders/@/services/order-dishes.service";
 import { OrderPricesService } from "src/orders/@/services/order-prices.service";
 import { OrdersService } from "src/orders/@/services/orders.service";
@@ -17,6 +18,7 @@ import { DispatcherOrdersService } from "src/orders/dispatcher/dispatcher-orders
     DispatcherOrdersService,
     OrderDishesService,
     OrderPricesService,
+    OrderActionsService,
   ],
   controllers: [
     OrdersController,
