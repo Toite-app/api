@@ -1,6 +1,7 @@
 import { Module } from "@nestjs/common";
 import { DrizzleModule } from "@postgress-db/drizzle.module";
 import { GuestsModule } from "src/guests/guests.module";
+import { OrderActionsController } from "src/orders/@/order-actions.controller";
 import { OrdersController } from "src/orders/@/orders.controller";
 import { OrderDishesService } from "src/orders/@/services/order-dishes.service";
 import { OrderPricesService } from "src/orders/@/services/order-prices.service";
@@ -17,7 +18,11 @@ import { DispatcherOrdersService } from "src/orders/dispatcher/dispatcher-orders
     OrderDishesService,
     OrderPricesService,
   ],
-  controllers: [OrdersController, DispatcherOrdersController],
+  controllers: [
+    OrdersController,
+    DispatcherOrdersController,
+    OrderActionsController,
+  ],
   exports: [OrdersService, OrderDishesService],
 })
 export class OrdersModule {}
