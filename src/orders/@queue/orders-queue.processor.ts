@@ -100,5 +100,8 @@ export class OrdersQueueProcessor extends WorkerHost {
       documentId: data.orderDishId,
       workerId: data.calledByWorkerId,
     });
+
+    // notify users
+    await this.ordersSocketNotifier.handleById(data.orderDish.orderId);
   }
 }
