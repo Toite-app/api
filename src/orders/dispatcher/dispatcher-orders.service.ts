@@ -113,6 +113,7 @@ export class DispatcherOrdersService {
                   and(
                     eq(orderDishes.orderId, orders.id),
                     eq(orderDishes.status, "pending"),
+                    eq(orderDishes.isRemoved, false),
                   ),
                 ),
             ),
