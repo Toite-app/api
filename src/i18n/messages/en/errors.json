@@ -80,7 +80,8 @@
     "cant-update-not-pending-order-dish": "You can't update not pending order dish",
     "cant-set-zero-quantity": "You can't set zero quantity. If you want to remove dish from order, use remove endpoint",
     "is-removed": "You can't do anything with removed dish",
-    "already-removed": "Dish already removed"
+    "already-removed": "Dish already removed",
+    "cant-force-not-cooking-dish": "You can't force ready not cooking dish"
   },
   "order-actions": {
     "no-dishes-is-pending": "No dishes are pending"

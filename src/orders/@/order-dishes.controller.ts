@@ -98,4 +98,22 @@ export class OrderDishesController {
 
     return this.ordersService.findById(orderId);
   }
+
+  @EnableAuditLog()
+  @Post(":orderDishId/force-ready")
+  @ApiOperation({ summary: "Forces a dish to be ready" })
+  @ApiOkResponse({
+    description: "Dish has been successfully marked as ready",
+  })
+  async forceReadyDish(
+    @Param("id") orderId: string,
+    @Param("orderDishId") orderDishId: string,
+    @Worker() worker: RequestWorker,
+  ) {
+    await this.orderDishesService.forceReady(orderDishId, {
+      worker,
+    });
+
+    return this.ordersService.findById(orderId);
+  }
 }
