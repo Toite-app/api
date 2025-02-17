@@ -11,6 +11,7 @@ import { PG_CONNECTION } from "src/constants";
 import { GuestsService } from "src/guests/guests.service";
 import { CreateOrderDto } from "src/orders/@/dtos/create-order.dto";
 import { UpdateOrderDto } from "src/orders/@/dtos/update-order.dto";
+import { OrderAvailableActionsEntity } from "src/orders/@/entities/order-available-actions.entity";
 import { OrderEntity } from "src/orders/@/entities/order.entity";
 import { OrdersQueueProducer } from "src/orders/@queue/orders-queue.producer";
 
@@ -281,5 +282,54 @@ export class OrdersService {
     }
 
     return this.attachRestaurantsName([order])[0];
+  }
+
+  public async getAvailableActions(
+    id: string,
+  ): Promise<OrderAvailableActionsEntity> {
+    const result: OrderAvailableActionsEntity = {
+      canPrecheck: false,
+      canCalculate: false,
+      canSendToKitchen: false,
+    };
+
+    result.canPrecheck = true;
+
+    const order = await this.pg.query.orders.findFirst({
+      where: (orders, { eq }) => eq(orders.id, id),
+      columns: {
+        status: true,
+      },
+    });
+
+    if (!order) {
+      throw new NotFoundException("errors.orders.with-this-id-doesnt-exist");
+    }
+
+    const orderDishes = await this.pg.query.orderDishes.findMany({
+      where: (orderDishes, { and, eq, gt }) =>
+        and(
+          eq(orderDishes.orderId, id),
+          eq(orderDishes.isRemoved, false),
+          gt(orderDishes.quantity, 0),
+        ),
+      columns: {
+        status: true,
+      },
+    });
+
+    if (orderDishes.some((d) => d.status === "pending")) {
+      result.canSendToKitchen = true;
+    }
+
+    if (
+      order.status !== "pending" &&
+      order.status !== "cooking" &&
+      orderDishes.every((d) => d.status === "completed")
+    ) {
+      result.canCalculate = true;
+    }
+
+    return result;
   }
 }
