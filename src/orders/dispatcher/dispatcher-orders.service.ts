@@ -64,6 +64,7 @@ export class DispatcherOrdersService {
         },
         // Order dishes for statuses
         orderDishes: {
+          where: (orderDishes, { eq }) => eq(orderDishes.isRemoved, false),
           columns: {
             status: true,
           },
@@ -132,6 +133,7 @@ export class DispatcherOrdersService {
         },
         // Order dishes for statuses
         orderDishes: {
+          where: (orderDishes, { eq }) => eq(orderDishes.isRemoved, false),
           columns: {
             status: true,
           },
@@ -176,6 +178,7 @@ export class DispatcherOrdersService {
         },
         // Order dishes for statuses
         orderDishes: {
+          where: (orderDishes, { eq }) => eq(orderDishes.isRemoved, false),
           columns: {
             status: true,
           },
