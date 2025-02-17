@@ -16,7 +16,6 @@ import { AddOrderDishDto } from "src/orders/@/dtos/add-order-dish.dto";
 import { CreateOrderDto } from "src/orders/@/dtos/create-order.dto";
 import { UpdateOrderDishDto } from "src/orders/@/dtos/update-order-dish.dto";
 import { UpdateOrderDto } from "src/orders/@/dtos/update-order.dto";
-import { OrderAvailableActionsEntity } from "src/orders/@/entities/order-available-actions.entity";
 import { OrderEntity } from "src/orders/@/entities/order.entity";
 import { OrderDishesService } from "src/orders/@/services/order-dishes.service";
 import { OrdersService } from "src/orders/@/services/orders.service";
@@ -64,17 +63,6 @@ export class OrdersController {
     }
 
     return await this.ordersService.findById(id);
-  }
-
-  @Get(":id/available-actions")
-  @Serializable(OrderAvailableActionsEntity)
-  @ApiOperation({ summary: "Gets available actions for the order" })
-  @ApiOkResponse({
-    description: "Available actions for the order",
-    type: OrderAvailableActionsEntity,
-  })
-  async getAvailableActions(@Param("id") id: string) {
-    return this.ordersService.getAvailableActions(id);
   }
 
   @EnableAuditLog()
