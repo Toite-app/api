@@ -2,6 +2,7 @@ import { Module } from "@nestjs/common";
 import { DrizzleModule } from "@postgress-db/drizzle.module";
 import { GuestsModule } from "src/guests/guests.module";
 import { OrderActionsController } from "src/orders/@/order-actions.controller";
+import { OrderDishesController } from "src/orders/@/order-dishes.controller";
 import { OrdersController } from "src/orders/@/orders.controller";
 import { OrderActionsService } from "src/orders/@/services/order-actions.service";
 import { OrderDishesService } from "src/orders/@/services/order-dishes.service";
@@ -22,6 +23,7 @@ import { DispatcherOrdersService } from "src/orders/dispatcher/dispatcher-orders
   ],
   controllers: [
     OrdersController,
+    OrderDishesController,
     DispatcherOrdersController,
     OrderActionsController,
   ],

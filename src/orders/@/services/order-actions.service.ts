@@ -9,12 +9,14 @@ import { eq, inArray } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { PG_CONNECTION } from "src/constants";
 import { OrderAvailableActionsEntity } from "src/orders/@/entities/order-available-actions.entity";
+import { OrdersQueueProducer } from "src/orders/@queue/orders-queue.producer";
 
 @Injectable()
 export class OrderActionsService {
   constructor(
     @Inject(PG_CONNECTION)
     private readonly pg: NodePgDatabase<Schema>,
+    private readonly ordersProducer: OrdersQueueProducer,
   ) {}
 
   public async getAvailableActions(
