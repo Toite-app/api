@@ -23,13 +23,13 @@ import {
   ApiOperation,
   ApiUnauthorizedResponse,
 } from "@nestjs/swagger";
+import { EnableAuditLog } from "src/@base/audit-logs/decorators/audit-logs.decorator";
 
 import { DishesService } from "./dishes.service";
 import { CreateDishDto } from "./dtos/create-dish.dto";
 import { UpdateDishDto } from "./dtos/update-dish.dto";
 import { DishEntity } from "./entities/dish.entity";
 import { DishesPaginatedDto } from "./entities/dishes-paginated.entity";
-import { EnableAuditLog } from "src/@base/audit-logs/decorators/audit-logs.decorator";
 
 @Controller("dishes")
 @ApiForbiddenResponse({ description: "Forbidden" })
