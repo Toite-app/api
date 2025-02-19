@@ -30,6 +30,7 @@ import { DishesModule } from "src/dishes/dishes.module";
 import { FilesModule } from "src/files/files.module";
 import { GuestsModule } from "src/guests/guests.module";
 import { OrdersModule } from "src/orders/orders.module";
+import { PaymentMethodsModule } from "src/payment-methods/payment-methods.module";
 import { TimezonesModule } from "src/timezones/timezones.module";
 
 import { DrizzleModule } from "./@base/drizzle/drizzle.module";
@@ -96,6 +97,7 @@ import { WorkersModule } from "./workers/workers.module";
       ],
     }),
     SocketModule,
+    PaymentMethodsModule,
   ],
   providers: [
     {

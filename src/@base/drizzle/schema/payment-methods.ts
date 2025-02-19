@@ -31,18 +31,20 @@ export const paymentMethods = pgTable("paymentMethods", {
   type: paymentMethodTypeEnum("type").notNull(),
   icon: paymentMethodIconEnum("icon").notNull(),
 
-  restaurantId: uuid("restaurantId"),
+  restaurantId: uuid("restaurantId").notNull(),
 
   // For YOO_KASSA //
-  shopId: text("shopId"),
+  secretId: text("secretId"),
   secretKey: text("secretKey"),
 
   // Boolean fields //
   isActive: boolean("isActive").notNull().default(false),
+  isRemoved: boolean("isRemoved").notNull().default(false),
 
   // Default timestamps //
   createdAt: timestamp("createdAt").notNull().defaultNow(),
   updatedAt: timestamp("updatedAt").notNull().defaultNow(),
+  removedAt: timestamp("removedAt"),
 });
 
 export type IPaymentMethod = typeof paymentMethods.$inferSelect;
