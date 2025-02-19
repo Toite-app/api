@@ -5,7 +5,6 @@ import env from "@core/env";
 import { BadRequestException } from "@core/errors/exceptions/bad-request.exception";
 import { ConflictException } from "@core/errors/exceptions/conflict.exception";
 import { ServerErrorException } from "@core/errors/exceptions/server-error.exception";
-import { RequestWorker } from "@core/interfaces/request";
 import { Inject, Injectable, OnApplicationBootstrap } from "@nestjs/common";
 import { schema } from "@postgress-db/drizzle.module";
 import { IWorker } from "@postgress-db/schema/workers";
@@ -213,12 +212,8 @@ export class WorkersService implements OnApplicationBootstrap {
    * @param dto
    * @returns
    */
-  public async create(
-    dto: CreateWorkerDto,
-    opts?: { worker?: RequestWorker },
-  ): Promise<WorkerEntity | undefined> {
+  public async create(dto: CreateWorkerDto): Promise<WorkerEntity | undefined> {
     const { password, role, restaurants, ...rest } = dto;
-    const requestWorker = opts?.worker;
 
     if (restaurants?.length) {
       this.checkRestaurantRoleAssignment(role);
@@ -229,9 +224,6 @@ export class WorkersService implements OnApplicationBootstrap {
         .insert(schema.workers)
         .values({
           ...rest,
-          ...(requestWorker?.role === "OWNER" && {
-            ownerId: requestWorker.id,
-          }),
           role,
           passwordHash: await argon2.hash(password),
         })

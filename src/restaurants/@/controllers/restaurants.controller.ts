@@ -5,6 +5,8 @@ import {
 } from "@core/decorators/pagination.decorator";
 import { Roles } from "@core/decorators/roles.decorator";
 import { Serializable } from "@core/decorators/serializable.decorator";
+import { Worker } from "@core/decorators/worker.decorator";
+import { RequestWorker } from "@core/interfaces/request";
 import { Body, Delete, Get, Param, Post, Put } from "@nestjs/common";
 import {
   ApiCreatedResponse,
@@ -39,9 +41,15 @@ export class RestaurantsController {
     description: "Restaurants have been successfully fetched",
     type: RestaurantsPaginatedDto,
   })
-  async findAll(@PaginationParams() pagination: IPagination) {
+  async findAll(
+    @PaginationParams() pagination: IPagination,
+    @Worker() worker: RequestWorker,
+  ) {
     const total = await this.restaurantsService.getTotalCount();
-    const data = await this.restaurantsService.findMany({ pagination });
+    const data = await this.restaurantsService.findMany({
+      pagination,
+      worker,
+    });
 
     return {
       data,
@@ -54,7 +62,6 @@ export class RestaurantsController {
 
   @EnableAuditLog()
   @Post()
-  @Roles("SYSTEM_ADMIN", "CHIEF_ADMIN")
   @Serializable(RestaurantEntity)
   @ApiOperation({
     summary: "Creates a new restaurant",
@@ -66,8 +73,13 @@ export class RestaurantsController {
   @ApiForbiddenResponse({
     description: "Action available only for SYSTEM_ADMIN, CHIEF_ADMIN",
   })
-  async create(@Body() dto: CreateRestaurantDto): Promise<RestaurantEntity> {
-    return await this.restaurantsService.create(dto);
+  async create(
+    @Body() dto: CreateRestaurantDto,
+    @Worker() worker: RequestWorker,
+  ): Promise<RestaurantEntity> {
+    return await this.restaurantsService.create(dto, {
+      worker,
+    });
   }
 
   @Get(":id")
@@ -82,8 +94,13 @@ export class RestaurantsController {
   @ApiNotFoundResponse({
     description: "Restaurant with this id not found",
   })
-  async findOne(@Param("id") id: string): Promise<RestaurantEntity> {
-    return await this.restaurantsService.findById(id);
+  async findOne(
+    @Param("id") id: string,
+    @Worker() worker: RequestWorker,
+  ): Promise<RestaurantEntity> {
+    return await this.restaurantsService.findById(id, {
+      worker,
+    });
   }
 
   @EnableAuditLog()
