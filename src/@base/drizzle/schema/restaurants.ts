@@ -13,7 +13,7 @@ import {
 } from "drizzle-orm/pg-core";
 
 import { currencyEnum, dayOfWeekEnum } from "./general";
-import { workersToRestaurants } from "./workers";
+import { workers, workersToRestaurants } from "./workers";
 
 export const restaurants = pgTable("restaurants", {
   // Primary key
@@ -45,6 +45,9 @@ export const restaurants = pgTable("restaurants", {
   // Is closed forever? //
   isClosedForever: boolean("isClosedForever").notNull().default(false),
 
+  // Owner of the restaurant //
+  ownerId: uuid("ownerId"),
+
   // Timestamps //
   createdAt: timestamp("createdAt").notNull().defaultNow(),
   updatedAt: timestamp("updatedAt").notNull().defaultNow(),
@@ -71,13 +74,17 @@ export const restaurantHours = pgTable("restaurantHours", {
   updatedAt: timestamp("updatedAt").notNull().defaultNow(),
 });
 
-export const restaurantRelations = relations(restaurants, ({ many }) => ({
+export const restaurantRelations = relations(restaurants, ({ one, many }) => ({
   restaurantHours: many(restaurantHours),
   workersToRestaurants: many(workersToRestaurants),
   workshops: many(restaurantWorkshops),
   orders: many(orders),
   dishesToRestaurants: many(dishesToRestaurants),
   paymentMethods: many(paymentMethods),
+  owner: one(workers, {
+    fields: [restaurants.ownerId],
+    references: [workers.id],
+  }),
 }));
 
 export const restaurantHourRelations = relations(

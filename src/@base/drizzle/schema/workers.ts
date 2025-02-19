@@ -18,6 +18,7 @@ import { sessions } from "./sessions";
 export const workerRoleEnum = pgEnum("workerRoleEnum", [
   "SYSTEM_ADMIN" as const,
   "CHIEF_ADMIN",
+  "OWNER",
   "ADMIN",
   "KITCHENER",
   "WAITER",
@@ -78,6 +79,7 @@ export const workerRelations = relations(workers, ({ many }) => ({
   sessions: many(sessions),
   workshops: many(workshopWorkers),
   deliveries: many(orderDeliveries),
+  ownedRestaurants: many(restaurants),
 }));
 
 export type IWorker = typeof workers.$inferSelect;
@@ -85,6 +87,7 @@ export type WorkerRole = typeof ZodWorkerRole._type;
 
 export const workerRoleRank: Record<WorkerRole, number> = {
   KITCHENER: 0,
+  OWNER: 0,
   WAITER: 0,
   CASHIER: 0,
   DISPATCHER: 0,

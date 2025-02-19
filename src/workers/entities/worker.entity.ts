@@ -79,6 +79,7 @@ export class WorkerEntity implements IWorker {
   @Expose()
   @ApiProperty({
     description: "Role of the worker",
+    enum: ZodWorkerRole.Enum,
     example: ZodWorkerRole.Enum.SYSTEM_ADMIN,
     examples: Object.values(ZodWorkerRole.Enum),
   })

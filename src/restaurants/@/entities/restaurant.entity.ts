@@ -7,7 +7,7 @@ import {
   IsString,
   IsUUID,
 } from "@i18n-class-validator";
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { ZodCurrency } from "@postgress-db/schema/general";
 import { IRestaurant } from "@postgress-db/schema/restaurants";
 import { Expose } from "class-transformer";
@@ -105,6 +105,15 @@ export class RestaurantEntity implements IRestaurant {
     example: false,
   })
   isClosedForever: boolean;
+
+  @IsOptional()
+  @IsUUID()
+  @Expose()
+  @ApiPropertyOptional({
+    description: "Owner of the restaurant",
+    example: "d290f1ee-6c54-4b01-90e6-d701748f0851",
+  })
+  ownerId: string | null;
 
   @IsISO8601()
   @Expose()
