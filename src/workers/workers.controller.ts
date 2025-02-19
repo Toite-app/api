@@ -11,6 +11,7 @@ import { Worker } from "@core/decorators/worker.decorator";
 import { BadRequestException } from "@core/errors/exceptions/bad-request.exception";
 import { ForbiddenException } from "@core/errors/exceptions/forbidden.exception";
 import { NotFoundException } from "@core/errors/exceptions/not-found.exception";
+import { RequestWorker } from "@core/interfaces/request";
 import { Body, Get, Param, Post, Put, Query } from "@nestjs/common";
 import {
   ApiBadRequestResponse,
@@ -109,7 +110,7 @@ export class WorkersController {
     description:
       "Available only for SYSTEM_ADMIN, CHIEF_ADMIN, ADMIN (restaurant scope)",
   })
-  async create(@Body() data: CreateWorkerDto, @Worker() worker: IWorker) {
+  async create(@Body() data: CreateWorkerDto, @Worker() worker: RequestWorker) {
     const { role } = data;
 
     const roleRank = workerRoleRank[role];
@@ -130,7 +131,7 @@ export class WorkersController {
       );
     }
 
-    return await this.workersService.create(data);
+    return await this.workersService.create(data, { worker });
   }
 
   @EnableAuditLog({ onlyErrors: true })
