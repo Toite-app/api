@@ -1,3 +1,4 @@
+import { dishModifiersToOrderDishes } from "@postgress-db/schema/dish-modifiers";
 import { dishes } from "@postgress-db/schema/dishes";
 import { orders } from "@postgress-db/schema/orders";
 import { relations } from "drizzle-orm";
@@ -74,7 +75,7 @@ export const orderDishes = pgTable(
 
 export type IOrderDish = typeof orderDishes.$inferSelect;
 
-export const orderDishRelations = relations(orderDishes, ({ one }) => ({
+export const orderDishRelations = relations(orderDishes, ({ one, many }) => ({
   order: one(orders, {
     fields: [orderDishes.orderId],
     references: [orders.id],
@@ -83,4 +84,5 @@ export const orderDishRelations = relations(orderDishes, ({ one }) => ({
     fields: [orderDishes.dishId],
     references: [dishes.id],
   }),
+  dishModifiersToOrderDishes: many(dishModifiersToOrderDishes),
 }));
