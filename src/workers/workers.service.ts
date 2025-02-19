@@ -9,7 +9,7 @@ import { Inject, Injectable, OnApplicationBootstrap } from "@nestjs/common";
 import { schema } from "@postgress-db/drizzle.module";
 import { IWorker } from "@postgress-db/schema/workers";
 import * as argon2 from "argon2";
-import { asc, count, desc, eq, sql } from "drizzle-orm";
+import { and, count, eq, sql } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { DrizzleUtils } from "src/@base/drizzle/drizzle-utils";
 import { PG_CONNECTION } from "src/constants";
@@ -57,41 +57,47 @@ export class WorkersService implements OnApplicationBootstrap {
   }): Promise<WorkerEntity[]> {
     const { pagination, sorting, filters } = options;
 
-    const query = this.pg
-      .select({
-        id: schema.workers.id,
-        name: schema.workers.name,
-        login: schema.workers.login,
-        role: schema.workers.role,
-        isBlocked: schema.workers.isBlocked,
-        hiredAt: schema.workers.hiredAt,
-        firedAt: schema.workers.firedAt,
-        onlineAt: schema.workers.onlineAt,
-        createdAt: schema.workers.createdAt,
-        updatedAt: schema.workers.updatedAt,
-        restaurantId: schema.workers.restaurantId,
-        restaurantName: schema.restaurants.name,
-        passwordHash: schema.workers.passwordHash,
-      })
-      .from(schema.workers)
-      .leftJoin(
-        schema.restaurants,
-        eq(schema.workers.restaurantId, schema.restaurants.id),
-      );
+    const workers = await this.pg.query.workers.findMany({
+      ...(filters
+        ? {
+            where: () =>
+              and(DrizzleUtils.buildFilterConditions(schema.workers, filters)),
+          }
+        : {}),
+      with: {
+        workersToRestaurants: {
+          with: {
+            restaurant: {
+              columns: {
+                name: true,
+              },
+            },
+          },
+          columns: {
+            restaurantId: true,
+          },
+        },
+      },
+      ...(sorting
+        ? {
+            orderBy: (workers, { asc, desc }) => [
+              sorting.sortOrder === "asc"
+                ? asc(sql.identifier(sorting.sortBy))
+                : desc(sql.identifier(sorting.sortBy)),
+            ],
+          }
+        : {}),
+      limit: pagination.size,
+      offset: pagination.offset,
+    });
 
-    if (filters) {
-      query.where(DrizzleUtils.buildFilterConditions(schema.workers, filters));
-    }
-
-    if (sorting) {
-      query.orderBy(
-        sorting.sortOrder === "asc"
-          ? asc(sql.identifier(sorting.sortBy))
-          : desc(sql.identifier(sorting.sortBy)),
-      );
-    }
-
-    return await query.limit(pagination.size).offset(pagination.offset);
+    return workers.map((w) => ({
+      ...w,
+      restaurants: w.workersToRestaurants.map((r) => ({
+        restaurantId: r.restaurantId,
+        restaurantName: r.restaurant.name,
+      })),
+    }));
   }
 
   /**
@@ -100,31 +106,33 @@ export class WorkersService implements OnApplicationBootstrap {
    * @returns
    */
   public async findById(id: string): Promise<WorkerEntity | undefined> {
-    const result = await this.pg
-      .select({
-        id: schema.workers.id,
-        name: schema.workers.name,
-        login: schema.workers.login,
-        role: schema.workers.role,
-        isBlocked: schema.workers.isBlocked,
-        hiredAt: schema.workers.hiredAt,
-        firedAt: schema.workers.firedAt,
-        onlineAt: schema.workers.onlineAt,
-        createdAt: schema.workers.createdAt,
-        updatedAt: schema.workers.updatedAt,
-        restaurantId: schema.workers.restaurantId,
-        restaurantName: schema.restaurants.name,
-        passwordHash: schema.workers.passwordHash,
-      })
-      .from(schema.workers)
-      .leftJoin(
-        schema.restaurants,
-        eq(schema.workers.restaurantId, schema.restaurants.id),
-      )
-      .where(eq(schema.workers.id, id))
-      .limit(1);
+    const worker = await this.pg.query.workers.findFirst({
+      where: (workers, { eq }) => eq(workers.id, id),
+      with: {
+        workersToRestaurants: {
+          with: {
+            restaurant: {
+              columns: {
+                name: true,
+              },
+            },
+          },
+          columns: {
+            restaurantId: true,
+          },
+        },
+      },
+    });
 
-    return result[0];
+    if (!worker) return undefined;
+
+    return {
+      ...worker,
+      restaurants: worker.workersToRestaurants.map((r) => ({
+        restaurantId: r.restaurantId,
+        restaurantName: r.restaurant.name,
+      })),
+    };
   }
 
   /**
@@ -135,31 +143,16 @@ export class WorkersService implements OnApplicationBootstrap {
   public async findOneByLogin(
     value: string,
   ): Promise<WorkerEntity | undefined> {
-    const result = await this.pg
-      .select({
-        id: schema.workers.id,
-        name: schema.workers.name,
-        login: schema.workers.login,
-        role: schema.workers.role,
-        isBlocked: schema.workers.isBlocked,
-        hiredAt: schema.workers.hiredAt,
-        firedAt: schema.workers.firedAt,
-        onlineAt: schema.workers.onlineAt,
-        createdAt: schema.workers.createdAt,
-        updatedAt: schema.workers.updatedAt,
-        restaurantId: schema.workers.restaurantId,
-        restaurantName: schema.restaurants.name,
-        passwordHash: schema.workers.passwordHash,
-      })
-      .from(schema.workers)
-      .leftJoin(
-        schema.restaurants,
-        eq(schema.workers.restaurantId, schema.restaurants.id),
-      )
-      .where(eq(schema.workers.login, value))
-      .limit(1);
+    const worker = await this.pg.query.workers.findFirst({
+      where: (workers, { eq }) => eq(workers.login, value),
+      columns: {
+        id: true,
+      },
+    });
 
-    return result[0];
+    if (!worker?.id) return undefined;
+
+    return await this.findById(worker?.id);
   }
 
   /**
@@ -168,21 +161,33 @@ export class WorkersService implements OnApplicationBootstrap {
    * @returns
    */
   public async create(dto: CreateWorkerDto): Promise<WorkerEntity | undefined> {
-    const { password, role, restaurantId, ...rest } = dto;
+    const { password, role, restaurants, ...rest } = dto;
 
-    if (restaurantId) {
+    if (restaurants?.length) {
       this.checkRestaurantRoleAssignment(role);
     }
 
-    const workers = await this.pg
-      .insert(schema.workers)
-      .values({
-        ...rest,
-        // restaurantId,
-        role,
-        passwordHash: await argon2.hash(password),
-      })
-      .returning();
+    const workers = await this.pg.transaction(async (tx) => {
+      const [worker] = await tx
+        .insert(schema.workers)
+        .values({
+          ...rest,
+          role,
+          passwordHash: await argon2.hash(password),
+        })
+        .returning();
+
+      if (restaurants?.length) {
+        await tx.insert(schema.workersToRestaurants).values(
+          restaurants.map((r) => ({
+            workerId: worker.id,
+            restaurantId: r.restaurantId,
+          })),
+        );
+      }
+
+      return [worker];
+    });
 
     const worker = workers[0];
 
@@ -203,7 +208,7 @@ export class WorkersService implements OnApplicationBootstrap {
     id: string,
     dto: UpdateWorkerDto,
   ): Promise<WorkerEntity | undefined> {
-    const { password, role, login, restaurantId, ...payload } = dto;
+    const { password, role, login, restaurants, ...payload } = dto;
 
     if (login) {
       const exist = await this.findOneByLogin(login);
@@ -222,7 +227,7 @@ export class WorkersService implements OnApplicationBootstrap {
       }
     }
 
-    if (restaurantId) {
+    if (restaurants?.length) {
       this.checkRestaurantRoleAssignment(role);
     }
 
@@ -232,22 +237,36 @@ export class WorkersService implements OnApplicationBootstrap {
       );
     }
 
-    await this.pg
-      .update(schema.workers)
-      .set({
-        ...payload,
-        login,
-        role,
-        ...(role === "SYSTEM_ADMIN" || role === "CHIEF_ADMIN"
-          ? { restaurantId: null }
-          : { restaurantId }),
-        ...(password
-          ? {
-              passwordHash: await argon2.hash(password),
-            }
-          : {}),
-      })
-      .where(eq(schema.workers.id, id));
+    await this.pg.transaction(async (tx) => {
+      await tx
+        .update(schema.workers)
+        .set({
+          ...payload,
+          login,
+          role,
+          ...(password
+            ? {
+                passwordHash: await argon2.hash(password),
+              }
+            : {}),
+        })
+        .where(eq(schema.workers.id, id));
+
+      if (restaurants) {
+        await tx
+          .delete(schema.workersToRestaurants)
+          .where(eq(schema.workersToRestaurants.workerId, id));
+
+        if (restaurants.length > 0) {
+          await tx.insert(schema.workersToRestaurants).values(
+            restaurants.map((r) => ({
+              workerId: id,
+              restaurantId: r.restaurantId,
+            })),
+          );
+        }
+      }
+    });
 
     return await this.findById(id);
   }

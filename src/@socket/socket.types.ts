@@ -1,4 +1,4 @@
-import { IWorker } from "@postgress-db/schema/workers";
+import { IWorker, IWorkersToRestaurants } from "@postgress-db/schema/workers";
 import { OrderEntity } from "src/orders/@/entities/order.entity";
 
 export enum GatewayIncomingMessage {
@@ -93,7 +93,8 @@ export interface GatewayClient {
 
 export type GatewayClients = GatewayClient[];
 
-export type GatewayWorker = Pick<IWorker, "role" | "id" | "restaurantId"> & {
+export type GatewayWorker = Pick<IWorker, "role" | "id"> & {
+  restaurants: Pick<IWorkersToRestaurants, "restaurantId">[];
   connectedAt: Date;
 };
 

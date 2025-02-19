@@ -1,4 +1,4 @@
-import { IWorker } from "@postgress-db/schema/workers";
+import { IWorker, IWorkersToRestaurants } from "@postgress-db/schema/workers";
 
 export enum AUTH_STRATEGY {
   accessToken = "access token",
@@ -12,10 +12,9 @@ export enum AUTH_COOKIES {
 export type SessionTokenPayload = {
   sessionId: string;
   workerId: string;
-  worker: Pick<
-    IWorker,
-    "name" | "restaurantId" | "login" | "role" | "isBlocked"
-  >;
+  worker: Pick<IWorker, "name" | "login" | "role" | "isBlocked"> & {
+    workersToRestaurants: Pick<IWorkersToRestaurants, "restaurantId">[];
+  };
   httpAgent: string;
   ip: string;
   version: number;

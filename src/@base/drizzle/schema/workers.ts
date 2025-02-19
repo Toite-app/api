@@ -1,9 +1,11 @@
 import { orderDeliveries } from "@postgress-db/schema/order-deliveries";
+import { restaurants } from "@postgress-db/schema/restaurants";
 import { relations } from "drizzle-orm";
 import {
   boolean,
   pgEnum,
   pgTable,
+  primaryKey,
   text,
   timestamp,
   uuid,
@@ -11,7 +13,6 @@ import {
 import { z } from "zod";
 
 import { workshopWorkers } from "./restaurant-workshop";
-import { restaurants } from "./restaurants";
 import { sessions } from "./sessions";
 
 export const workerRoleEnum = pgEnum("workerRoleEnum", [
@@ -32,7 +33,6 @@ export type IRole = (typeof workerRoleEnum.enumValues)[number];
 export const workers = pgTable("workers", {
   id: uuid("id").defaultRandom().primaryKey(),
   name: text("name").notNull().default("N/A"),
-  restaurantId: uuid("restaurantId"),
   login: text("login").unique().notNull(),
   role: workerRoleEnum("role").notNull(),
   passwordHash: text("passwordHash").notNull(),
@@ -44,11 +44,37 @@ export const workers = pgTable("workers", {
   updatedAt: timestamp("updatedAt").notNull().defaultNow(),
 });
 
-export const workerRelations = relations(workers, ({ one, many }) => ({
-  restaurant: one(restaurants, {
-    fields: [workers.restaurantId],
-    references: [restaurants.id],
+export const workersToRestaurants = pgTable(
+  "workersToRestaurants",
+  {
+    workerId: uuid("workerId").notNull(),
+    restaurantId: uuid("restaurantId").notNull(),
+  },
+  (t) => [
+    primaryKey({
+      columns: [t.workerId, t.restaurantId],
+    }),
+  ],
+);
+
+export type IWorkersToRestaurants = typeof workersToRestaurants.$inferSelect;
+
+export const workersToRestaurantsRelations = relations(
+  workersToRestaurants,
+  ({ one }) => ({
+    worker: one(workers, {
+      fields: [workersToRestaurants.workerId],
+      references: [workers.id],
+    }),
+    restaurant: one(restaurants, {
+      fields: [workersToRestaurants.restaurantId],
+      references: [restaurants.id],
+    }),
   }),
+);
+
+export const workerRelations = relations(workers, ({ many }) => ({
+  workersToRestaurants: many(workersToRestaurants),
   sessions: many(sessions),
   workshops: many(workshopWorkers),
   deliveries: many(orderDeliveries),

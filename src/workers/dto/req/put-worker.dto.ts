@@ -11,7 +11,7 @@ import { WorkerEntity } from "src/workers/entities/worker.entity";
 export class CreateWorkerDto extends IntersectionType(
   PickType(WorkerEntity, ["name", "login", "role"]),
   PartialType(
-    PickType(WorkerEntity, ["isBlocked", "hiredAt", "firedAt", "restaurantId"]),
+    PickType(WorkerEntity, ["isBlocked", "hiredAt", "firedAt", "restaurants"]),
   ),
 ) {
   @IsStrongPassword({

@@ -75,12 +75,18 @@ export class SnapshotsService {
 
     const worker = await this.pg.query.workers.findFirst({
       where: eq(schema.workers.id, workerId),
+      with: {
+        workersToRestaurants: {
+          columns: {
+            restaurantId: true,
+          },
+        },
+      },
       columns: {
         id: true,
         name: true,
         login: true,
         role: true,
-        restaurantId: true,
         createdAt: true,
         updatedAt: true,
         firedAt: true,
