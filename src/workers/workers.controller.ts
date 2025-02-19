@@ -131,7 +131,7 @@ export class WorkersController {
       );
     }
 
-    return await this.workersService.create(data, { worker });
+    return await this.workersService.create(data);
   }
 
   @EnableAuditLog({ onlyErrors: true })

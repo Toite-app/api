@@ -1,9 +1,10 @@
 import { IPagination } from "@core/decorators/pagination.decorator";
 import { BadRequestException } from "@core/errors/exceptions/bad-request.exception";
 import { NotFoundException } from "@core/errors/exceptions/not-found.exception";
+import { RequestWorker } from "@core/interfaces/request";
 import { Inject, Injectable } from "@nestjs/common";
 import { schema } from "@postgress-db/drizzle.module";
-import { count, eq } from "drizzle-orm";
+import { and, count, eq, inArray, SQL } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { PG_CONNECTION } from "src/constants";
 import { TimezonesService } from "src/timezones/timezones.service";
@@ -37,10 +38,36 @@ export class RestaurantsService {
    */
   public async findMany(options: {
     pagination: IPagination;
+    worker?: RequestWorker;
   }): Promise<RestaurantEntity[]> {
+    const { pagination, worker } = options;
+
+    const conditions: SQL<unknown>[] = [];
+
+    if (worker) {
+      if (worker.role === "OWNER") {
+        conditions.push(eq(schema.restaurants.ownerId, worker.id));
+      } else if (
+        worker.role !== "SYSTEM_ADMIN" &&
+        worker.role !== "CHIEF_ADMIN"
+      ) {
+        if (worker?.workersToRestaurants.length === 0) {
+          return [];
+        }
+
+        conditions.push(
+          inArray(
+            schema.restaurants.id,
+            worker.workersToRestaurants.map((r) => r.restaurantId),
+          ),
+        );
+      }
+    }
+
     return await this.pg.query.restaurants.findMany({
-      limit: options.pagination.size,
-      offset: options.pagination.offset,
+      ...(conditions.length > 0 ? { where: () => and(...conditions) } : {}),
+      limit: pagination.size,
+      offset: pagination.offset,
     });
   }
 
@@ -49,9 +76,38 @@ export class RestaurantsService {
    * @param id
    * @returns
    */
-  public async findById(id: string): Promise<RestaurantEntity> {
+  public async findById(
+    id: string,
+    opts?: {
+      worker?: RequestWorker;
+    },
+  ): Promise<RestaurantEntity> {
+    const requestWorker = opts?.worker;
+
+    const conditions: SQL<unknown>[] = [eq(schema.restaurants.id, id)];
+
+    if (requestWorker) {
+      if (requestWorker.role === "OWNER") {
+        conditions.push(eq(schema.restaurants.ownerId, requestWorker.id));
+      } else if (
+        requestWorker.role !== "SYSTEM_ADMIN" &&
+        requestWorker.role !== "CHIEF_ADMIN"
+      ) {
+        if (requestWorker?.workersToRestaurants.length === 0) {
+          throw new NotFoundException(`Restaurant with id ${id} not found`);
+        }
+
+        conditions.push(
+          inArray(
+            schema.restaurants.id,
+            requestWorker.workersToRestaurants.map((r) => r.restaurantId),
+          ),
+        );
+      }
+    }
+
     const data = await this.pg.query.restaurants.findFirst({
-      where: eq(schema.restaurants.id, id),
+      where: and(...conditions),
     });
 
     if (!data) {
@@ -66,7 +122,12 @@ export class RestaurantsService {
    * @param dto
    * @returns
    */
-  public async create(dto: CreateRestaurantDto): Promise<RestaurantEntity> {
+  public async create(
+    dto: CreateRestaurantDto,
+    opts?: { worker?: RequestWorker },
+  ): Promise<RestaurantEntity> {
+    const requestWorker = opts?.worker;
+
     if (dto.timezone && !this.timezonesService.checkTimezone(dto.timezone)) {
       throw new BadRequestException(
         "errors.restaurants.provided-timezone-cant-be-set",
@@ -78,7 +139,10 @@ export class RestaurantsService {
 
     const data = await this.pg
       .insert(schema.restaurants)
-      .values(dto)
+      .values({
+        ...dto,
+        ...(requestWorker?.role === "OWNER" && { ownerId: requestWorker.id }),
+      })
       .returning({
         id: schema.restaurants.id,
       });
