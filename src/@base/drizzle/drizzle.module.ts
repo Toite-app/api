@@ -15,6 +15,7 @@ import * as manyToMany from "./schema/many-to-many";
 import * as orderDeliveries from "./schema/order-deliveries";
 import * as orderDishes from "./schema/order-dishes";
 import * as orders from "./schema/orders";
+import * as paymentMethods from "./schema/payment-methods";
 import * as restaurantWorkshops from "./schema/restaurant-workshop";
 import * as restaurants from "./schema/restaurants";
 import * as sessions from "./schema/sessions";
@@ -34,6 +35,7 @@ export const schema = {
   ...orderDishes,
   ...orderDeliveries,
   ...orders,
+  ...paymentMethods,
 };
 
 export type Schema = typeof schema;

@@ -85,5 +85,10 @@
   },
   "order-actions": {
     "no-dishes-is-pending": "No dishes are pending"
+  },
+  "payment-methods": {
+    "secret-id-and-secret-key-are-required": "Secret id and secret key are required",
+    "restaurant-not-found": "Restaurant not found",
+    "not-enough-rights": "You don't have enough rights to do this"
   }
 }
