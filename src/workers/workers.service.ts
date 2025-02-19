@@ -9,7 +9,7 @@ import { Inject, Injectable, OnApplicationBootstrap } from "@nestjs/common";
 import { schema } from "@postgress-db/drizzle.module";
 import { IWorker } from "@postgress-db/schema/workers";
 import * as argon2 from "argon2";
-import { and, count, eq, sql } from "drizzle-orm";
+import { count, eq, inArray, or, sql, SQL } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { DrizzleUtils } from "src/@base/drizzle/drizzle-utils";
 import { PG_CONNECTION } from "src/constants";
@@ -40,11 +40,38 @@ export class WorkersService implements OnApplicationBootstrap {
     return true;
   }
 
-  public async getTotalCount(filters?: IFilters): Promise<number> {
+  public async getTotalCount(
+    filters?: IFilters,
+    restaurantIds?: string[],
+  ): Promise<number> {
     const query = this.pg.select({ value: count() }).from(schema.workers);
 
-    if (filters) {
-      query.where(DrizzleUtils.buildFilterConditions(schema.workers, filters));
+    if (filters ?? restaurantIds) {
+      const conditions: SQL<unknown>[] = [];
+
+      if (filters) {
+        const condition = DrizzleUtils.buildFilterConditions(
+          schema.workers,
+          filters,
+        );
+
+        if (condition) {
+          conditions.push(condition);
+        }
+      }
+
+      if (restaurantIds?.length) {
+        const subquery = this.pg
+          .select({ workerId: schema.workersToRestaurants.workerId })
+          .from(schema.workersToRestaurants)
+          .where(
+            inArray(schema.workersToRestaurants.restaurantId, restaurantIds),
+          );
+
+        conditions.push(inArray(schema.workers.id, subquery));
+      }
+
+      query.where(conditions.length > 1 ? or(...conditions) : conditions[0]);
     }
 
     return await query.then((res) => res[0].value);
@@ -54,14 +81,39 @@ export class WorkersService implements OnApplicationBootstrap {
     pagination: IPagination;
     sorting: ISorting;
     filters?: IFilters;
+    restaurantIds?: string[];
   }): Promise<WorkerEntity[]> {
-    const { pagination, sorting, filters } = options;
+    const { pagination, sorting, filters, restaurantIds } = options;
+
+    const conditions: SQL<unknown>[] = [];
+
+    if (filters) {
+      const condition = DrizzleUtils.buildFilterConditions(
+        schema.workers,
+        filters,
+      );
+
+      if (condition) {
+        conditions.push(condition);
+      }
+    }
+
+    if (restaurantIds?.length) {
+      const subquery = this.pg
+        .select({ workerId: schema.workersToRestaurants.workerId })
+        .from(schema.workersToRestaurants)
+        .where(
+          inArray(schema.workersToRestaurants.restaurantId, restaurantIds),
+        );
+
+      conditions.push(inArray(schema.workers.id, subquery));
+    }
 
     const workers = await this.pg.query.workers.findMany({
-      ...(filters
+      ...(conditions.length > 0
         ? {
             where: () =>
-              and(DrizzleUtils.buildFilterConditions(schema.workers, filters)),
+              conditions.length > 1 ? or(...conditions) : conditions[0],
           }
         : {}),
       with: {
