@@ -4,6 +4,7 @@ import IpAddress from "@core/decorators/ip-address.decorator";
 import UserAgent from "@core/decorators/user-agent.decorator";
 import { Worker } from "@core/decorators/worker.decorator";
 import env from "@core/env";
+import { RequestWorker } from "@core/interfaces/request";
 import { Response } from "@core/interfaces/response";
 import {
   Body,
@@ -20,7 +21,6 @@ import {
   ApiOperation,
   ApiUnauthorizedResponse,
 } from "@nestjs/swagger";
-import { IWorker } from "@postgress-db/schema/workers";
 import { EnableAuditLog } from "src/@base/audit-logs/decorators/audit-logs.decorator";
 import { Serializable } from "src/@core/decorators/serializable.decorator";
 import { WorkerEntity } from "src/workers/entities/worker.entity";
@@ -47,8 +47,14 @@ export class AuthController {
   @ApiUnauthorizedResponse({
     description: "You unauthorized",
   })
-  async getUser(@Worker() worker: IWorker) {
-    return worker;
+  async getUser(@Worker() worker: RequestWorker) {
+    return {
+      ...worker,
+      restaurants: worker.workersToRestaurants.map((r) => ({
+        ...r,
+        restaurantName: "",
+      })),
+    } satisfies Omit<WorkerEntity, "passwordHash">;
   }
 
   @Public()

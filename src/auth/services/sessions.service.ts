@@ -6,7 +6,7 @@ import { JwtService } from "@nestjs/jwt";
 import { schema } from "@postgress-db/drizzle.module";
 import { ISession, sessions } from "@postgress-db/schema/sessions";
 import { workers } from "@postgress-db/schema/workers";
-import { eq, or } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { SessionTokenPayload } from "src/auth/auth.types";
 import { PG_CONNECTION } from "src/constants";
@@ -24,16 +24,23 @@ export class SessionsService {
   ) {}
 
   private async _getWorker(workerId: string) {
-    const [worker] = await this.pg
-      .select({
-        name: workers.name,
-        restaurantId: workers.restaurantId,
-        login: workers.login,
-        role: workers.role,
-        isBlocked: workers.isBlocked,
-      })
-      .from(workers)
-      .where(eq(workers.id, workerId));
+    const worker = await this.pg.query.workers.findFirst({
+      where: eq(workers.id, workerId),
+      with: {
+        workersToRestaurants: {
+          columns: {
+            restaurantId: true,
+          },
+        },
+      },
+      columns: {
+        id: true,
+        name: true,
+        login: true,
+        role: true,
+        isBlocked: true,
+      },
+    });
 
     if (!worker) {
       throw new BadRequestException();
@@ -215,31 +222,21 @@ export class SessionsService {
       }
     }
 
-    const [session] = await this.pg
-      .select({
-        id: sessions.id,
-        previousId: sessions.previousId,
-        workerId: sessions.workerId,
-        isActive: sessions.isActive,
-        refreshedAt: sessions.refreshedAt,
+    const session = await this.pg.query.sessions.findFirst({
+      where: (sessions, { eq, or }) =>
+        or(eq(sessions.id, sessionId), eq(sessions.previousId, sessionId)),
+      with: {
         worker: {
-          id: workers.id,
-          name: workers.name,
-          login: workers.login,
-          role: workers.role,
-          isBlocked: workers.isBlocked,
-          hiredAt: workers.hiredAt,
-          firedAt: workers.firedAt,
-          onlineAt: workers.onlineAt,
-          createdAt: workers.createdAt,
-          updatedAt: workers.updatedAt,
-          restaurantId: workers.restaurantId,
+          with: {
+            workersToRestaurants: {
+              columns: {
+                restaurantId: true,
+              },
+            },
+          },
         },
-      })
-      .from(sessions)
-      .leftJoin(workers, eq(sessions.workerId, workers.id))
-      .where(or(eq(sessions.id, sessionId), eq(sessions.previousId, sessionId)))
-      .limit(1);
+      },
+    });
 
     if (!session || !session.isActive) return false;
 

@@ -66,24 +66,22 @@ export class AuthService {
   }
 
   public async getAuthWorker(workerId: string) {
-    const [worker] = await this.pg
-      .select({
-        id: workers.id,
-        name: workers.name,
-        login: workers.login,
-        role: workers.role,
-        isBlocked: workers.isBlocked,
-        hiredAt: workers.hiredAt,
-        firedAt: workers.firedAt,
-        onlineAt: workers.onlineAt,
-        createdAt: workers.createdAt,
-        updatedAt: workers.updatedAt,
-        restaurantId: workers.restaurantId,
-      })
-      .from(workers)
-      .where(eq(workers.id, workerId))
-      .limit(1);
-
-    return worker;
+    return await this.pg.query.workers.findFirst({
+      where: eq(workers.id, workerId),
+      with: {
+        workersToRestaurants: {
+          columns: {
+            restaurantId: true,
+          },
+        },
+      },
+      columns: {
+        id: true,
+        name: true,
+        login: true,
+        role: true,
+        isBlocked: true,
+      },
+    });
   }
 }

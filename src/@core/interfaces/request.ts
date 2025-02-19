@@ -1,5 +1,5 @@
 import { ISession } from "@postgress-db/schema/sessions";
-import { IWorker } from "@postgress-db/schema/workers";
+import { IWorker, IWorkersToRestaurants } from "@postgress-db/schema/workers";
 import { Request as Req } from "express";
 
 export type RequestWorker = Pick<
@@ -14,8 +14,9 @@ export type RequestWorker = Pick<
   | "onlineAt"
   | "createdAt"
   | "updatedAt"
-  | "restaurantId"
->;
+> & {
+  workersToRestaurants: Pick<IWorkersToRestaurants, "restaurantId">[];
+};
 
 export type RequestSession = Pick<
   ISession,

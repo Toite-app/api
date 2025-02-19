@@ -1,4 +1,5 @@
 import {
+  IsArray,
   IsBoolean,
   IsEnum,
   IsISO8601,
@@ -8,8 +9,32 @@ import {
   MinLength,
 } from "@i18n-class-validator";
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
-import { IWorker, ZodWorkerRole } from "@postgress-db/schema/workers";
-import { Exclude, Expose } from "class-transformer";
+import {
+  IWorker,
+  IWorkersToRestaurants,
+  ZodWorkerRole,
+} from "@postgress-db/schema/workers";
+import { Exclude, Expose, Type } from "class-transformer";
+
+export class WorkerRestaurantEntity
+  implements Pick<IWorkersToRestaurants, "restaurantId">
+{
+  @IsUUID()
+  @Expose()
+  @ApiProperty({
+    description: "Unique identifier of the restaurant",
+    example: "d290f1ee-6c54-4b01-90e6-d701748f0851",
+  })
+  restaurantId: string;
+
+  @IsString()
+  @Expose()
+  @ApiProperty({
+    description: "Name of the restaurant",
+    example: "Restaurant Name",
+  })
+  restaurantName: string;
+}
 
 export class WorkerEntity implements IWorker {
   @IsUUID()
@@ -28,26 +53,14 @@ export class WorkerEntity implements IWorker {
   })
   name: string;
 
-  @IsOptional()
-  @IsUUID()
+  @IsArray()
   @Expose()
+  @Type(() => WorkerRestaurantEntity)
   @ApiProperty({
-    description: "Unique identifier of the restaurant",
-    example: null,
+    description: "Restaurants where worker is employed",
+    type: [WorkerRestaurantEntity],
   })
-  @ApiPropertyOptional()
-  restaurantId: string | null;
-
-  @IsOptional()
-  @IsString()
-  @Expose()
-  @ApiProperty({
-    description: "Name of the restaurant where worker is employed",
-    example: "Restaurant Name",
-    type: String,
-  })
-  @ApiPropertyOptional()
-  restaurantName: string | null;
+  restaurants: WorkerRestaurantEntity[];
 
   @IsString()
   @MinLength(4)

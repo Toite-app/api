@@ -359,7 +359,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
       this.localWorkersMap.set(worker.id, {
         id: worker.id,
         role: worker.role,
-        restaurantId: worker.restaurantId,
+        restaurants: worker.workersToRestaurants,
         connectedAt,
       } satisfies GatewayWorker);
 

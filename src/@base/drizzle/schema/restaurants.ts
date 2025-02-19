@@ -13,7 +13,7 @@ import {
 } from "drizzle-orm/pg-core";
 
 import { currencyEnum, dayOfWeekEnum } from "./general";
-import { workers } from "./workers";
+import { workersToRestaurants } from "./workers";
 
 export const restaurants = pgTable("restaurants", {
   // Primary key
@@ -73,7 +73,7 @@ export const restaurantHours = pgTable("restaurantHours", {
 
 export const restaurantRelations = relations(restaurants, ({ many }) => ({
   restaurantHours: many(restaurantHours),
-  workers: many(workers),
+  workersToRestaurants: many(workersToRestaurants),
   workshops: many(restaurantWorkshops),
   orders: many(orders),
   dishesToRestaurants: many(dishesToRestaurants),
