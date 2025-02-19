@@ -11,7 +11,7 @@ import { Worker } from "@core/decorators/worker.decorator";
 import { BadRequestException } from "@core/errors/exceptions/bad-request.exception";
 import { ForbiddenException } from "@core/errors/exceptions/forbidden.exception";
 import { NotFoundException } from "@core/errors/exceptions/not-found.exception";
-import { Body, Get, Param, Post, Put } from "@nestjs/common";
+import { Body, Get, Param, Post, Put, Query } from "@nestjs/common";
 import {
   ApiBadRequestResponse,
   ApiConflictResponse,
@@ -20,6 +20,7 @@ import {
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiQuery,
   ApiUnauthorizedResponse,
 } from "@nestjs/swagger";
 import {
@@ -43,6 +44,13 @@ export class WorkersController {
   @EnableAuditLog({ onlyErrors: true })
   @Get()
   @ApiOperation({ summary: "Gets workers that created in system" })
+  @ApiQuery({
+    name: "restaurantIds",
+    type: String,
+    required: false,
+    description: "Comma separated list of restaurant IDs to filter workers by",
+    example: "['1', '2', '3']",
+  })
   @Serializable(WorkersPaginatedDto)
   @ApiOkResponse({
     description: "Workers have been successfully fetched",
@@ -63,12 +71,21 @@ export class WorkersController {
     sorting: ISorting,
     @PaginationParams() pagination: IPagination,
     @FilterParams() filters?: IFilters,
+    @Query("restaurantIds") restaurantIds?: string,
   ): Promise<WorkersPaginatedDto> {
-    const total = await this.workersService.getTotalCount(filters);
+    const parsedRestaurantIds =
+      restaurantIds !== "undefined" ? restaurantIds?.split(",") : undefined;
+
+    const total = await this.workersService.getTotalCount(
+      filters,
+      parsedRestaurantIds,
+    );
+
     const data = await this.workersService.findMany({
       pagination,
       sorting,
       filters,
+      restaurantIds: parsedRestaurantIds,
     });
 
     return {
