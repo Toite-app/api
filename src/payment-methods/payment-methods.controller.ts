@@ -9,6 +9,7 @@ import { CreatePaymentMethodDto } from "src/payment-methods/dto/create-payment-m
 import { UpdatePaymentMethodDto } from "src/payment-methods/dto/update-payment-method.dto";
 import { PaymentMethodEntity } from "src/payment-methods/entities/payment-method.entity";
 import { PaymentMethodsService } from "src/payment-methods/payment-methods.service";
+import { RestaurantGuard } from "src/restaurants/@/decorators/restaurant-guard.decorator";
 
 @Controller("restaurants/:id/payment-methods", {
   tags: ["restaurants"],
@@ -16,6 +17,10 @@ import { PaymentMethodsService } from "src/payment-methods/payment-methods.servi
 export class PaymentMethodsController {
   constructor(private readonly paymentMethodsService: PaymentMethodsService) {}
 
+  @RestaurantGuard({
+    restaurantId: (req) => req.params.id,
+    allow: ["OWNER", "ADMIN", "KITCHENER", "WAITER", "CASHIER"],
+  })
   @EnableAuditLog({ onlyErrors: true })
   @Get()
   @Serializable(PaymentMethodEntity)
@@ -32,6 +37,10 @@ export class PaymentMethodsController {
     });
   }
 
+  @RestaurantGuard({
+    restaurantId: (req) => req.params.id,
+    allow: ["OWNER", "ADMIN"],
+  })
   @EnableAuditLog()
   @Post()
   @Serializable(PaymentMethodEntity)
@@ -57,6 +66,10 @@ export class PaymentMethodsController {
     );
   }
 
+  @RestaurantGuard({
+    restaurantId: (req) => req.params.id,
+    allow: ["OWNER", "ADMIN"],
+  })
   @EnableAuditLog()
   @Patch(":paymentMethodId")
   @Serializable(PaymentMethodEntity)
