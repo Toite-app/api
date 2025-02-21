@@ -3,5 +3,5 @@ import { RestaurantDishModifierEntity } from "src/restaurants/dish-modifiers/ent
 
 export class CreateRestaurantDishModifierDto extends OmitType(
   RestaurantDishModifierEntity,
-  ["id", "createdAt", "updatedAt", "removedAt"] as const,
+  ["id", "createdAt", "updatedAt", "removedAt", "isRemoved"] as const,
 ) {}
