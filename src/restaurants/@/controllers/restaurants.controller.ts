@@ -31,6 +31,7 @@ import { RestaurantsService } from "../services/restaurants.service";
 export class RestaurantsController {
   constructor(private readonly restaurantsService: RestaurantsService) {}
 
+  // TODO: configure custom guard for this endpoint
   @EnableAuditLog({ onlyErrors: true })
   @Get()
   @ApiOperation({
@@ -60,6 +61,7 @@ export class RestaurantsController {
     };
   }
 
+  // TODO: configure custom guard for this endpoint
   @EnableAuditLog()
   @Post()
   @Serializable(RestaurantEntity)

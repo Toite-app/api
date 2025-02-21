@@ -1,3 +1,4 @@
+import { orders } from "@postgress-db/schema/orders";
 import { restaurants } from "@postgress-db/schema/restaurants";
 import { relations } from "drizzle-orm";
 import {
@@ -49,9 +50,13 @@ export const paymentMethods = pgTable("paymentMethods", {
 
 export type IPaymentMethod = typeof paymentMethods.$inferSelect;
 
-export const paymentMethodRelations = relations(paymentMethods, ({ one }) => ({
-  restaurant: one(restaurants, {
-    fields: [paymentMethods.restaurantId],
-    references: [restaurants.id],
+export const paymentMethodRelations = relations(
+  paymentMethods,
+  ({ one, many }) => ({
+    orders: many(orders),
+    restaurant: one(restaurants, {
+      fields: [paymentMethods.restaurantId],
+      references: [restaurants.id],
+    }),
   }),
-}));
+);

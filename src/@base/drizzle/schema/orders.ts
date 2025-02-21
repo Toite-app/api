@@ -2,6 +2,7 @@ import { currencyEnum } from "@postgress-db/schema/general";
 import { guests } from "@postgress-db/schema/guests";
 import { orderDeliveries } from "@postgress-db/schema/order-deliveries";
 import { orderDishes } from "@postgress-db/schema/order-dishes";
+import { paymentMethods } from "@postgress-db/schema/payment-methods";
 import { restaurants } from "@postgress-db/schema/restaurants";
 import { relations } from "drizzle-orm";
 import {
@@ -66,6 +67,7 @@ export const orders = pgTable(
     // Links //
     guestId: uuid("guestId"),
     restaurantId: uuid("restaurantId"),
+    paymentMethodId: uuid("paymentMethodId"),
 
     // Order number //
     number: text("number").notNull(),
@@ -124,6 +126,10 @@ export const orders = pgTable(
 export type IOrder = typeof orders.$inferSelect;
 
 export const orderRelations = relations(orders, ({ one, many }) => ({
+  paymentMethod: one(paymentMethods, {
+    fields: [orders.paymentMethodId],
+    references: [paymentMethods.id],
+  }),
   delivery: one(orderDeliveries, {
     fields: [orders.id],
     references: [orderDeliveries.orderId],

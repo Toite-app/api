@@ -49,6 +49,15 @@ export class OrderEntity implements IOrder {
   })
   restaurantId: string | null;
 
+  @IsUUID()
+  @IsOptional()
+  @Expose()
+  @ApiPropertyOptional({
+    description: "Payment method identifier",
+    example: "d290f1ee-6c54-4b01-90e6-d701748f0851",
+  })
+  paymentMethodId: string | null;
+
   @IsString()
   @IsOptional()
   @Expose()
