@@ -12,6 +12,7 @@ export class CreateOrderDto extends IntersectionType(
       "guestPhone",
       "guestsAmount",
       "delayedTo",
+      "paymentMethodId",
     ]),
   ),
 ) {}
