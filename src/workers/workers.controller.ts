@@ -4,7 +4,6 @@ import {
   IPagination,
   PaginationParams,
 } from "@core/decorators/pagination.decorator";
-import { Roles } from "@core/decorators/roles.decorator";
 import { Serializable } from "@core/decorators/serializable.decorator";
 import { ISorting, SortingParams } from "@core/decorators/sorting.decorator";
 import { Worker } from "@core/decorators/worker.decorator";
@@ -101,7 +100,6 @@ export class WorkersController {
   // TODO: add validation of ADMIN restaurant id
   @EnableAuditLog()
   @Post()
-  @Roles("SYSTEM_ADMIN", "CHIEF_ADMIN", "ADMIN")
   @Serializable(WorkerEntity)
   @ApiOperation({ summary: "Creates a new worker" })
   @ApiCreatedResponse({ description: "Worker has been successfully created" })
@@ -167,7 +165,6 @@ export class WorkersController {
   // TODO: add validation of ADMIN restaurant id
   @EnableAuditLog()
   @Put(":id")
-  @Roles("SYSTEM_ADMIN", "CHIEF_ADMIN", "ADMIN")
   @Serializable(WorkerEntity)
   @ApiOperation({ summary: "Updates a worker by id" })
   @ApiOkResponse({

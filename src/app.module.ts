@@ -1,7 +1,6 @@
 import * as path from "path";
 
 import env from "@core/env";
-import { RolesGuard } from "@core/guards/roles.guard";
 import { RedisModule } from "@liaoliaots/nestjs-redis";
 import { BullModule } from "@nestjs/bullmq";
 import { Module } from "@nestjs/common";
@@ -31,6 +30,7 @@ import { FilesModule } from "src/files/files.module";
 import { GuestsModule } from "src/guests/guests.module";
 import { OrdersModule } from "src/orders/orders.module";
 import { PaymentMethodsModule } from "src/payment-methods/payment-methods.module";
+import { RestaurantGuard } from "src/restaurants/@/guards/restaurant.guard";
 import { TimezonesModule } from "src/timezones/timezones.module";
 
 import { DrizzleModule } from "./@base/drizzle/drizzle.module";
@@ -109,12 +109,12 @@ import { WorkersModule } from "./workers/workers.module";
       useClass: SessionAuthGuard,
     },
     {
-      provide: APP_GUARD,
-      useClass: RolesGuard,
-    },
-    {
       provide: APP_INTERCEPTOR,
       useClass: AuditLogsInterceptor,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: RestaurantGuard,
     },
   ],
 })

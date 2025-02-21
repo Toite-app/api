@@ -4,6 +4,8 @@ import { TimezonesModule } from "src/timezones/timezones.module";
 
 import { RestaurantsController } from "./@/controllers/restaurants.controller";
 import { RestaurantsService } from "./@/services/restaurants.service";
+import { RestaurantDishModifiersController } from "./dish-modifiers/restaurant-dish-modifiers.controller";
+import { RestaurantDishModifiersService } from "./dish-modifiers/restaurant-dish-modifiers.service";
 import { RestaurantHoursController } from "./hours/restaurant-hours.controller";
 import { RestaurantHoursService } from "./hours/restaurant-hours.service";
 import { RestaurantWorkshopsController } from "./workshops/restaurant-workshops.controller";
@@ -15,11 +17,13 @@ import { RestaurantWorkshopsService } from "./workshops/restaurant-workshops.ser
     RestaurantsService,
     RestaurantHoursService,
     RestaurantWorkshopsService,
+    RestaurantDishModifiersService,
   ],
   controllers: [
     RestaurantsController,
     RestaurantHoursController,
     RestaurantWorkshopsController,
+    RestaurantDishModifiersController,
   ],
   exports: [
     RestaurantsService,

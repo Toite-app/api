@@ -1,5 +1,4 @@
 import { Controller } from "@core/decorators/controller.decorator";
-import { Roles } from "@core/decorators/roles.decorator";
 import { Serializable } from "@core/decorators/serializable.decorator";
 import { Body, Delete, Get, Param, Post, Put } from "@nestjs/common";
 import {
@@ -10,6 +9,7 @@ import {
   OmitType,
 } from "@nestjs/swagger";
 import { EnableAuditLog } from "src/@base/audit-logs/decorators/audit-logs.decorator";
+import { RestaurantGuard } from "src/restaurants/@/decorators/restaurant-guard.decorator";
 
 import {
   CreateRestaurantHoursDto,
@@ -31,6 +31,10 @@ export class RestaurantHoursController {
     private readonly restaurantHoursService: RestaurantHoursService,
   ) {}
 
+  @RestaurantGuard({
+    restaurantId: (req) => req.params.id,
+    allow: ["OWNER", "ADMIN", "KITCHENER", "WAITER", "CASHIER"],
+  })
   @EnableAuditLog({ onlyErrors: true })
   @Get()
   @Serializable(RestaurantHoursEntity)
@@ -43,9 +47,12 @@ export class RestaurantHoursController {
     return await this.restaurantHoursService.findMany(id);
   }
 
+  @RestaurantGuard({
+    restaurantId: (req) => req.params.id,
+    allow: ["OWNER", "ADMIN"],
+  })
   @EnableAuditLog()
   @Post()
-  @Roles("SYSTEM_ADMIN", "CHIEF_ADMIN")
   @ApiOperation({ summary: "Creates restaurant hours" })
   @ApiCreatedResponse({
     description: "Restaurant hours have been successfully created",
@@ -63,9 +70,12 @@ export class RestaurantHoursController {
     });
   }
 
+  @RestaurantGuard({
+    restaurantId: (req) => req.params.id,
+    allow: ["OWNER", "ADMIN"],
+  })
   @EnableAuditLog()
   @Put(":hoursId")
-  @Roles("SYSTEM_ADMIN", "CHIEF_ADMIN")
   @Serializable(RestaurantHoursEntity)
   @ApiOperation({ summary: "Updates restaurant hours" })
   @ApiOkResponse({
@@ -81,9 +91,12 @@ export class RestaurantHoursController {
     return await this.restaurantHoursService.update(id, dto);
   }
 
+  @RestaurantGuard({
+    restaurantId: (req) => req.params.id,
+    allow: ["OWNER", "ADMIN"],
+  })
   @EnableAuditLog()
   @Delete(":hoursId")
-  @Roles("SYSTEM_ADMIN", "CHIEF_ADMIN")
   @ApiOperation({ summary: "Deletes restaurant hours" })
   @ApiOkResponse({
     description: "Restaurant hours have been successfully deleted",
