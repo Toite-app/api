@@ -30,6 +30,15 @@ export const workerRoleEnum = pgEnum("workerRoleEnum", [
 export const ZodWorkerRole = z.enum(workerRoleEnum.enumValues);
 
 export type IRole = (typeof workerRoleEnum.enumValues)[number];
+export enum IRoleEnum {
+  SYSTEM_ADMIN = "SYSTEM_ADMIN",
+  CHIEF_ADMIN = "CHIEF_ADMIN",
+  OWNER = "OWNER",
+  ADMIN = "ADMIN",
+  KITCHENER = "KITCHENER",
+  WAITER = "WAITER",
+  CASHIER = "CASHIER",
+}
 
 export const workers = pgTable("workers", {
   id: uuid("id").defaultRandom().primaryKey(),

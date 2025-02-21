@@ -1,5 +1,4 @@
 import { Controller } from "@core/decorators/controller.decorator";
-import { Roles } from "@core/decorators/roles.decorator";
 import { Serializable } from "@core/decorators/serializable.decorator";
 import { Body, Delete, Get, Param, Post, Put } from "@nestjs/common";
 import {
@@ -10,6 +9,7 @@ import {
   OmitType,
 } from "@nestjs/swagger";
 import { EnableAuditLog } from "src/@base/audit-logs/decorators/audit-logs.decorator";
+import { RestaurantGuard } from "src/restaurants/@/decorators/restaurant-guard.decorator";
 
 import { UpdateRestaurantWorkshopWorkersDto } from "./dto/put-restaurant-workshop-workers.dto";
 import { WorkshopWorkerEntity } from "./entity/restaurant-workshop-worker.entity";
@@ -33,6 +33,10 @@ export class RestaurantWorkshopsController {
     private readonly restaurantWorkshopsService: RestaurantWorkshopsService,
   ) {}
 
+  @RestaurantGuard({
+    restaurantId: (req) => req.params.id,
+    allow: ["OWNER", "ADMIN", "KITCHENER", "WAITER", "CASHIER"],
+  })
   @EnableAuditLog({ onlyErrors: true })
   @Get()
   @Serializable(RestaurantWorkshopDto)
@@ -45,9 +49,12 @@ export class RestaurantWorkshopsController {
     return await this.restaurantWorkshopsService.findMany(id);
   }
 
+  @RestaurantGuard({
+    restaurantId: (req) => req.params.id,
+    allow: ["OWNER", "ADMIN"],
+  })
   @EnableAuditLog()
   @Post()
-  @Roles("SYSTEM_ADMIN", "CHIEF_ADMIN")
   @ApiOperation({ summary: "Creates restaurant workshop" })
   @ApiCreatedResponse({
     description: "Restaurant workshop has been successfully created",
@@ -65,9 +72,12 @@ export class RestaurantWorkshopsController {
     });
   }
 
+  @RestaurantGuard({
+    restaurantId: (req) => req.params.id,
+    allow: ["OWNER", "ADMIN"],
+  })
   @EnableAuditLog()
   @Put(":workshopId")
-  @Roles("SYSTEM_ADMIN", "CHIEF_ADMIN")
   @Serializable(RestaurantWorkshopDto)
   @ApiOperation({ summary: "Updates restaurant workshop" })
   @ApiOkResponse({
@@ -83,6 +93,10 @@ export class RestaurantWorkshopsController {
     return await this.restaurantWorkshopsService.update(id, dto);
   }
 
+  @RestaurantGuard({
+    restaurantId: (req) => req.params.id,
+    allow: ["OWNER", "ADMIN", "KITCHENER", "WAITER", "CASHIER"],
+  })
   @EnableAuditLog({ onlyErrors: true })
   @Get(":workshopId/workers")
   @Serializable(WorkshopWorkerEntity)
@@ -95,9 +109,12 @@ export class RestaurantWorkshopsController {
     return await this.restaurantWorkshopsService.getWorkers(id);
   }
 
+  @RestaurantGuard({
+    restaurantId: (req) => req.params.id,
+    allow: ["OWNER", "ADMIN"],
+  })
   @EnableAuditLog()
   @Put(":workshopId/workers")
-  @Roles("SYSTEM_ADMIN", "CHIEF_ADMIN")
   @ApiOperation({ summary: "Updates workshop workers" })
   @ApiOkResponse({
     description: "Workshop workers have been successfully updated",
@@ -113,9 +130,12 @@ export class RestaurantWorkshopsController {
     return;
   }
 
+  @RestaurantGuard({
+    restaurantId: (req) => req.params.id,
+    allow: ["OWNER", "ADMIN"],
+  })
   @EnableAuditLog()
   @Delete(":workshopId")
-  @Roles("SYSTEM_ADMIN", "CHIEF_ADMIN")
   @ApiOperation({ summary: "Deletes restaurant workshop" })
   @ApiOkResponse({
     description: "Restaurant workshop has been successfully deleted",

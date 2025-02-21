@@ -7,6 +7,7 @@ import { Pool } from "pg";
 import { PG_CONNECTION } from "../../constants";
 
 import * as dishCategories from "./schema/dish-categories";
+import * as dishModifiers from "./schema/dish-modifiers";
 import * as dishes from "./schema/dishes";
 import * as files from "./schema/files";
 import * as general from "./schema/general";
@@ -36,6 +37,7 @@ export const schema = {
   ...orderDeliveries,
   ...orders,
   ...paymentMethods,
+  ...dishModifiers,
 };
 
 export type Schema = typeof schema;

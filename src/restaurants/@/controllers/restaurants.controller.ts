@@ -3,7 +3,6 @@ import {
   IPagination,
   PaginationParams,
 } from "@core/decorators/pagination.decorator";
-import { Roles } from "@core/decorators/roles.decorator";
 import { Serializable } from "@core/decorators/serializable.decorator";
 import { Worker } from "@core/decorators/worker.decorator";
 import { RequestWorker } from "@core/interfaces/request";
@@ -18,6 +17,7 @@ import {
   ApiUnauthorizedResponse,
 } from "@nestjs/swagger";
 import { EnableAuditLog } from "src/@base/audit-logs/decorators/audit-logs.decorator";
+import { RestaurantGuard } from "src/restaurants/@/decorators/restaurant-guard.decorator";
 
 import { CreateRestaurantDto } from "../dto/create-restaurant.dto";
 import { UpdateRestaurantDto } from "../dto/update-restaurant.dto";
@@ -82,6 +82,10 @@ export class RestaurantsController {
     });
   }
 
+  @RestaurantGuard({
+    restaurantId: (req) => req.params.id,
+    allow: ["OWNER", "ADMIN", "KITCHENER", "WAITER", "CASHIER"],
+  })
   @Get(":id")
   @Serializable(RestaurantEntity)
   @ApiOperation({
@@ -103,9 +107,12 @@ export class RestaurantsController {
     });
   }
 
+  @RestaurantGuard({
+    restaurantId: (req) => req.params.id,
+    allow: ["OWNER", "ADMIN"],
+  })
   @EnableAuditLog()
   @Put(":id")
-  @Roles("SYSTEM_ADMIN", "CHIEF_ADMIN")
   @Serializable(RestaurantEntity)
   @ApiOperation({
     summary: "Updates restaurant by id",
@@ -127,9 +134,12 @@ export class RestaurantsController {
     return await this.restaurantsService.update(id, dto);
   }
 
+  @RestaurantGuard({
+    restaurantId: (req) => req.params.id,
+    allow: ["OWNER"],
+  })
   @EnableAuditLog()
   @Delete(":id")
-  @Roles("SYSTEM_ADMIN")
   @ApiOperation({
     summary: "Deletes restaurant by id",
   })

@@ -233,6 +233,11 @@ export class SessionsService {
                 restaurantId: true,
               },
             },
+            ownedRestaurants: {
+              columns: {
+                id: true,
+              },
+            },
           },
         },
       },
