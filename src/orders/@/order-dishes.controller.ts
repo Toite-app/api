@@ -2,7 +2,7 @@ import { Controller } from "@core/decorators/controller.decorator";
 import { Serializable } from "@core/decorators/serializable.decorator";
 import { Worker } from "@core/decorators/worker.decorator";
 import { RequestWorker } from "@core/interfaces/request";
-import { Body, Delete, Param, Patch, Post } from "@nestjs/common";
+import { Body, Delete, Param, Patch, Post, Put } from "@nestjs/common";
 import {
   ApiBadRequestResponse,
   ApiNotFoundResponse,
@@ -11,6 +11,7 @@ import {
 } from "@nestjs/swagger";
 import { EnableAuditLog } from "src/@base/audit-logs/decorators/audit-logs.decorator";
 import { AddOrderDishDto } from "src/orders/@/dtos/add-order-dish.dto";
+import { PutOrderDishModifiersDto } from "src/orders/@/dtos/put-order-dish-modifiers";
 import { UpdateOrderDishDto } from "src/orders/@/dtos/update-order-dish.dto";
 import { OrderEntity } from "src/orders/@/entities/order.entity";
 import { OrderDishesService } from "src/orders/@/services/order-dishes.service";
@@ -115,5 +116,21 @@ export class OrderDishesController {
     });
 
     return this.ordersService.findById(orderId);
+  }
+
+  @EnableAuditLog()
+  @Put(":orderDishId/modifiers")
+  @ApiOperation({ summary: "Updates the modifiers for a dish in the order" })
+  @ApiOkResponse({
+    description: "Dish modifiers have been successfully updated",
+  })
+  async updateDishModifiers(
+    @Param("id") orderId: string,
+    @Param("orderDishId") orderDishId: string,
+    @Body() payload: PutOrderDishModifiersDto,
+  ) {
+    await this.orderDishesService.updateDishModifiers(orderDishId, payload);
+
+    return true;
   }
 }
