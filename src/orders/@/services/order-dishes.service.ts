@@ -350,12 +350,14 @@ export class OrderDishesService {
         .where(eq(dishModifiersToOrderDishes.orderDishId, orderDishId));
 
       // Insert new dish modifiers for this order dish
-      await tx.insert(dishModifiersToOrderDishes).values(
-        dishModifiers.map(({ id }) => ({
-          dishModifierId: id,
-          orderDishId,
-        })),
-      );
+      if (payload.dishModifierIds.length > 0) {
+        await tx.insert(dishModifiersToOrderDishes).values(
+          dishModifiers.map(({ id }) => ({
+            dishModifierId: id,
+            orderDishId,
+          })),
+        );
+      }
     });
 
     return orderDish;
