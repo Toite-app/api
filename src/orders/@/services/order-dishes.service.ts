@@ -3,11 +3,13 @@ import { NotFoundException } from "@core/errors/exceptions/not-found.exception";
 import { RequestWorker } from "@core/interfaces/request";
 import { Inject, Injectable } from "@nestjs/common";
 import { Schema } from "@postgress-db/drizzle.module";
+import { dishModifiersToOrderDishes } from "@postgress-db/schema/dish-modifiers";
 import { orderDishes } from "@postgress-db/schema/order-dishes";
 import { eq, sql } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { PG_CONNECTION } from "src/constants";
 import { AddOrderDishDto } from "src/orders/@/dtos/add-order-dish.dto";
+import { PutOrderDishModifiersDto } from "src/orders/@/dtos/put-order-dish-modifiers";
 import { UpdateOrderDishDto } from "src/orders/@/dtos/update-order-dish.dto";
 import { OrderPricesService } from "src/orders/@/services/order-prices.service";
 import { OrdersQueueProducer } from "src/orders/@queue/orders-queue.producer";
@@ -292,5 +294,70 @@ export class OrderDishesService {
     });
 
     return updatedOrderDish;
+  }
+
+  public async updateDishModifiers(
+    orderDishId: string,
+    payload: PutOrderDishModifiersDto,
+  ) {
+    const orderDish = await this.getOrderDish(orderDishId);
+
+    if (orderDish.isRemoved) {
+      throw new BadRequestException("errors.order-dishes.is-removed");
+    }
+
+    if (orderDish.status !== "pending" && orderDish.status !== "cooking") {
+      throw new BadRequestException(
+        "errors.order-dishes.cant-update-ready-dish",
+      );
+    }
+
+    const order = await this.getOrder(orderDish.orderId);
+
+    const dishModifiers = await this.pg.query.dishModifiers.findMany({
+      where: (dishModifiers, { inArray, and, eq }) =>
+        and(
+          inArray(dishModifiers.id, payload.dishModifierIds),
+          eq(dishModifiers.isActive, true),
+          eq(dishModifiers.isRemoved, false),
+        ),
+      columns: {
+        id: true,
+        restaurantId: true,
+      },
+    });
+
+    if (
+      dishModifiers.some(
+        ({ restaurantId }) => restaurantId !== order.restaurantId,
+      )
+    ) {
+      throw new BadRequestException(
+        "errors.order-dish-modifiers.some-dish-modifiers-not-assigned-to-restaurant",
+      );
+    }
+
+    if (dishModifiers.length !== payload.dishModifierIds.length) {
+      throw new BadRequestException(
+        "errors.order-dish-modifiers.some-dish-modifiers-not-found",
+      );
+    }
+
+    await this.pg.transaction(async (tx) => {
+      // Delete all existing dish modifiers for this order dish
+      await tx
+        .delete(dishModifiersToOrderDishes)
+        .where(eq(dishModifiersToOrderDishes.orderDishId, orderDishId));
+
+      // Insert new dish modifiers for this order dish
+      await tx.insert(dishModifiersToOrderDishes).values(
+        dishModifiers.map(({ id }) => ({
+          dishModifierId: id,
+          orderDishId,
+        })),
+      );
+    });
+
+    return orderDish;
   }
 }

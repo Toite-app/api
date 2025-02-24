@@ -34,8 +34,8 @@ export type IDishModifier = typeof dishModifiers.$inferSelect;
 export const dishModifiersToOrderDishes = pgTable(
   "dishModifiersToOrderDishes",
   {
-    dishModifierId: uuid("dishModifierId"),
-    orderDishId: uuid("orderDishId"),
+    dishModifierId: uuid("dishModifierId").notNull(),
+    orderDishId: uuid("orderDishId").notNull(),
   },
   (t) => [primaryKey({ columns: [t.dishModifierId, t.orderDishId] })],
 );

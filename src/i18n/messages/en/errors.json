@@ -81,7 +81,12 @@
     "cant-set-zero-quantity": "You can't set zero quantity. If you want to remove dish from order, use remove endpoint",
     "is-removed": "You can't do anything with removed dish",
     "already-removed": "Dish already removed",
-    "cant-force-not-cooking-dish": "You can't force ready not cooking dish"
+    "cant-force-not-cooking-dish": "You can't force ready not cooking dish",
+    "cant-update-ready-dish": "You can't update ready dish"
+  },
+  "order-dish-modifiers": {
+    "some-dish-modifiers-not-found": "Some dish modifiers not found",
+    "some-dish-modifiers-not-assigned-to-restaurant": "Some dish modifiers not assigned to restaurant"
   },
   "order-actions": {
     "no-dishes-is-pending": "No dishes are pending"
