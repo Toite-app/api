@@ -1,4 +1,5 @@
 import {
+  IsArray,
   IsBoolean,
   IsDate,
   IsDecimal,
@@ -14,7 +15,8 @@ import {
   OrderDishStatusEnum,
   ZodOrderDishStatusEnum,
 } from "@postgress-db/schema/order-dishes";
-import { Expose } from "class-transformer";
+import { Expose, Type } from "class-transformer";
+import { OrderDishModifierEntity } from "src/orders/@/entities/order-dish-modifier.entity";
 
 export class OrderDishEntity implements IOrderDish {
   @IsUUID()
@@ -76,6 +78,15 @@ export class OrderDishEntity implements IOrderDish {
   })
   // status: typeof ZodOrderDishStatusEnum._type;
   status: OrderDishStatusEnum;
+
+  @Expose()
+  @IsArray()
+  @Type(() => OrderDishModifierEntity)
+  @ApiProperty({
+    description: "Dish modifiers",
+    example: ["d290f1ee-6c54-4b01-90e6-d701748f0851"],
+  })
+  modifiers: OrderDishModifierEntity[];
 
   @IsInt()
   @Expose()

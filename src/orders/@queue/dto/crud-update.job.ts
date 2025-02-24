@@ -11,7 +11,7 @@ export class OrderCrudUpdateJobDto {
 
 export class OrderDishCrudUpdateJobDto {
   orderDishId: string;
-  orderDish: OrderDishEntity;
+  orderDish: Omit<OrderDishEntity, "modifiers">;
   action: `${CrudAction}`;
   calledByWorkerId?: string;
 }
