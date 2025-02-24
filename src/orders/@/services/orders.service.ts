@@ -11,6 +11,7 @@ import { PG_CONNECTION } from "src/constants";
 import { GuestsService } from "src/guests/guests.service";
 import { CreateOrderDto } from "src/orders/@/dtos/create-order.dto";
 import { UpdateOrderDto } from "src/orders/@/dtos/update-order.dto";
+import { OrderDishModifierEntity } from "src/orders/@/entities/order-dish-modifier.entity";
 import { OrderEntity } from "src/orders/@/entities/order.entity";
 import { OrdersQueueProducer } from "src/orders/@queue/orders-queue.producer";
 
@@ -263,6 +264,40 @@ export class OrdersService {
     }));
   }
 
+  public attachModifiers<
+    T extends {
+      orderDishes: Array<{
+        dishModifiersToOrderDishes?: {
+          dishModifierId: string;
+          dishModifier?: { name?: string | null } | null;
+        }[];
+      }>;
+    },
+  >(
+    orders: Array<T>,
+  ): Array<
+    T & {
+      orderDishes: Array<
+        T["orderDishes"][number] & {
+          modifiers: OrderDishModifierEntity[];
+        }
+      >;
+    }
+  > {
+    return orders.map((order) => ({
+      ...order,
+      orderDishes: (order.orderDishes ?? []).map((dish) => ({
+        ...dish,
+        modifiers: (dish.dishModifiersToOrderDishes
+          ?.map((modifier) => ({
+            id: modifier.dishModifierId,
+            name: modifier.dishModifier?.name ?? null,
+          }))
+          .filter(Boolean) ?? []) as OrderDishModifierEntity[],
+      })),
+    }));
+  }
+
   public async findById(id: string): Promise<OrderEntity> {
     const order = await this.pg.query.orders.findFirst({
       where: (orders, { eq }) => eq(orders.id, id),
@@ -272,7 +307,22 @@ export class OrdersService {
             name: true,
           },
         },
-        orderDishes: true,
+        orderDishes: {
+          with: {
+            dishModifiersToOrderDishes: {
+              with: {
+                dishModifier: {
+                  columns: {
+                    name: true,
+                  },
+                },
+              },
+              columns: {
+                dishModifierId: true,
+              },
+            },
+          },
+        },
       },
     });
 
@@ -280,6 +330,9 @@ export class OrdersService {
       throw new NotFoundException("errors.orders.with-this-id-doesnt-exist");
     }
 
-    return this.attachRestaurantsName([order])[0];
+    const withRestaurantsName = this.attachRestaurantsName([order])[0];
+    const withModifiers = this.attachModifiers([withRestaurantsName])[0];
+
+    return withModifiers;
   }
 }
