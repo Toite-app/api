@@ -28,20 +28,6 @@ export const restaurantWorkshops = pgTable("restaurantWorkshop", {
   updatedAt: timestamp("updatedAt").notNull().defaultNow(),
 });
 
-export type IRestaurantWorkshop = typeof restaurantWorkshops.$inferSelect;
-
-export const workshopWorkers = pgTable("workshopWorkers", {
-  workerId: uuid("workerId")
-    .notNull()
-    .references(() => workers.id),
-  workshopId: uuid("workshopId")
-    .notNull()
-    .references(() => restaurantWorkshops.id),
-  createdAt: timestamp("createdAt").notNull().defaultNow(),
-});
-
-export type IWorkshopWorker = typeof workshopWorkers.$inferSelect;
-
 export const restaurantWorkshopRelations = relations(
   restaurantWorkshops,
   ({ one, many }) => ({
@@ -53,6 +39,18 @@ export const restaurantWorkshopRelations = relations(
     dishesToWorkshops: many(dishesToWorkshops),
   }),
 );
+
+export type IRestaurantWorkshop = typeof restaurantWorkshops.$inferSelect;
+
+export const workshopWorkers = pgTable("workshopWorkers", {
+  workerId: uuid("workerId")
+    .notNull()
+    .references(() => workers.id),
+  workshopId: uuid("workshopId")
+    .notNull()
+    .references(() => restaurantWorkshops.id),
+  createdAt: timestamp("createdAt").notNull().defaultNow(),
+});
 
 export const workshopWorkerRelations = relations(
   workshopWorkers,
@@ -67,3 +65,5 @@ export const workshopWorkerRelations = relations(
     }),
   }),
 );
+
+export type IWorkshopWorker = typeof workshopWorkers.$inferSelect;

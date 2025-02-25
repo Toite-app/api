@@ -86,7 +86,7 @@ export const workersToRestaurantsRelations = relations(
 export const workerRelations = relations(workers, ({ many }) => ({
   workersToRestaurants: many(workersToRestaurants),
   sessions: many(sessions),
-  workshops: many(workshopWorkers),
+  workshopWorkers: many(workshopWorkers),
   deliveries: many(orderDeliveries),
   ownedRestaurants: many(restaurants),
 }));
