@@ -11,12 +11,15 @@ import { OrdersService } from "src/orders/@/services/orders.service";
 import { OrdersQueueModule } from "src/orders/@queue/orders-queue.module";
 import { DispatcherOrdersController } from "src/orders/dispatcher/dispatcher-orders.controller";
 import { DispatcherOrdersService } from "src/orders/dispatcher/dispatcher-orders.service";
+import { KitchenerOrdersController } from "src/orders/kitchener/kitchener-orders.controller";
+import { KitchenerOrdersService } from "src/orders/kitchener/kitchener-orders.service";
 
 @Module({
   imports: [DrizzleModule, GuestsModule, OrdersQueueModule],
   providers: [
     OrdersService,
     DispatcherOrdersService,
+    KitchenerOrdersService,
     OrderDishesService,
     OrderPricesService,
     OrderActionsService,
@@ -25,6 +28,7 @@ import { DispatcherOrdersService } from "src/orders/dispatcher/dispatcher-orders
     OrdersController,
     OrderDishesController,
     DispatcherOrdersController,
+    KitchenerOrdersController,
     OrderActionsController,
   ],
   exports: [OrdersService, OrderDishesService],

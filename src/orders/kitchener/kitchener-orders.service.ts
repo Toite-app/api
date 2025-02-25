@@ -1,0 +1,163 @@
+import { RequestWorker } from "@core/interfaces/request";
+import { Inject, Injectable } from "@nestjs/common";
+import { Schema } from "@postgress-db/drizzle.module";
+import { dishesToWorkshops } from "@postgress-db/schema/dishes";
+import { orderDishes } from "@postgress-db/schema/order-dishes";
+import { IWorker } from "@postgress-db/schema/workers";
+import { SQL } from "drizzle-orm";
+import { NodePgDatabase } from "drizzle-orm/node-postgres";
+import { PG_CONNECTION } from "src/constants";
+import { KitchenerOrderEntity } from "src/orders/kitchener/entities/kitchener-order.entity";
+
+@Injectable()
+export class KitchenerOrdersService {
+  constructor(
+    @Inject(PG_CONNECTION)
+    private readonly pg: NodePgDatabase<Schema>,
+  ) {}
+
+  /**
+   * Get all workshop ids for a worker
+   * @param workerId - The id of the worker
+   * @returns An array of workshop ids
+   */
+  private async getWorkerWorkshopIds(
+    worker: Pick<IWorker, "role" | "id">,
+  ): Promise<string[] | undefined> {
+    // System admin and chief admin can see all workshops
+    if (worker.role === "SYSTEM_ADMIN" || worker.role === "CHIEF_ADMIN") {
+      return undefined;
+    }
+
+    const workerWorkshops = await this.pg.query.workshopWorkers.findMany({
+      where: (workshopWorkers, { eq }) =>
+        eq(workshopWorkers.workerId, worker.id),
+      with: {
+        workshop: {
+          columns: {
+            isEnabled: true,
+          },
+        },
+      },
+      columns: {
+        workshopId: true,
+      },
+    });
+
+    return workerWorkshops
+      .filter((ww) => !!ww.workshop && ww.workshop.isEnabled)
+      .map((ww) => ww.workshopId);
+  }
+
+  async findMany(opts: {
+    worker: RequestWorker;
+  }): Promise<KitchenerOrderEntity[]> {
+    const { worker } = opts;
+    const workerId = worker.id;
+    const restaurantIds = worker.workersToRestaurants.map(
+      (wtr) => wtr.restaurantId,
+    );
+
+    const workerWorkshopIds = await this.getWorkerWorkshopIds({
+      id: workerId,
+      role: worker.role,
+    });
+
+    const fetchedOrders = await this.pg.query.orders.findMany({
+      where: (orders, { eq, and, or, exists, inArray }) => {
+        const conditions: SQL[] = [
+          // Exclude archived orders
+          eq(orders.isArchived, false),
+          // Exclude removed orders
+          eq(orders.isRemoved, false),
+          // Include only orders with cooking status
+          eq(orders.status, "cooking"),
+          // Have cooking or ready dishes
+          exists(
+            this.pg
+              .select({
+                id: orderDishes.id,
+              })
+              .from(orderDishes)
+              .where(
+                and(
+                  eq(orderDishes.orderId, orders.id),
+                  or(
+                    eq(orderDishes.status, "cooking"),
+                    eq(orderDishes.status, "ready"),
+                  ),
+                  eq(orderDishes.isRemoved, false),
+                ),
+              ),
+          ),
+        ];
+
+        // System admin and chief admin can see all orders
+        if (worker.role !== "SYSTEM_ADMIN" && worker.role !== "CHIEF_ADMIN") {
+          conditions.push(inArray(orders.restaurantId, restaurantIds));
+        }
+
+        return and(...conditions);
+      },
+      with: {
+        orderDishes: {
+          // Filter
+          where: (orderDishes, { eq, and, gt, or, exists, inArray }) =>
+            and(
+              // Only not removed
+              eq(orderDishes.isRemoved, false),
+              // Only dishes with quantity > 0
+              gt(orderDishes.quantity, 0),
+              // Only dishes with cooking or ready status
+              or(
+                eq(orderDishes.status, "cooking"),
+                eq(orderDishes.status, "ready"),
+              ),
+              // Only dishes with workshopId in workerWorkshopIds
+              Array.isArray(workerWorkshopIds)
+                ? exists(
+                    this.pg
+                      .select({ id: dishesToWorkshops.workshopId })
+                      .from(dishesToWorkshops)
+                      .where(
+                        and(
+                          eq(dishesToWorkshops.dishId, orderDishes.dishId),
+                          inArray(
+                            dishesToWorkshops.workshopId,
+                            workerWorkshopIds,
+                          ),
+                        ),
+                      ),
+                  )
+                : undefined,
+            ),
+          // Select
+          columns: {
+            id: true,
+            status: true,
+            name: true,
+            quantity: true,
+            quantityReturned: true,
+            isAdditional: true,
+          },
+        },
+      },
+      columns: {
+        id: true,
+        number: true,
+        tableNumber: true,
+        from: true,
+        type: true,
+        note: true,
+        guestsAmount: true,
+        createdAt: true,
+        updatedAt: true,
+        delayedTo: true,
+      },
+      orderBy: (orders, { desc }) => [desc(orders.createdAt)],
+      limit: 100,
+    });
+
+    return fetchedOrders;
+  }
+}
