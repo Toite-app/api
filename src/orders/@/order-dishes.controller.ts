@@ -16,6 +16,7 @@ import { UpdateOrderDishDto } from "src/orders/@/dtos/update-order-dish.dto";
 import { OrderEntity } from "src/orders/@/entities/order.entity";
 import { OrderDishesService } from "src/orders/@/services/order-dishes.service";
 import { OrdersService } from "src/orders/@/services/orders.service";
+import { KitchenerOrderActionsService } from "src/orders/kitchener/kitchener-order-actions.service";
 
 @Controller("orders/:id/dishes", {
   tags: ["orders"],
@@ -24,6 +25,7 @@ export class OrderDishesController {
   constructor(
     private readonly ordersService: OrdersService,
     private readonly orderDishesService: OrderDishesService,
+    private readonly kitchenerOrderActionsService: KitchenerOrderActionsService,
   ) {}
 
   @EnableAuditLog()
@@ -111,7 +113,7 @@ export class OrderDishesController {
     @Param("orderDishId") orderDishId: string,
     @Worker() worker: RequestWorker,
   ) {
-    await this.orderDishesService.forceReady(orderDishId, {
+    await this.kitchenerOrderActionsService.markDishAsReady(orderDishId, {
       worker,
     });
 

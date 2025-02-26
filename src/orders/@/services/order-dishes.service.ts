@@ -1,6 +1,5 @@
 import { BadRequestException } from "@core/errors/exceptions/bad-request.exception";
 import { NotFoundException } from "@core/errors/exceptions/not-found.exception";
-import { RequestWorker } from "@core/interfaces/request";
 import { Inject, Injectable } from "@nestjs/common";
 import { Schema } from "@postgress-db/drizzle.module";
 import { dishModifiersToOrderDishes } from "@postgress-db/schema/dish-modifiers";
@@ -262,41 +261,6 @@ export class OrderDishesService {
     });
 
     return removedOrderDish;
-  }
-
-  public async forceReady(
-    orderDishId: string,
-    opts?: { worker?: RequestWorker },
-  ) {
-    const orderDish = await this.getOrderDish(orderDishId);
-
-    if (orderDish.status !== "cooking") {
-      throw new BadRequestException(
-        "errors.order-dishes.cant-force-not-cooking-dish",
-      );
-    }
-
-    const updatedOrderDish = await this.pg.transaction(async (tx) => {
-      const [updatedOrderDish] = await tx
-        .update(orderDishes)
-        .set({
-          status: "ready",
-          readyAt: new Date(),
-        })
-        .where(eq(orderDishes.id, orderDishId))
-        .returning();
-
-      return updatedOrderDish;
-    });
-
-    await this.ordersProducer.dishCrudUpdate({
-      action: "UPDATE",
-      orderDishId: orderDish.id,
-      orderDish: updatedOrderDish,
-      calledByWorkerId: opts?.worker?.id,
-    });
-
-    return updatedOrderDish;
   }
 
   public async updateDishModifiers(
