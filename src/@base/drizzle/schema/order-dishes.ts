@@ -68,6 +68,8 @@ export const orderDishes = pgTable(
     // Timestamps //
     createdAt: timestamp("createdAt").notNull().defaultNow(),
     updatedAt: timestamp("updatedAt").notNull().defaultNow(),
+    cookingAt: timestamp("cookingAt"),
+    readyAt: timestamp("readyAt"),
     removedAt: timestamp("removedAt"),
   },
   (table) => [index("orderDishes_orderId_idx").on(table.orderId)],

@@ -72,6 +72,13 @@ export class OrderActionsService {
     orderId: string,
     opts?: { worker?: RequestWorker },
   ) {
+    const order = await this.pg.query.orders.findFirst({
+      where: (orders, { eq }) => eq(orders.id, orderId),
+      columns: {
+        cookingAt: true,
+      },
+    });
+
     const dishes = await this.pg.query.orderDishes.findMany({
       where: (orderDishes, { eq, and, gt }) =>
         and(
@@ -102,8 +109,10 @@ export class OrderActionsService {
         .set({
           status: "cooking",
           isAdditional,
+          cookingAt: new Date(),
         })
         .where(
+          // Change status of pending dishes to cooking
           inArray(
             orderDishes.id,
             pendingDishes.map((d) => d.id),
@@ -115,6 +124,8 @@ export class OrderActionsService {
         .update(orders)
         .set({
           status: "cooking",
+          cookingAt:
+            order && order.cookingAt ? new Date(order.cookingAt) : new Date(),
         })
         .where(eq(orders.id, orderId));
     });

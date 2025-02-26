@@ -247,6 +247,15 @@ export class OrderEntity implements IOrder {
   })
   updatedAt: Date;
 
+  @Expose()
+  @IsDate()
+  @IsOptional()
+  @ApiPropertyOptional({
+    description: "Date when order was cooking",
+    example: null,
+  })
+  cookingAt: Date | null;
+
   @IsDate()
   @IsOptional()
   @Expose()
