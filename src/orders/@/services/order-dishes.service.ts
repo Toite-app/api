@@ -279,7 +279,10 @@ export class OrderDishesService {
     const updatedOrderDish = await this.pg.transaction(async (tx) => {
       const [updatedOrderDish] = await tx
         .update(orderDishes)
-        .set({ status: "ready" })
+        .set({
+          status: "ready",
+          readyAt: new Date(),
+        })
         .where(eq(orderDishes.id, orderDishId))
         .returning();
 

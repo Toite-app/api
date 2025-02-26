@@ -5,6 +5,7 @@ import { orderDishes } from "@postgress-db/schema/order-dishes";
 import { orders } from "@postgress-db/schema/orders";
 import { restaurantWorkshops } from "@postgress-db/schema/restaurant-workshop";
 import { IWorker } from "@postgress-db/schema/workers";
+import { differenceInMinutes } from "date-fns";
 import { SQL } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { PG_CONNECTION } from "src/constants";
@@ -52,6 +53,27 @@ export class KitchenerOrdersService {
         id: ww.workshopId,
         name: ww.workshop.name,
       }));
+  }
+
+  private getIsReadyOnTime({
+    cookingTimeInMin,
+    cookingAt,
+    readyAt,
+  }: {
+    cookingTimeInMin: number;
+    cookingAt?: Date | null;
+    readyAt?: Date | null;
+  }) {
+    if (!cookingAt && !readyAt) {
+      return false;
+    }
+
+    const differenceInMin = differenceInMinutes(
+      cookingAt ?? new Date(),
+      readyAt ?? new Date(),
+    );
+
+    return differenceInMin <= cookingTimeInMin;
   }
 
   async findMany(opts: {
@@ -182,7 +204,9 @@ export class KitchenerOrdersService {
                   },
                 },
               },
-              columns: {},
+              columns: {
+                cookingTimeInMin: true,
+              },
             },
           },
         },
@@ -212,6 +236,12 @@ export class KitchenerOrdersService {
           orderDishes: orderDishes.map(
             ({ dish, dishModifiersToOrderDishes, ...orderDish }) => ({
               ...orderDish,
+              cookingTimeInMin: dish.cookingTimeInMin,
+              isReadyOnTime: this.getIsReadyOnTime({
+                cookingTimeInMin: dish.cookingTimeInMin,
+                cookingAt: orderDish.cookingAt,
+                readyAt: orderDish.readyAt,
+              }),
               modifiers: dishModifiersToOrderDishes.map(
                 ({ dishModifierId, dishModifier }) => ({
                   id: dishModifierId,
