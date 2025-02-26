@@ -1,6 +1,7 @@
 import { IsBoolean, IsString, IsUUID } from "@i18n-class-validator";
-import { ApiProperty, PickType } from "@nestjs/swagger";
+import { ApiProperty, IntersectionType, PickType } from "@nestjs/swagger";
 import { Expose, Type } from "class-transformer";
+import { DishEntity } from "src/dishes/@/entities/dish.entity";
 import { OrderDishEntity } from "src/orders/@/entities/order-dish.entity";
 
 export class KitchenerOrderDishWorkshopEntity {
@@ -29,17 +30,20 @@ export class KitchenerOrderDishWorkshopEntity {
   isMyWorkshop: boolean;
 }
 
-export class KitchenerOrderDishEntity extends PickType(OrderDishEntity, [
-  "id",
-  "status",
-  "name",
-  "quantity",
-  "quantityReturned",
-  "isAdditional",
-  "modifiers",
-  "cookingAt",
-  "readyAt",
-]) {
+export class KitchenerOrderDishEntity extends IntersectionType(
+  PickType(OrderDishEntity, [
+    "id",
+    "status",
+    "name",
+    "quantity",
+    "quantityReturned",
+    "isAdditional",
+    "modifiers",
+    "cookingAt",
+    "readyAt",
+  ]),
+  PickType(DishEntity, ["cookingTimeInMin"]),
+) {
   @Expose()
   @ApiProperty({
     description: "Workshops",
@@ -47,4 +51,12 @@ export class KitchenerOrderDishEntity extends PickType(OrderDishEntity, [
   })
   @Type(() => KitchenerOrderDishWorkshopEntity)
   workshops: KitchenerOrderDishWorkshopEntity[];
+
+  @Expose()
+  @IsBoolean()
+  @ApiProperty({
+    description: "Is ready in time",
+    example: false,
+  })
+  isReadyOnTime: boolean;
 }
