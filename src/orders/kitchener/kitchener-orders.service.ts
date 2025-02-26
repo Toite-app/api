@@ -1,8 +1,9 @@
 import { RequestWorker } from "@core/interfaces/request";
 import { Inject, Injectable } from "@nestjs/common";
 import { Schema } from "@postgress-db/drizzle.module";
-import { dishesToWorkshops } from "@postgress-db/schema/dishes";
 import { orderDishes } from "@postgress-db/schema/order-dishes";
+import { orders } from "@postgress-db/schema/orders";
+import { restaurantWorkshops } from "@postgress-db/schema/restaurant-workshop";
 import { IWorker } from "@postgress-db/schema/workers";
 import { SQL } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
@@ -21,9 +22,9 @@ export class KitchenerOrdersService {
    * @param workerId - The id of the worker
    * @returns An array of workshop ids
    */
-  private async getWorkerWorkshopIds(
+  private async getWorkerWorkshops(
     worker: Pick<IWorker, "role" | "id">,
-  ): Promise<string[] | undefined> {
+  ): Promise<{ id: string; name: string }[] | undefined> {
     // System admin and chief admin can see all workshops
     if (worker.role === "SYSTEM_ADMIN" || worker.role === "CHIEF_ADMIN") {
       return undefined;
@@ -36,6 +37,7 @@ export class KitchenerOrdersService {
         workshop: {
           columns: {
             isEnabled: true,
+            name: true,
           },
         },
       },
@@ -46,7 +48,10 @@ export class KitchenerOrdersService {
 
     return workerWorkshops
       .filter((ww) => !!ww.workshop && ww.workshop.isEnabled)
-      .map((ww) => ww.workshopId);
+      .map((ww) => ({
+        id: ww.workshopId,
+        name: ww.workshop.name,
+      }));
   }
 
   async findMany(opts: {
@@ -58,10 +63,14 @@ export class KitchenerOrdersService {
       (wtr) => wtr.restaurantId,
     );
 
-    const workerWorkshopIds = await this.getWorkerWorkshopIds({
+    const workerWorkshops = await this.getWorkerWorkshops({
       id: workerId,
       role: worker.role,
     });
+
+    const workerWorkshopsIdsSet = new Set(
+      workerWorkshops?.map((ww) => ww.id) ?? [],
+    );
 
     const fetchedOrders = await this.pg.query.orders.findMany({
       where: (orders, { eq, and, or, exists, inArray }) => {
@@ -102,7 +111,7 @@ export class KitchenerOrdersService {
       with: {
         orderDishes: {
           // Filter
-          where: (orderDishes, { eq, and, gt, or, exists, inArray }) =>
+          where: (orderDishes, { eq, and, gt, or }) =>
             and(
               // Only not removed
               eq(orderDishes.isRemoved, false),
@@ -113,23 +122,6 @@ export class KitchenerOrdersService {
                 eq(orderDishes.status, "cooking"),
                 eq(orderDishes.status, "ready"),
               ),
-              // Only dishes with workshopId in workerWorkshopIds
-              Array.isArray(workerWorkshopIds)
-                ? exists(
-                    this.pg
-                      .select({ id: dishesToWorkshops.workshopId })
-                      .from(dishesToWorkshops)
-                      .where(
-                        and(
-                          eq(dishesToWorkshops.dishId, orderDishes.dishId),
-                          inArray(
-                            dishesToWorkshops.workshopId,
-                            workerWorkshopIds,
-                          ),
-                        ),
-                      ),
-                  )
-                : undefined,
             ),
           // Select
           columns: {
@@ -140,10 +132,50 @@ export class KitchenerOrdersService {
             quantityReturned: true,
             isAdditional: true,
           },
+          with: {
+            dish: {
+              with: {
+                dishesToWorkshops: {
+                  where: (dishesToWorkshops, { eq, and, exists }) =>
+                    and(
+                      exists(
+                        this.pg
+                          .select({ id: restaurantWorkshops.id })
+                          .from(restaurantWorkshops)
+                          .where(
+                            and(
+                              eq(
+                                restaurantWorkshops.restaurantId,
+                                orders.restaurantId,
+                              ),
+                              eq(
+                                restaurantWorkshops.id,
+                                dishesToWorkshops.workshopId,
+                              ),
+                            ),
+                          ),
+                      ),
+                    ),
+                  columns: {
+                    workshopId: true,
+                  },
+                  with: {
+                    workshop: {
+                      columns: {
+                        name: true,
+                      },
+                    },
+                  },
+                },
+              },
+              columns: {},
+            },
+          },
         },
       },
       columns: {
         id: true,
+        status: true,
         number: true,
         tableNumber: true,
         from: true,
@@ -158,6 +190,25 @@ export class KitchenerOrdersService {
       limit: 100,
     });
 
-    return fetchedOrders;
+    return fetchedOrders.map(
+      ({ orderDishes, ...order }) =>
+        ({
+          ...order,
+          orderDishes: orderDishes.map(({ dish, ...orderDish }) => ({
+            ...orderDish,
+            workshops: dish.dishesToWorkshops.map(
+              ({ workshopId, workshop }) =>
+                ({
+                  id: workshopId,
+                  name: workshop.name,
+                  isMyWorkshop:
+                    worker.role === "SYSTEM_ADMIN" ||
+                    worker.role === "CHIEF_ADMIN" ||
+                    workerWorkshopsIdsSet.has(workshopId),
+                }) satisfies KitchenerOrderEntity["orderDishes"][number]["workshops"][number],
+            ),
+          })),
+        }) satisfies KitchenerOrderEntity,
+    );
   }
 }

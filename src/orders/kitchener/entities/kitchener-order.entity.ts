@@ -5,6 +5,7 @@ import { KitchenerOrderDishEntity } from "src/orders/kitchener/entities/kitchene
 
 export class KitchenerOrderEntity extends PickType(OrderEntity, [
   "id",
+  "status",
   "number",
   "tableNumber",
   "from",
