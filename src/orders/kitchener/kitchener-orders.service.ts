@@ -133,6 +133,18 @@ export class KitchenerOrdersService {
             isAdditional: true,
           },
           with: {
+            dishModifiersToOrderDishes: {
+              columns: {
+                dishModifierId: true,
+              },
+              with: {
+                dishModifier: {
+                  columns: {
+                    name: true,
+                  },
+                },
+              },
+            },
             dish: {
               with: {
                 dishesToWorkshops: {
@@ -194,20 +206,28 @@ export class KitchenerOrdersService {
       ({ orderDishes, ...order }) =>
         ({
           ...order,
-          orderDishes: orderDishes.map(({ dish, ...orderDish }) => ({
-            ...orderDish,
-            workshops: dish.dishesToWorkshops.map(
-              ({ workshopId, workshop }) =>
-                ({
-                  id: workshopId,
-                  name: workshop.name,
-                  isMyWorkshop:
-                    worker.role === "SYSTEM_ADMIN" ||
-                    worker.role === "CHIEF_ADMIN" ||
-                    workerWorkshopsIdsSet.has(workshopId),
-                }) satisfies KitchenerOrderEntity["orderDishes"][number]["workshops"][number],
-            ),
-          })),
+          orderDishes: orderDishes.map(
+            ({ dish, dishModifiersToOrderDishes, ...orderDish }) => ({
+              ...orderDish,
+              modifiers: dishModifiersToOrderDishes.map(
+                ({ dishModifierId, dishModifier }) => ({
+                  id: dishModifierId,
+                  name: dishModifier.name,
+                }),
+              ),
+              workshops: dish.dishesToWorkshops.map(
+                ({ workshopId, workshop }) =>
+                  ({
+                    id: workshopId,
+                    name: workshop.name,
+                    isMyWorkshop:
+                      worker.role === "SYSTEM_ADMIN" ||
+                      worker.role === "CHIEF_ADMIN" ||
+                      workerWorkshopsIdsSet.has(workshopId),
+                  }) satisfies KitchenerOrderEntity["orderDishes"][number]["workshops"][number],
+              ),
+            }),
+          ),
         }) satisfies KitchenerOrderEntity,
     );
   }
