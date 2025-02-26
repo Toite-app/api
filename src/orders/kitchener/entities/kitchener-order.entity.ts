@@ -14,6 +14,7 @@ export class KitchenerOrderEntity extends PickType(OrderEntity, [
   "guestsAmount",
   "createdAt",
   "updatedAt",
+  "cookingAt",
   "delayedTo",
 ]) {
   @Expose()

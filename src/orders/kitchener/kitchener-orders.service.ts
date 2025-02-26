@@ -131,6 +131,8 @@ export class KitchenerOrdersService {
             quantity: true,
             quantityReturned: true,
             isAdditional: true,
+            cookingAt: true,
+            readyAt: true,
           },
           with: {
             dishModifiersToOrderDishes: {
@@ -197,6 +199,7 @@ export class KitchenerOrdersService {
         createdAt: true,
         updatedAt: true,
         delayedTo: true,
+        cookingAt: true,
       },
       orderBy: (orders, { desc }) => [desc(orders.createdAt)],
       limit: 100,

@@ -37,6 +37,8 @@ export class KitchenerOrderDishEntity extends PickType(OrderDishEntity, [
   "quantityReturned",
   "isAdditional",
   "modifiers",
+  "cookingAt",
+  "readyAt",
 ]) {
   @Expose()
   @ApiProperty({

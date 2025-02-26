@@ -188,6 +188,24 @@ export class OrderDishEntity implements IOrderDish {
   @IsOptional()
   @Expose()
   @ApiPropertyOptional({
+    description: "Date when dish was cooking",
+    example: null,
+  })
+  cookingAt: Date | null;
+
+  @IsDate()
+  @IsOptional()
+  @Expose()
+  @ApiPropertyOptional({
+    description: "Date when dish was ready",
+    example: null,
+  })
+  readyAt: Date | null;
+
+  @IsDate()
+  @IsOptional()
+  @Expose()
+  @ApiPropertyOptional({
     description: "Removal timestamp",
     example: null,
   })
