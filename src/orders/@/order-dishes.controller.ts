@@ -113,6 +113,7 @@ export class OrderDishesController {
     @Param("orderDishId") orderDishId: string,
     @Worker() worker: RequestWorker,
   ) {
+    // TODO: restrict access to admins
     await this.kitchenerOrderActionsService.markDishAsReady(orderDishId, {
       worker,
     });
