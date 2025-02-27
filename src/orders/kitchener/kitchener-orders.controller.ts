@@ -49,6 +49,7 @@ export class KitchenerOrdersController {
     @Param("orderDishId") orderDishId: string,
     @Worker() worker: RequestWorker,
   ) {
+    // TODO: restrict access to kitchener workers
     await this.kitchenerOrderActionsService.markDishAsReady(orderDishId, {
       worker,
     });
