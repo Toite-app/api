@@ -156,4 +156,61 @@ export class DiscountsService {
 
     return await this.findOne(discount.id);
   }
+
+  public async update(
+    id: string,
+    payload: UpdateDiscountDto,
+    options: { worker: RequestWorker },
+  ) {
+    const { worker } = options;
+
+    const existingDiscount = await this.findOne(id);
+    if (!existingDiscount) {
+      throw new BadRequestException(
+        "errors.discounts.discount-with-provided-id-not-found",
+      );
+    }
+
+    if (payload.restaurantIds) {
+      await this.validatePayload(payload, worker);
+    }
+
+    const updatedDiscount = await this.pg.transaction(async (tx) => {
+      // Update discount
+      const [discount] = await tx
+        .update(discounts)
+        .set({
+          ...payload,
+          ...(payload.activeFrom
+            ? { activeFrom: new Date(payload.activeFrom) }
+            : {}),
+          ...(payload.activeTo ? { activeTo: new Date(payload.activeTo) } : {}),
+          updatedAt: new Date(),
+        })
+        .where(eq(discounts.id, id))
+        .returning({
+          id: discounts.id,
+        });
+
+      // If restaurantIds are provided, update restaurant associations
+      if (payload.restaurantIds) {
+        // Delete existing associations
+        await tx
+          .delete(discountsToRestaurants)
+          .where(eq(discountsToRestaurants.discountId, id));
+
+        // Create new associations
+        await tx.insert(discountsToRestaurants).values(
+          payload.restaurantIds.map((restaurantId) => ({
+            discountId: id,
+            restaurantId,
+          })),
+        );
+      }
+
+      return discount;
+    });
+
+    return await this.findOne(updatedDiscount.id);
+  }
 }
