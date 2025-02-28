@@ -1,5 +1,6 @@
 import { IsArray, IsUUID } from "@i18n-class-validator";
 import { ApiProperty, PickType } from "@nestjs/swagger";
+import { Expose } from "class-transformer";
 
 import { DiscountEntity } from "../entities/discount.entity";
 
@@ -20,6 +21,7 @@ export class CreateDiscountDto extends PickType(DiscountEntity, [
   "activeFrom",
   "activeTo",
 ]) {
+  @Expose()
   @IsArray()
   @IsUUID(undefined, { each: true })
   @ApiProperty({

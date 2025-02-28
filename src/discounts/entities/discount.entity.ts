@@ -3,6 +3,7 @@ import {
   IsBoolean,
   IsDate,
   IsEnum,
+  IsISO8601,
   IsNumber,
   IsOptional,
   IsString,
@@ -158,7 +159,7 @@ export class DiscountEntity implements IDiscount {
   })
   endHour: number | null;
 
-  @IsDate()
+  @IsISO8601()
   @Expose()
   @ApiProperty({
     description: "Start date of the discount validity",
@@ -166,7 +167,7 @@ export class DiscountEntity implements IDiscount {
   })
   activeFrom: Date;
 
-  @IsDate()
+  @IsISO8601()
   @Expose()
   @ApiProperty({
     description: "End date of the discount validity",

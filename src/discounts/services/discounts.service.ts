@@ -1,10 +1,16 @@
+import { BadRequestException } from "@core/errors/exceptions/bad-request.exception";
 import { RequestWorker } from "@core/interfaces/request";
 import { Inject, Injectable } from "@nestjs/common";
 import { schema } from "@postgress-db/drizzle.module";
-import { discountsToRestaurants } from "@postgress-db/schema/discounts";
-import { and, exists, inArray, SQL } from "drizzle-orm";
+import {
+  discounts,
+  discountsToRestaurants,
+} from "@postgress-db/schema/discounts";
+import { and, eq, exists, inArray, SQL } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { PG_CONNECTION } from "src/constants";
+import { CreateDiscountDto } from "src/discounts/dto/create-discount.dto";
+import { UpdateDiscountDto } from "src/discounts/dto/update-discount.dto";
 import { DiscountEntity } from "src/discounts/entities/discount.entity";
 
 @Injectable()
@@ -64,5 +70,90 @@ export class DiscountsService {
         restaurantName: restaurant.name,
       })),
     }));
+  }
+
+  public async findOne(id: string) {
+    const discount = await this.pg.query.discounts.findFirst({
+      where: eq(discounts.id, id),
+      with: {
+        discountsToRestaurants: {
+          with: {
+            restaurant: true,
+          },
+        },
+      },
+    });
+
+    if (!discount) {
+      return null;
+    }
+
+    return {
+      ...discount,
+      restaurants: discount.discountsToRestaurants.map(({ restaurant }) => ({
+        restaurantId: restaurant.id,
+        restaurantName: restaurant.name,
+      })),
+    };
+  }
+
+  private async validatePayload(
+    payload: CreateDiscountDto | UpdateDiscountDto,
+    worker: RequestWorker,
+  ) {
+    if (!payload.restaurantIds || payload.restaurantIds.length === 0) {
+      throw new BadRequestException(
+        "errors.discounts.you-should-provide-at-least-one-restaurant-id",
+      );
+    }
+
+    // If worker is owner, check if they own all provided restaurant ids
+    if (worker.role === "SYSTEM_ADMIN" || worker.role === "CHIEF_ADMIN") {
+    } else if (worker.role === "OWNER" || worker.role === "ADMIN") {
+      const restaurantIdsSet = new Set(
+        worker.role === "OWNER"
+          ? worker.ownedRestaurants.map((r) => r.id)
+          : worker.workersToRestaurants.map((r) => r.restaurantId),
+      );
+
+      if (payload.restaurantIds.some((id) => !restaurantIdsSet.has(id))) {
+        throw new BadRequestException(
+          "errors.discounts.you-provided-restaurant-id-that-you-dont-own",
+        );
+      }
+    }
+  }
+
+  public async create(
+    payload: CreateDiscountDto,
+    options: { worker: RequestWorker },
+  ) {
+    const { worker } = options;
+
+    await this.validatePayload(payload, worker);
+
+    const discount = await this.pg.transaction(async (tx) => {
+      const [discount] = await tx
+        .insert(discounts)
+        .values({
+          ...payload,
+          activeFrom: new Date(payload.activeFrom),
+          activeTo: new Date(payload.activeTo),
+        })
+        .returning({
+          id: discounts.id,
+        });
+
+      await tx.insert(discountsToRestaurants).values(
+        payload.restaurantIds.map((id) => ({
+          discountId: discount.id,
+          restaurantId: id,
+        })),
+      );
+
+      return discount;
+    });
+
+    return await this.findOne(discount.id);
   }
 }
