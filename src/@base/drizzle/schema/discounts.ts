@@ -4,7 +4,6 @@ import { restaurants } from "@postgress-db/schema/restaurants";
 import { relations } from "drizzle-orm";
 import {
   boolean,
-  decimal,
   integer,
   pgTable,
   primaryKey,
@@ -24,7 +23,7 @@ export const discounts = pgTable("discounts", {
   description: text("description").default(""),
 
   // Info //
-  value: decimal("value", { precision: 10, scale: 2 }).default("0"),
+  percent: integer("percent").notNull().default(0),
 
   // Basic conditions //
   orderFroms: orderFromEnum("orderFroms").array().notNull(),
@@ -33,8 +32,9 @@ export const discounts = pgTable("discounts", {
 
   // Advanced conditions //
   promocode: text("promocode"),
-  onlyFirstOrder: boolean("onlyFirstOrder").notNull().default(false),
-  limitedByTime: boolean("limitedByTime").notNull().default(false),
+  applyByPromocode: boolean("applyByPromocode").notNull().default(false),
+  applyForFirstOrder: boolean("applyForFirstOrder").notNull().default(false),
+  applyByDefault: boolean("applyByDefault").notNull().default(false),
 
   // Boolean flags //
   isEnabled: boolean("isEnabled").notNull().default(true),
@@ -49,6 +49,8 @@ export const discounts = pgTable("discounts", {
   createdAt: timestamp("createdAt").notNull().defaultNow(),
   updatedAt: timestamp("updatedAt").notNull().defaultNow(),
 });
+
+export type IDiscount = typeof discounts.$inferSelect;
 
 export const discountRelations = relations(discounts, ({ many }) => ({
   discountsToRestaurants: many(discountsToRestaurants),

@@ -24,6 +24,7 @@ import { S3Module } from "src/@base/s3/s3.module";
 import { SnapshotsModule } from "src/@base/snapshots/snapshots.module";
 import { SocketModule } from "src/@socket/socket.module";
 import { AddressesModule } from "src/addresses/addresses.module";
+import { DiscountsModule } from "src/discounts/discounts.module";
 import { DishCategoriesModule } from "src/dish-categories/dish-categories.module";
 import { DishesModule } from "src/dishes/dishes.module";
 import { FilesModule } from "src/files/files.module";
@@ -98,6 +99,7 @@ import { WorkersModule } from "./workers/workers.module";
     }),
     SocketModule,
     PaymentMethodsModule,
+    DiscountsModule,
   ],
   providers: [
     {

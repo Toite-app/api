@@ -11,6 +11,8 @@ export const dayOfWeekEnum = pgEnum("day_of_week", [
   "sunday",
 ]);
 
+export const ZodDayOfWeekEnum = z.enum(dayOfWeekEnum.enumValues);
+
 export const currencyEnum = pgEnum("currency", ["EUR", "USD", "RUB"]);
 
 export const ZodCurrency = z.enum(currencyEnum.enumValues);
