@@ -2,7 +2,7 @@ import { Controller } from "@core/decorators/controller.decorator";
 import { Serializable } from "@core/decorators/serializable.decorator";
 import { Worker } from "@core/decorators/worker.decorator";
 import { RequestWorker } from "@core/interfaces/request";
-import { Body, Get, Post } from "@nestjs/common";
+import { Body, Get, Post, Patch, Param } from "@nestjs/common";
 import {
   ApiCreatedResponse,
   ApiForbiddenResponse,
@@ -13,6 +13,7 @@ import {
 import { EnableAuditLog } from "src/@base/audit-logs/decorators/audit-logs.decorator";
 import { CreateDiscountDto } from "src/discounts/dto/create-discount.dto";
 import { DiscountEntity } from "src/discounts/entities/discount.entity";
+import { UpdateDiscountDto } from "./dto/update-discount.dto";
 
 import { DiscountsService } from "./services/discounts.service";
 
@@ -50,6 +51,26 @@ export class DiscountsController {
     @Worker() worker: RequestWorker,
   ) {
     return this.discountsService.create(payload, {
+      worker,
+    });
+  }
+
+  @EnableAuditLog()
+  @Patch(":id")
+  @Serializable(DiscountEntity)
+  @ApiOperation({
+    summary: "Update an existing discount",
+  })
+  @ApiOkResponse({
+    description: "Discount has been successfully updated",
+    type: DiscountEntity,
+  })
+  async update(
+    @Param("id") id: string,
+    @Body() payload: UpdateDiscountDto,
+    @Worker() worker: RequestWorker,
+  ) {
+    return this.discountsService.update(id, payload, {
       worker,
     });
   }
