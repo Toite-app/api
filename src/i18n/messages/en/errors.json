@@ -68,7 +68,11 @@
     "table-number-is-required": "Table number is required",
     "phone-number-is-required": "Phone number is required",
     "restaurant-is-required-for-banquet-or-hall": "Restaurant is required for banquet or hall",
-    "table-number-is-already-taken": "Table number is already taken"
+    "table-number-is-already-taken": "Table number is already taken",
+    "payment-method-not-found": "Payment method not found",
+    "payment-method-is-not-active": "Payment method is not active",
+    "payment-method-is-not-for-this-restaurant": "Payment method is not for this restaurant",
+    "payment-method-is-required": "Payment method is required"
   },
   "order-dishes": {
     "order-not-found": "Order not found",

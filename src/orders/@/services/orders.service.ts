@@ -114,6 +114,53 @@ export class OrdersService {
         property: "guestPhone",
       });
     }
+
+    if (!dto.paymentMethodId && !!dto.restaurantId) {
+      throw new BadRequestException(
+        "errors.orders.payment-method-is-required",
+        {
+          property: "paymentMethodId",
+        },
+      );
+    }
+
+    if (!!dto.paymentMethodId) {
+      const paymentMethod = await this.pg.query.paymentMethods.findFirst({
+        where: (paymentMethods, { eq }) =>
+          eq(paymentMethods.id, String(dto.paymentMethodId)),
+        columns: {
+          isActive: true,
+          restaurantId: true,
+        },
+      });
+
+      if (!paymentMethod) {
+        throw new BadRequestException(
+          "errors.orders.payment-method-not-found",
+          {
+            property: "paymentMethodId",
+          },
+        );
+      }
+
+      if (paymentMethod.isActive === false) {
+        throw new BadRequestException(
+          "errors.orders.payment-method-is-not-active",
+          {
+            property: "paymentMethodId",
+          },
+        );
+      }
+
+      if (paymentMethod.restaurantId !== dto.restaurantId) {
+        throw new BadRequestException(
+          "errors.orders.payment-method-is-not-for-this-restaurant",
+          {
+            property: "paymentMethodId",
+          },
+        );
+      }
+    }
   }
 
   async create(
@@ -131,6 +178,7 @@ export class OrdersService {
       delayedTo,
       restaurantId,
       tableNumber,
+      paymentMethodId,
     } = dto;
 
     const number = await this.generateOrderNumber();
@@ -145,6 +193,7 @@ export class OrdersService {
         from: "internal",
         status: "pending",
         currency: "RUB",
+        paymentMethodId,
         ...(delayedTo ? { delayedTo: new Date(delayedTo) } : {}),
         guestsAmount,
         note,
@@ -200,6 +249,7 @@ export class OrdersService {
       guestPhone,
       guestsAmount,
       type,
+      paymentMethodId,
     } = dto;
 
     let guestName =
@@ -225,6 +275,7 @@ export class OrdersService {
         ...(guestPhone ? { guestPhone } : {}),
         ...(guestsAmount ? { guestsAmount } : {}),
         ...(type ? { type } : {}),
+        ...(paymentMethodId ? { paymentMethodId } : {}),
       })
       .where(eq(orders.id, id))
       .returning({ id: orders.id });
