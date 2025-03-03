@@ -61,6 +61,7 @@ export class DiscountsService {
           },
         },
       },
+      orderBy: (discounts, { desc }) => [desc(discounts.createdAt)],
     });
 
     return fetchedDiscounts.map(({ discountsToRestaurants, ...discount }) => ({
@@ -74,6 +75,8 @@ export class DiscountsService {
 
   public async findOne(id: string, options: { worker?: RequestWorker }) {
     const { worker } = options;
+
+    worker;
 
     const discount = await this.pg.query.discounts.findFirst({
       where: eq(discounts.id, id),
