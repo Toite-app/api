@@ -72,7 +72,9 @@ export class DiscountsService {
     }));
   }
 
-  public async findOne(id: string) {
+  public async findOne(id: string, options: { worker?: RequestWorker }) {
+    const { worker } = options;
+
     const discount = await this.pg.query.discounts.findFirst({
       where: eq(discounts.id, id),
       with: {
@@ -104,6 +106,9 @@ export class DiscountsService {
     if (!payload.restaurantIds || payload.restaurantIds.length === 0) {
       throw new BadRequestException(
         "errors.discounts.you-should-provide-at-least-one-restaurant-id",
+        {
+          property: "restaurantIds",
+        },
       );
     }
 
@@ -119,6 +124,9 @@ export class DiscountsService {
       if (payload.restaurantIds.some((id) => !restaurantIdsSet.has(id))) {
         throw new BadRequestException(
           "errors.discounts.you-provided-restaurant-id-that-you-dont-own",
+          {
+            property: "restaurantIds",
+          },
         );
       }
     }
@@ -154,7 +162,7 @@ export class DiscountsService {
       return discount;
     });
 
-    return await this.findOne(discount.id);
+    return await this.findOne(discount.id, { worker });
   }
 
   public async update(
@@ -164,7 +172,7 @@ export class DiscountsService {
   ) {
     const { worker } = options;
 
-    const existingDiscount = await this.findOne(id);
+    const existingDiscount = await this.findOne(id, { worker });
     if (!existingDiscount) {
       throw new BadRequestException(
         "errors.discounts.discount-with-provided-id-not-found",
@@ -211,6 +219,6 @@ export class DiscountsService {
       return discount;
     });
 
-    return await this.findOne(updatedDiscount.id);
+    return await this.findOne(updatedDiscount.id, { worker });
   }
 }
