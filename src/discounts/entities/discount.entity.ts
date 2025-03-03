@@ -8,6 +8,9 @@ import {
   IsOptional,
   IsString,
   IsUUID,
+  Max,
+  Min,
+  MinLength,
 } from "@i18n-class-validator";
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { IDiscount } from "@postgress-db/schema/discounts";
@@ -46,6 +49,7 @@ export class DiscountEntity implements IDiscount {
   id: string;
 
   @IsString()
+  @MinLength(2)
   @Expose()
   @ApiProperty({
     description: "Name of the discount",
@@ -63,6 +67,8 @@ export class DiscountEntity implements IDiscount {
   description: string | null;
 
   @IsNumber()
+  @Min(0)
+  @Max(100)
   @Expose()
   @ApiProperty({
     description: "Percent of the discount",

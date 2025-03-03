@@ -16,6 +16,7 @@ import {
   IsUUID as _IsUUID,
   Min as _Min,
   MinLength as _MinLength,
+  Max as _Max,
   IsNumberOptions,
   ValidationOptions,
 } from "class-validator";
@@ -144,3 +145,6 @@ export const IsDecimal = (
 
 export const Min = (min: number, validationOptions?: ValidationOptions) =>
   applyDecorators(_Min(min, mergeI18nValidation("min", validationOptions)));
+
+export const Max = (max: number, validationOptions?: ValidationOptions) =>
+  applyDecorators(_Max(max, mergeI18nValidation("max", validationOptions)));
