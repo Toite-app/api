@@ -2,7 +2,7 @@ import { Controller } from "@core/decorators/controller.decorator";
 import { Serializable } from "@core/decorators/serializable.decorator";
 import { Worker } from "@core/decorators/worker.decorator";
 import { RequestWorker } from "@core/interfaces/request";
-import { Body, Get, Post, Patch, Param } from "@nestjs/common";
+import { Body, Get, Param, Patch, Post } from "@nestjs/common";
 import {
   ApiCreatedResponse,
   ApiForbiddenResponse,
@@ -13,8 +13,8 @@ import {
 import { EnableAuditLog } from "src/@base/audit-logs/decorators/audit-logs.decorator";
 import { CreateDiscountDto } from "src/discounts/dto/create-discount.dto";
 import { DiscountEntity } from "src/discounts/entities/discount.entity";
-import { UpdateDiscountDto } from "./dto/update-discount.dto";
 
+import { UpdateDiscountDto } from "./dto/update-discount.dto";
 import { DiscountsService } from "./services/discounts.service";
 
 @Controller("discounts")
@@ -34,6 +34,15 @@ export class DiscountsController {
   })
   async findAll(@Worker() worker: RequestWorker) {
     return this.discountsService.findMany({ worker });
+  }
+
+  @EnableAuditLog()
+  @Get(":id")
+  @ApiOperation({
+    summary: "Get a discount by id",
+  })
+  async findOne(@Param("id") id: string, @Worker() worker: RequestWorker) {
+    return this.discountsService.findOne(id, { worker });
   }
 
   @EnableAuditLog()
