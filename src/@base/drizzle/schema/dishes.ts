@@ -1,3 +1,4 @@
+import { dishesMenu } from "@postgress-db/schema/dishes-menu";
 import { currencyEnum } from "@postgress-db/schema/general";
 import {
   dishesToCategories,
@@ -31,6 +32,9 @@ export type WeightMeasureEnum = typeof ZodWeightMeasureEnum._type;
 
 export const dishes = pgTable("dishes", {
   id: uuid("id").defaultRandom().primaryKey(),
+
+  // Menu //
+  menuId: uuid("menuId"),
 
   // Name of the dish //
   name: text("name").notNull().default(""),
@@ -129,10 +133,14 @@ export const dishesToWorkshopsRelations = relations(
   }),
 );
 
-export const dishRelations = relations(dishes, ({ many }) => ({
+export const dishRelations = relations(dishes, ({ one, many }) => ({
   dishesToCategories: many(dishesToCategories),
   dishesToImages: many(dishesToImages),
   dishesToWorkshops: many(dishesToWorkshops),
   dishesToRestaurants: many(dishesToRestaurants),
   orderDishes: many(orderDishes),
+  menu: one(dishesMenu, {
+    fields: [dishes.menuId],
+    references: [dishesMenu.id],
+  }),
 }));

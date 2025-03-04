@@ -3,11 +3,12 @@ import {
   IsEnum,
   IsISO8601,
   IsNumber,
+  IsOptional,
   IsString,
   IsUUID,
   ValidateNested,
 } from "@i18n-class-validator";
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { IDish, ZodWeightMeasureEnum } from "@postgress-db/schema/dishes";
 import { Expose } from "class-transformer";
 import { DishImageEntity } from "src/dishes/@/entities/dish-image.entity";
@@ -20,6 +21,15 @@ export class DishEntity implements IDish {
     example: "d290f1ee-6c54-4b01-90e6-d701748f0851",
   })
   id: string;
+
+  @Expose()
+  @IsOptional()
+  @IsUUID()
+  @ApiPropertyOptional({
+    description: "Unique identifier of the menu",
+    example: "d290f1ee-6c54-4b01-90e6-d701748f0851",
+  })
+  menuId: string | null;
 
   @Expose()
   @IsString()

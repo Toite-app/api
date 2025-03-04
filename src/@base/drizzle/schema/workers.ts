@@ -1,3 +1,4 @@
+import { dishesMenu } from "@postgress-db/schema/dishes-menu";
 import { orderDeliveries } from "@postgress-db/schema/order-deliveries";
 import { restaurants } from "@postgress-db/schema/restaurants";
 import { relations } from "drizzle-orm";
@@ -89,6 +90,7 @@ export const workerRelations = relations(workers, ({ many }) => ({
   workshopWorkers: many(workshopWorkers),
   deliveries: many(orderDeliveries),
   ownedRestaurants: many(restaurants),
+  ownedDishesMenus: many(dishesMenu),
 }));
 
 export type IWorker = typeof workers.$inferSelect;
