@@ -17,7 +17,7 @@ export const dishesMenu = pgTable("dishesMenu", {
   updatedAt: timestamp("updatedAt").notNull().defaultNow(),
 });
 
-export type IDishesMenu = typeof dishesMenu.$inferSelect;
+export type IDishMenu = typeof dishesMenu.$inferSelect;
 
 export const dishesMenuRelations = relations(dishesMenu, ({ one, many }) => ({
   dishes: many(dishes),
