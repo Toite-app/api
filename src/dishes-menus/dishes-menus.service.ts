@@ -291,7 +291,9 @@ export class DishesMenusService {
       throw new ForbiddenException("errors.dishes-menus.not-enough-rights");
     } else if (
       worker.role !== "SYSTEM_ADMIN" &&
-      worker.role !== "CHIEF_ADMIN"
+      worker.role !== "CHIEF_ADMIN" &&
+      worker.role !== "OWNER" &&
+      worker.role !== "ADMIN"
     ) {
       // If not a OWNER, or ADMIN, or SYSTEM_ADMIN, or CHIEF_ADMIN, then you can't update the menu
       throw new ForbiddenException("errors.dishes-menus.not-enough-rights");
