@@ -166,6 +166,9 @@ export class DishesMenusService {
     if (restaurants.length !== restaurantIds.length) {
       throw new BadRequestException(
         "errors.dishes-menus.some-restaurant-are-not-owned-by-the-owner",
+        {
+          property: "restaurantIds",
+        },
       );
     }
   }
@@ -199,6 +202,9 @@ export class DishesMenusService {
       if (!payload.ownerId) {
         throw new BadRequestException(
           "errors.dishes-menus.owner-id-is-required",
+          {
+            property: "ownerId",
+          },
         );
       }
 
