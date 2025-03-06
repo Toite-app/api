@@ -12,6 +12,7 @@ import {
 import { and, desc, eq, inArray, SQL } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { PG_CONNECTION } from "src/constants";
+import { DishesMenusProducer } from "src/dishes-menus/dishes-menus.producer";
 import { CreateDishesMenuDto } from "src/dishes-menus/dto/create-dishes-menu.dto";
 import { UpdateDishesMenuDto } from "src/dishes-menus/dto/update-dishes-menu.dto";
 import { DishesMenuEntity } from "src/dishes-menus/entity/dishes-menu.entity";
@@ -20,11 +21,11 @@ import { DishesMenuEntity } from "src/dishes-menus/entity/dishes-menu.entity";
 export class DishesMenusService {
   constructor(
     @Inject(PG_CONNECTION) private readonly pg: NodePgDatabase<typeof schema>,
+    private readonly dishesMenusProducer: DishesMenusProducer,
   ) {}
 
   private async onApplicationBootstrap() {
-    // TODO: create default menu for each owner that doesn't have one
-    // should be done with redis lock
+    await this.dishesMenusProducer.createOwnersDefaultMenu();
   }
 
   /**
