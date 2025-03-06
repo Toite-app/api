@@ -2,6 +2,7 @@ import {
   IsArray,
   IsBoolean,
   IsISO8601,
+  IsObject,
   IsString,
   IsUUID,
 } from "@i18n-class-validator";
@@ -9,8 +10,14 @@ import { ApiProperty, PickType } from "@nestjs/swagger";
 import { IDishesMenu } from "@postgress-db/schema/dishes-menus";
 import { Expose, Type } from "class-transformer";
 import { RestaurantEntity } from "src/restaurants/@/entities/restaurant.entity";
+import { WorkerEntity } from "src/workers/entities/worker.entity";
 
 export class DishesMenuRestaurantEntity extends PickType(RestaurantEntity, [
+  "id",
+  "name",
+]) {}
+
+export class DishesMenuOwnerEntity extends PickType(WorkerEntity, [
   "id",
   "name",
 ]) {}
@@ -48,6 +55,15 @@ export class DishesMenuEntity implements IDishesMenu {
     example: "d290f1ee-6c54-4b01-90e6-d701748f0851",
   })
   ownerId: string;
+
+  @Expose()
+  @IsObject()
+  @Type(() => DishesMenuOwnerEntity)
+  @ApiProperty({
+    description: "Owner of the menu",
+    type: DishesMenuOwnerEntity,
+  })
+  owner: DishesMenuOwnerEntity;
 
   @IsBoolean()
   // @Expose()

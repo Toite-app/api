@@ -66,6 +66,12 @@ export class DishesMenusService {
             },
           },
         },
+        owner: {
+          columns: {
+            id: true,
+            name: true,
+          },
+        },
       },
     });
 
@@ -123,6 +129,12 @@ export class DishesMenusService {
                 name: true,
               },
             },
+          },
+        },
+        owner: {
+          columns: {
+            id: true,
+            name: true,
           },
         },
       },
