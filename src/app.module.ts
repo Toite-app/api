@@ -20,6 +20,7 @@ import { AuditLogsInterceptor } from "src/@base/audit-logs/audit-logs.intercepto
 import { AuditLogsModule } from "src/@base/audit-logs/audit-logs.module";
 import { EncryptionModule } from "src/@base/encryption/encryption.module";
 import { RedisChannels } from "src/@base/redis/channels";
+import { RedlockModule } from "src/@base/redlock/redlock.module";
 import { S3Module } from "src/@base/s3/s3.module";
 import { SnapshotsModule } from "src/@base/snapshots/snapshots.module";
 import { SocketModule } from "src/@socket/socket.module";
@@ -77,6 +78,7 @@ import { WorkersModule } from "./workers/workers.module";
     TimezonesModule,
     AuthModule,
     WorkersModule,
+    RedlockModule,
     RestaurantsModule,
     AddressesModule,
     GuestsModule,
