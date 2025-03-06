@@ -10,7 +10,7 @@ import * as discounts from "./schema/discounts";
 import * as dishCategories from "./schema/dish-categories";
 import * as dishModifiers from "./schema/dish-modifiers";
 import * as dishes from "./schema/dishes";
-import * as dishesMenu from "./schema/dishes-menu";
+import * as dishesMenus from "./schema/dishes-menus";
 import * as files from "./schema/files";
 import * as general from "./schema/general";
 import * as guests from "./schema/guests";
@@ -41,7 +41,7 @@ export const schema = {
   ...paymentMethods,
   ...dishModifiers,
   ...discounts,
-  ...dishesMenu,
+  ...dishesMenus,
 };
 
 export type Schema = typeof schema;

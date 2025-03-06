@@ -18,7 +18,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { z } from "zod";
 
-export const orderFromEnum = pgEnum("orderFromEnum", [
+export const orderFromEnum = pgEnum("order_from_enum", [
   "app",
   "website",
   "internal",
@@ -28,7 +28,7 @@ export const ZodOrderFromEnum = z.enum(orderFromEnum.enumValues);
 
 export type OrderFromEnum = typeof ZodOrderFromEnum._type;
 
-export const orderStatusEnum = pgEnum("orderStatusEnum", [
+export const orderStatusEnum = pgEnum("order_status_enum", [
   "pending",
   "cooking",
   "ready",
@@ -42,7 +42,7 @@ export const ZodOrderStatusEnum = z.enum(orderStatusEnum.enumValues);
 
 export type OrderStatusEnum = typeof ZodOrderStatusEnum._type;
 
-export const orderTypeEnum = pgEnum("orderTypeEnum", [
+export const orderTypeEnum = pgEnum("order_type_enum", [
   "hall",
   "banquet",
   "takeaway",

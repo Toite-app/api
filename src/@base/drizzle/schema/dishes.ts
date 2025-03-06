@@ -1,4 +1,4 @@
-import { dishesMenu } from "@postgress-db/schema/dishes-menu";
+import { dishesMenus } from "@postgress-db/schema/dishes-menus";
 import { currencyEnum } from "@postgress-db/schema/general";
 import {
   dishesToCategories,
@@ -21,7 +21,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { z } from "zod";
 
-export const weightMeasureEnum = pgEnum("weightMeasureEnum", [
+export const weightMeasureEnum = pgEnum("weight_measure_enum", [
   "grams",
   "milliliters",
 ]);
@@ -139,8 +139,8 @@ export const dishRelations = relations(dishes, ({ one, many }) => ({
   dishesToWorkshops: many(dishesToWorkshops),
   dishesToRestaurants: many(dishesToRestaurants),
   orderDishes: many(orderDishes),
-  menu: one(dishesMenu, {
+  menu: one(dishesMenus, {
     fields: [dishes.menuId],
-    references: [dishesMenu.id],
+    references: [dishesMenus.id],
   }),
 }));

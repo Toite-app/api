@@ -1,9 +1,15 @@
-import { IsISO8601, IsString, IsUUID } from "@i18n-class-validator";
-import { ApiProperty } from "@nestjs/swagger";
-import { IDishMenu } from "@postgress-db/schema/dishes-menu";
-import { Expose } from "class-transformer";
+import { IsArray, IsISO8601, IsString, IsUUID } from "@i18n-class-validator";
+import { ApiProperty, PickType } from "@nestjs/swagger";
+import { IDishesMenu } from "@postgress-db/schema/dishes-menus";
+import { Expose, Type } from "class-transformer";
+import { RestaurantEntity } from "src/restaurants/@/entities/restaurant.entity";
 
-export class DishMenuEntity implements IDishMenu {
+export class DishesMenuRestaurantEntity extends PickType(RestaurantEntity, [
+  "id",
+  "name",
+]) {}
+
+export class DishesMenuEntity implements IDishesMenu {
   @IsUUID()
   @Expose()
   @ApiProperty({
@@ -19,6 +25,15 @@ export class DishMenuEntity implements IDishMenu {
     example: "Lunch Menu",
   })
   name: string;
+
+  @Expose()
+  @IsArray()
+  @Type(() => DishesMenuRestaurantEntity)
+  @ApiProperty({
+    description: "Restaurants that have this menu",
+    type: [DishesMenuRestaurantEntity],
+  })
+  restaurants: DishesMenuRestaurantEntity[];
 
   @IsUUID()
   @Expose()

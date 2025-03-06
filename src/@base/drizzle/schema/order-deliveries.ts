@@ -12,7 +12,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { z } from "zod";
 
-export const orderDeliveryStatusEnum = pgEnum("orderDeliveryStatusEnum", [
+export const orderDeliveryStatusEnum = pgEnum("order_delivery_status_enum", [
   "pending",
   "dispatched",
   "delivered",
