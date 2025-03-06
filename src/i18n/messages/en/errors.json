@@ -103,5 +103,11 @@
   "discounts": {
     "you-should-provide-at-least-one-restaurant-id": "You should provide at least one restaurant id",
     "you-provided-restaurant-id-that-you-dont-own": "You provided restaurant id that you don't own"
+  },
+  "dishes-menus": {
+    "dish-menu-not-found": "Dish menu not found",
+    "owner-id-is-required": "Owner id is required",
+    "not-enough-rights": "You don't have enough rights to do this",
+    "some-restaurants-are-not-owned-by-the-owner": "Some restaurants are not owned by the owner"
   }
 }
