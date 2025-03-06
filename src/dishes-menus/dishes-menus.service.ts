@@ -9,7 +9,7 @@ import {
   dishesMenus,
   dishesMenusToRestaurants,
 } from "@postgress-db/schema/dishes-menus";
-import { and, eq, inArray, SQL } from "drizzle-orm";
+import { and, desc, eq, inArray, SQL } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { PG_CONNECTION } from "src/constants";
 import { CreateDishesMenuDto } from "src/dishes-menus/dto/create-dishes-menu.dto";
@@ -138,6 +138,7 @@ export class DishesMenusService {
           },
         },
       },
+      orderBy: [desc(dishesMenus.createdAt)],
     });
 
     return fetchedMenus.map(({ dishesMenusToRestaurants, ...dishesMenu }) => ({
@@ -326,12 +327,14 @@ export class DishesMenusService {
           .delete(dishesMenusToRestaurants)
           .where(eq(dishesMenusToRestaurants.dishesMenuId, id));
 
-        await tx.insert(dishesMenusToRestaurants).values(
-          restaurantIds.map((restaurantId) => ({
-            dishesMenuId: id,
-            restaurantId,
-          })),
-        );
+        if (restaurantIds.length > 0) {
+          await tx.insert(dishesMenusToRestaurants).values(
+            restaurantIds.map((restaurantId) => ({
+              dishesMenuId: id,
+              restaurantId,
+            })),
+          );
+        }
       }
     });
 
