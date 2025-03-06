@@ -26,6 +26,7 @@ export class RestaurantsService {
    * Gets total count of restaurants
    * @returns
    */
+  // TODO: add menuId and ownerId filters
   public async getTotalCount(): Promise<number> {
     return await this.pg
       .select({ value: count() })
@@ -41,9 +42,11 @@ export class RestaurantsService {
   public async findMany(options: {
     pagination: IPagination;
     worker?: RequestWorker;
+    // TODO: replace with filters
     menuId?: string;
+    ownerId?: string;
   }): Promise<RestaurantEntity[]> {
-    const { pagination, worker, menuId } = options;
+    const { pagination, worker, menuId, ownerId } = options;
 
     const conditions: SQL<unknown>[] = [];
 
@@ -84,6 +87,10 @@ export class RestaurantsService {
             ),
         ),
       );
+    }
+
+    if (ownerId && ownerId !== "undefined" && ownerId.length > 0) {
+      conditions.push(eq(schema.restaurants.ownerId, ownerId));
     }
 
     return await this.pg.query.restaurants.findMany({
