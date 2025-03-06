@@ -49,16 +49,24 @@ export class RestaurantsController {
     type: String,
     required: false,
   })
+  @ApiQuery({
+    name: "ownerId",
+    description: "Filter out restaurants by owner id",
+    type: String,
+    required: false,
+  })
   async findAll(
     @PaginationParams() pagination: IPagination,
     @Worker() worker: RequestWorker,
     @Query("menuId") menuId?: string,
+    @Query("ownerId") ownerId?: string,
   ) {
     const total = await this.restaurantsService.getTotalCount();
     const data = await this.restaurantsService.findMany({
       pagination,
       worker,
       menuId,
+      ownerId,
     });
 
     return {
