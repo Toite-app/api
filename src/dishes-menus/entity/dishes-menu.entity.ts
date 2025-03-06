@@ -5,6 +5,7 @@ import {
   IsObject,
   IsString,
   IsUUID,
+  MinLength,
 } from "@i18n-class-validator";
 import { ApiProperty, PickType } from "@nestjs/swagger";
 import { IDishesMenu } from "@postgress-db/schema/dishes-menus";
@@ -32,6 +33,7 @@ export class DishesMenuEntity implements IDishesMenu {
   id: string;
 
   @IsString()
+  @MinLength(3)
   @Expose()
   @ApiProperty({
     description: "Name of the menu",
