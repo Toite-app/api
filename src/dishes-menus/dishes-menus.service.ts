@@ -22,6 +22,11 @@ export class DishesMenusService {
     @Inject(PG_CONNECTION) private readonly pg: NodePgDatabase<typeof schema>,
   ) {}
 
+  private async onApplicationBootstrap() {
+    // TODO: create default menu for each owner that doesn't have one
+    // should be done with redis lock
+  }
+
   /**
    * Fetches a dish menu by its ID
    * @param id - The ID of the dish menu

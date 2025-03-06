@@ -4,7 +4,9 @@ import { NotFoundException } from "@core/errors/exceptions/not-found.exception";
 import { RequestWorker } from "@core/interfaces/request";
 import { Inject, Injectable } from "@nestjs/common";
 import { schema } from "@postgress-db/drizzle.module";
-import { and, count, eq, inArray, SQL } from "drizzle-orm";
+import { dishesMenusToRestaurants } from "@postgress-db/schema/dishes-menus";
+import { restaurants } from "@postgress-db/schema/restaurants";
+import { and, count, eq, exists, inArray, SQL } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { PG_CONNECTION } from "src/constants";
 import { TimezonesService } from "src/timezones/timezones.service";
@@ -39,8 +41,9 @@ export class RestaurantsService {
   public async findMany(options: {
     pagination: IPagination;
     worker?: RequestWorker;
+    menuId?: string;
   }): Promise<RestaurantEntity[]> {
-    const { pagination, worker } = options;
+    const { pagination, worker, menuId } = options;
 
     const conditions: SQL<unknown>[] = [];
 
@@ -62,6 +65,25 @@ export class RestaurantsService {
           ),
         );
       }
+    }
+
+    // Filter restaurants that are assigned to a menu
+    if (menuId && menuId !== "undefined" && menuId.length > 0) {
+      conditions.push(
+        exists(
+          this.pg
+            .select({
+              id: dishesMenusToRestaurants.restaurantId,
+            })
+            .from(dishesMenusToRestaurants)
+            .where(
+              and(
+                eq(dishesMenusToRestaurants.dishesMenuId, menuId),
+                eq(dishesMenusToRestaurants.restaurantId, restaurants.id),
+              ),
+            ),
+        ),
+      );
     }
 
     return await this.pg.query.restaurants.findMany({
