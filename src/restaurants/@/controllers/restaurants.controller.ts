@@ -6,7 +6,7 @@ import {
 import { Serializable } from "@core/decorators/serializable.decorator";
 import { Worker } from "@core/decorators/worker.decorator";
 import { RequestWorker } from "@core/interfaces/request";
-import { Body, Delete, Get, Param, Post, Put } from "@nestjs/common";
+import { Body, Delete, Get, Param, Post, Put, Query } from "@nestjs/common";
 import {
   ApiCreatedResponse,
   ApiForbiddenResponse,
@@ -14,6 +14,7 @@ import {
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiQuery,
   ApiUnauthorizedResponse,
 } from "@nestjs/swagger";
 import { EnableAuditLog } from "src/@base/audit-logs/decorators/audit-logs.decorator";
@@ -42,14 +43,22 @@ export class RestaurantsController {
     description: "Restaurants have been successfully fetched",
     type: RestaurantsPaginatedDto,
   })
+  @ApiQuery({
+    name: "menuId",
+    description: "Filter out restaurants that was assigned to a menu",
+    type: String,
+    required: false,
+  })
   async findAll(
     @PaginationParams() pagination: IPagination,
     @Worker() worker: RequestWorker,
+    @Query("menuId") menuId?: string,
   ) {
     const total = await this.restaurantsService.getTotalCount();
     const data = await this.restaurantsService.findMany({
       pagination,
       worker,
+      menuId,
     });
 
     return {
