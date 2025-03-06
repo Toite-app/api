@@ -1,4 +1,10 @@
-import { IsArray, IsISO8601, IsString, IsUUID } from "@i18n-class-validator";
+import {
+  IsArray,
+  IsBoolean,
+  IsISO8601,
+  IsString,
+  IsUUID,
+} from "@i18n-class-validator";
 import { ApiProperty, PickType } from "@nestjs/swagger";
 import { IDishesMenu } from "@postgress-db/schema/dishes-menus";
 import { Expose, Type } from "class-transformer";
@@ -43,6 +49,14 @@ export class DishesMenuEntity implements IDishesMenu {
   })
   ownerId: string;
 
+  @IsBoolean()
+  // @Expose()
+  @ApiProperty({
+    description: "Whether the menu is removed",
+    example: false,
+  })
+  isRemoved: boolean;
+
   @IsISO8601()
   @Expose()
   @ApiProperty({
@@ -60,4 +74,13 @@ export class DishesMenuEntity implements IDishesMenu {
     type: Date,
   })
   updatedAt: Date;
+
+  @IsISO8601()
+  // @Expose()
+  @ApiProperty({
+    description: "Date when menu was removed",
+    example: new Date("2024-01-01T00:00:00.000Z"),
+    type: Date,
+  })
+  removedAt: Date | null;
 }

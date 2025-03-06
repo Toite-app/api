@@ -5,12 +5,14 @@ import {
   PartialType,
   PickType,
 } from "@nestjs/swagger";
+import { Expose } from "class-transformer";
 import { DishesMenuEntity } from "src/dishes-menus/entity/dishes-menu.entity";
 
 export class CreateDishesMenuDto extends IntersectionType(
   PickType(DishesMenuEntity, ["name"]),
   PartialType(PickType(DishesMenuEntity, ["ownerId"])),
 ) {
+  @Expose()
   @IsArray()
   @IsUUID(undefined, { each: true })
   @ApiProperty({

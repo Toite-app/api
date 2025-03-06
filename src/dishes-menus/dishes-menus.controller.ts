@@ -2,7 +2,7 @@ import { Controller } from "@core/decorators/controller.decorator";
 import { Serializable } from "@core/decorators/serializable.decorator";
 import { Worker } from "@core/decorators/worker.decorator";
 import { RequestWorker } from "@core/interfaces/request";
-import { Body, Get, Param, Patch, Post } from "@nestjs/common";
+import { Body, Delete, Get, Param, Patch, Post } from "@nestjs/common";
 import { ApiOkResponse, ApiOperation } from "@nestjs/swagger";
 import { EnableAuditLog } from "src/@base/audit-logs/decorators/audit-logs.decorator";
 import { DishesMenusService } from "src/dishes-menus/dishes-menus.service";
@@ -65,5 +65,17 @@ export class DishesMenusController {
     return this.dishesMenusService.update(dishesMenuId, payload, {
       worker,
     });
+  }
+
+  @EnableAuditLog()
+  @Delete(":dishesMenuId")
+  @ApiOperation({
+    summary: "Removes a dish menu",
+  })
+  async remove(
+    @Worker() worker: RequestWorker,
+    @Param("dishesMenuId") dishesMenuId: string,
+  ) {
+    return this.dishesMenusService.remove(dishesMenuId, { worker });
   }
 }

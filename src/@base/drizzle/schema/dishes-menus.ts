@@ -3,6 +3,7 @@ import { restaurants } from "@postgress-db/schema/restaurants";
 import { workers } from "@postgress-db/schema/workers";
 import { relations } from "drizzle-orm";
 import {
+  boolean,
   pgTable,
   primaryKey,
   text,
@@ -19,9 +20,13 @@ export const dishesMenus = pgTable("dishesMenu", {
   // Owner of the menu //
   ownerId: uuid("ownerId").notNull(),
 
+  // Boolean flags //
+  isRemoved: boolean("isRemoved").notNull().default(false),
+
   // Default timestamps //
   createdAt: timestamp("createdAt").notNull().defaultNow(),
   updatedAt: timestamp("updatedAt").notNull().defaultNow(),
+  removedAt: timestamp("removedAt"),
 });
 
 export type IDishesMenu = typeof dishesMenus.$inferSelect;
