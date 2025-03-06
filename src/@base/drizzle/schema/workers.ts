@@ -1,4 +1,4 @@
-import { dishesMenu } from "@postgress-db/schema/dishes-menu";
+import { dishesMenus } from "@postgress-db/schema/dishes-menus";
 import { orderDeliveries } from "@postgress-db/schema/order-deliveries";
 import { restaurants } from "@postgress-db/schema/restaurants";
 import { relations } from "drizzle-orm";
@@ -16,7 +16,7 @@ import { z } from "zod";
 import { workshopWorkers } from "./restaurant-workshop";
 import { sessions } from "./sessions";
 
-export const workerRoleEnum = pgEnum("workerRoleEnum", [
+export const workerRoleEnum = pgEnum("worker_role_enum", [
   "SYSTEM_ADMIN" as const,
   "CHIEF_ADMIN",
   "OWNER",
@@ -90,7 +90,7 @@ export const workerRelations = relations(workers, ({ many }) => ({
   workshopWorkers: many(workshopWorkers),
   deliveries: many(orderDeliveries),
   ownedRestaurants: many(restaurants),
-  ownedDishesMenus: many(dishesMenu),
+  ownedDishesMenus: many(dishesMenus),
 }));
 
 export type IWorker = typeof workers.$inferSelect;

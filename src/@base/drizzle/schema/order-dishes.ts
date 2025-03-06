@@ -15,7 +15,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { z } from "zod";
 
-export const orderDishStatusEnum = pgEnum("orderDishStatusEnum", [
+export const orderDishStatusEnum = pgEnum("order_dish_status_enum", [
   "pending",
   "cooking",
   "ready",

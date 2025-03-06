@@ -10,12 +10,12 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 
-export const paymentMethodTypeEnum = pgEnum("paymentMethodType", [
+export const paymentMethodTypeEnum = pgEnum("payment_method_type", [
   "YOO_KASSA",
   "CUSTOM",
 ]);
 
-export const paymentMethodIconEnum = pgEnum("paymentMethodIcon", [
+export const paymentMethodIconEnum = pgEnum("payment_method_icon", [
   "YOO_KASSA",
   "CASH",
   "CARD",

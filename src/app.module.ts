@@ -26,8 +26,8 @@ import { SocketModule } from "src/@socket/socket.module";
 import { AddressesModule } from "src/addresses/addresses.module";
 import { DiscountsModule } from "src/discounts/discounts.module";
 import { DishCategoriesModule } from "src/dish-categories/dish-categories.module";
-import { DishMenusModule } from "src/dish-menus/dish-menus.module";
 import { DishesModule } from "src/dishes/dishes.module";
+import { DishesMenusModule } from "src/dishes-menus/dishes-menus.module";
 import { FilesModule } from "src/files/files.module";
 import { GuestsModule } from "src/guests/guests.module";
 import { OrdersModule } from "src/orders/orders.module";
@@ -80,7 +80,7 @@ import { WorkersModule } from "./workers/workers.module";
     RestaurantsModule,
     AddressesModule,
     GuestsModule,
-    DishMenusModule,
+    DishesMenusModule,
     DishesModule,
     DishCategoriesModule,
     S3Module,
