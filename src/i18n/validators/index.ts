@@ -10,13 +10,14 @@ import {
   IsISO8601 as _IsISO8601,
   IsLatitude as _IsLatitude,
   IsNumber as _IsNumber,
+  IsObject as _IsObject,
   IsOptional as _IsOptional,
   IsString as _IsString,
   IsStrongPassword as _IsStrongPassword,
   IsUUID as _IsUUID,
+  Max as _Max,
   Min as _Min,
   MinLength as _MinLength,
-  Max as _Max,
   IsNumberOptions,
   ValidationOptions,
 } from "class-validator";
@@ -50,6 +51,11 @@ export const IsString = (validationOptions?: ValidationOptions) =>
 export const IsBoolean = (validationOptions?: ValidationOptions) =>
   applyDecorators(
     _IsBoolean(mergeI18nValidation("isBoolean", validationOptions)),
+  );
+
+export const IsObject = (validationOptions?: ValidationOptions) =>
+  applyDecorators(
+    _IsObject(mergeI18nValidation("isObject", validationOptions)),
   );
 
 export const IsUUID = (
