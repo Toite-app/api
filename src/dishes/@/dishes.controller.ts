@@ -13,7 +13,7 @@ import { Serializable } from "@core/decorators/serializable.decorator";
 import { ISorting, SortingParams } from "@core/decorators/sorting.decorator";
 import { BadRequestException } from "@core/errors/exceptions/bad-request.exception";
 import { NotFoundException } from "@core/errors/exceptions/not-found.exception";
-import { Body, Get, Param, Post, Put } from "@nestjs/common";
+import { Body, Get, Param, Post, Put, Query } from "@nestjs/common";
 import {
   ApiBadRequestResponse,
   ApiCreatedResponse,
@@ -21,6 +21,7 @@ import {
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiQuery,
   ApiUnauthorizedResponse,
 } from "@nestjs/swagger";
 import { EnableAuditLog } from "src/@base/audit-logs/decorators/audit-logs.decorator";
@@ -47,6 +48,12 @@ export class DishesController {
     description: "Dishes have been successfully fetched",
     type: DishesPaginatedDto,
   })
+  @ApiQuery({
+    name: "menuId",
+    description: "Filter out dishes by menu id",
+    type: String,
+    required: false,
+  })
   async findMany(
     @SortingParams({
       fields: [
@@ -62,6 +69,8 @@ export class DishesController {
     @PaginationParams() pagination: IPagination,
     @FilterParams() filters?: IFilters,
     @SearchParam() search?: string,
+    @Query("menuId")
+    menuId?: string,
   ): Promise<DishesPaginatedDto> {
     if (typeof search === "string" && search.length > 0 && search !== "null") {
       if (!filters) {
@@ -72,6 +81,18 @@ export class DishesController {
         field: "name",
         value: search,
         condition: FilterCondition.Contains,
+      });
+    }
+
+    if (menuId) {
+      if (!filters) {
+        filters = { filters: [] };
+      }
+
+      filters.filters.push({
+        field: "menuId",
+        value: menuId,
+        condition: FilterCondition.Equals,
       });
     }
 
