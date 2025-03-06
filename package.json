@@ -46,6 +46,7 @@
     "@nestjs/swagger": "^7.2.0",
     "@nestjs/throttler": "^5.1.1",
     "@nestjs/websockets": "^11.0.8",
+    "@sesamecare-oss/redlock": "^1.4.0",
     "@supercharge/request-ip": "^1.2.0",
     "@vvo/tzdb": "^6.157.0",
     "argon2": "^0.31.2",
