@@ -108,6 +108,8 @@
     "dish-menu-not-found": "Dish menu not found",
     "owner-id-is-required": "Owner id is required",
     "not-enough-rights": "You don't have enough rights to do this",
-    "some-restaurants-are-not-owned-by-the-owner": "Some restaurants are not owned by the owner"
+    "some-restaurant-are-not-owned-by-the-owner": "Some restaurants are not owned by the owner",
+    "unable-to-remove-menu": "Unable to remove menu",
+    "menu-has-restaurants": "Menu has restaurants"
   }
 }

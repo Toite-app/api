@@ -91,7 +91,10 @@ export class DishesMenusService {
   }): Promise<DishesMenuEntity[]> {
     const { worker } = options;
 
-    const conditions: SQL[] = [];
+    const conditions: SQL[] = [
+      // Exclude removed menus
+      eq(dishesMenus.isRemoved, false),
+    ];
 
     if (worker.role === "SYSTEM_ADMIN" || worker.role === "CHIEF_ADMIN") {
       // Fetch all menus
@@ -209,12 +212,14 @@ export class DishesMenusService {
           id: dishesMenus.id,
         });
 
-      await tx.insert(dishesMenusToRestaurants).values(
-        restaurantIds.map((restaurantId) => ({
-          dishesMenuId: createdMenu.id,
-          restaurantId,
-        })),
-      );
+      if (restaurantIds.length > 0) {
+        await tx.insert(dishesMenusToRestaurants).values(
+          restaurantIds.map((restaurantId) => ({
+            dishesMenuId: createdMenu.id,
+            restaurantId,
+          })),
+        );
+      }
 
       return createdMenu.id;
     });
@@ -301,6 +306,7 @@ export class DishesMenusService {
         })
         .where(eq(dishesMenus.id, id));
 
+      // TODO: replace with individual function that will check if menu have some dishes that was assigned to editable restaurants
       if (restaurantIds) {
         await tx
           .delete(dishesMenusToRestaurants)
@@ -318,5 +324,73 @@ export class DishesMenusService {
     return this.findOne(id, {
       worker,
     });
+  }
+
+  /**
+   * Removes a dish menu
+   * @param id - The ID of the dish menu
+   * @param options - Options for removing the menu
+   * @param options.worker - The worker making the request
+   */
+  public async remove(
+    id: string,
+    options: {
+      worker: RequestWorker;
+    },
+  ) {
+    const { worker } = options;
+
+    if (
+      worker.role !== "SYSTEM_ADMIN" &&
+      worker.role !== "CHIEF_ADMIN" &&
+      worker.role !== "OWNER"
+    ) {
+      throw new ForbiddenException("errors.dishes-menus.not-enough-rights");
+    }
+
+    const menu = await this.pg.query.dishesMenus.findFirst({
+      where: eq(dishesMenus.id, id),
+      columns: {},
+      with: {
+        dishesMenusToRestaurants: {
+          columns: {
+            restaurantId: true,
+          },
+        },
+      },
+    });
+
+    if (!menu) {
+      throw new NotFoundException("errors.dishes-menus.dish-menu-not-found");
+    }
+
+    if (menu.dishesMenusToRestaurants.length > 0) {
+      throw new BadRequestException("errors.dishes-menus.menu-has-restaurants");
+    }
+
+    const [removedMenu] = await this.pg
+      .update(dishesMenus)
+      .set({
+        isRemoved: true,
+        removedAt: new Date(),
+      })
+      .where(
+        and(
+          eq(dishesMenus.id, id),
+          eq(dishesMenus.isRemoved, false),
+          worker.role === "OWNER"
+            ? eq(dishesMenus.ownerId, worker.id)
+            : undefined,
+        ),
+      )
+      .returning({
+        id: dishesMenus.id,
+      });
+
+    if (!removedMenu) {
+      throw new NotFoundException("errors.dishes-menus.unable-to-remove-menu");
+    }
+
+    return true;
   }
 }
