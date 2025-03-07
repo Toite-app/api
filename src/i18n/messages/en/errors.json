@@ -43,7 +43,9 @@
   "restaurants": {
     "provided-timezone-cant-be-set": "Provided timezone can't be set",
     "with-this-id-doesnt-exist": "Restaurant with this id doesn't exist",
-    "with-provided-id-doesnt-exist": "Restaurant with provided id doesn't exist"
+    "with-provided-id-doesnt-exist": "Restaurant with provided id doesn't exist",
+    "you-dont-have-rights-to-that-restaurant": "You don't have rights to that restaurant",
+    "restaurant-was-assigned-to-some-owner-menus": "Restaurant was assigned to some owner menus"
   },
   "restaurant-hours": {
     "with-this-id-doesnt-exist": "Restaurant hours with this id doesn't exist"
