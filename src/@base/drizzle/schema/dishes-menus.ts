@@ -11,22 +11,22 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 
-export const dishesMenus = pgTable("dishesMenu", {
+export const dishesMenus = pgTable("dishes_menus", {
   id: uuid("id").defaultRandom().primaryKey(),
 
   // Name of the menu with dishes //
   name: text("name").notNull().default(""),
 
   // Owner of the menu //
-  ownerId: uuid("ownerId").notNull(),
+  ownerId: uuid("owner_id").notNull(),
 
   // Boolean flags //
-  isRemoved: boolean("isRemoved").notNull().default(false),
+  isRemoved: boolean("is_removed").notNull().default(false),
 
   // Default timestamps //
-  createdAt: timestamp("createdAt").notNull().defaultNow(),
-  updatedAt: timestamp("updatedAt").notNull().defaultNow(),
-  removedAt: timestamp("removedAt"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  removedAt: timestamp("removed_at"),
 });
 
 export type IDishesMenu = typeof dishesMenus.$inferSelect;
@@ -34,8 +34,8 @@ export type IDishesMenu = typeof dishesMenus.$inferSelect;
 export const dishesMenusToRestaurants = pgTable(
   "dishesMenusToRestaurants",
   {
-    restaurantId: uuid("restaurantId").notNull(),
-    dishesMenuId: uuid("dishesMenuId").notNull(),
+    restaurantId: uuid("restaurant_id").notNull(),
+    dishesMenuId: uuid("dishes_menu_id").notNull(),
   },
   (t) => [
     primaryKey({

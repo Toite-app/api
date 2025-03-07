@@ -34,7 +34,7 @@ export const dishes = pgTable("dishes", {
   id: uuid("id").defaultRandom().primaryKey(),
 
   // Menu //
-  menuId: uuid("menuId"),
+  menuId: uuid("menu_id"),
 
   // Name of the dish //
   name: text("name").notNull().default(""),
@@ -43,42 +43,42 @@ export const dishes = pgTable("dishes", {
   note: text("note").notNull().default(""),
 
   // How much time is needed for cooking //
-  cookingTimeInMin: integer("cookingTimeInMin").notNull().default(0),
+  cookingTimeInMin: integer("cooking_time_in_min").notNull().default(0),
 
   // How many pcs in one item (for example: 6 hinkali per one item) //
-  amountPerItem: integer("amountPerItem").notNull().default(1),
+  amountPerItem: integer("amount_per_item").notNull().default(1),
 
   // Weight of the dish //
   weight: integer("weight").notNull().default(0),
-  weightMeasure: weightMeasureEnum("weightMeasure").notNull().default("grams"),
+  weightMeasure: weightMeasureEnum("weight_measure").notNull().default("grams"),
 
   // Label printing //
-  isLabelPrintingEnabled: boolean("isLabelPrintingEnabled")
+  isLabelPrintingEnabled: boolean("is_label_printing_enabled")
     .notNull()
     .default(false),
-  printLabelEveryItem: integer("printLabelEveryItem").notNull().default(0),
+  printLabelEveryItem: integer("print_label_every_item").notNull().default(0),
 
   // Publishing booleans //
-  isPublishedInApp: boolean("isPublishedInApp").notNull().default(false),
-  isPublishedAtSite: boolean("isPublishedAtSite").notNull().default(false),
+  isPublishedInApp: boolean("is_published_in_app").notNull().default(false),
+  isPublishedAtSite: boolean("is_published_at_site").notNull().default(false),
 
   // Default timestamps //
-  createdAt: timestamp("createdAt").notNull().defaultNow(),
-  updatedAt: timestamp("updatedAt").notNull().defaultNow(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
 export type IDish = typeof dishes.$inferSelect;
 
 export const dishesToRestaurants = pgTable(
-  "dishesToRestaurants",
+  "dishes_to_restaurants",
   {
-    dishId: uuid("dishId").notNull(),
-    restaurantId: uuid("restaurantId").notNull(),
+    dishId: uuid("dish_id").notNull(),
+    restaurantId: uuid("restaurant_id").notNull(),
     price: decimal("price", { precision: 10, scale: 2 }).notNull().default("0"),
     currency: currencyEnum("currency").notNull().default("EUR"),
-    isInStopList: boolean("isInStopList").notNull().default(false),
-    createdAt: timestamp("createdAt").notNull().defaultNow(),
-    updatedAt: timestamp("updatedAt").notNull().defaultNow(),
+    isInStopList: boolean("is_in_stop_list").notNull().default(false),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at").notNull().defaultNow(),
   },
   (t) => [
     primaryKey({
@@ -104,11 +104,11 @@ export const dishesToRestaurantsRelations = relations(
 );
 
 export const dishesToWorkshops = pgTable(
-  "dishesToWorkshops",
+  "dishes_to_workshops",
   {
-    dishId: uuid("dishId").notNull(),
-    workshopId: uuid("workshopId").notNull(),
-    createdAt: timestamp("createdAt").notNull().defaultNow(),
+    dishId: uuid("dish_id").notNull(),
+    workshopId: uuid("workshop_id").notNull(),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
   },
   (t) => [
     primaryKey({

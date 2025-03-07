@@ -46,20 +46,20 @@ export const workers = pgTable("workers", {
   name: text("name").notNull().default("N/A"),
   login: text("login").unique().notNull(),
   role: workerRoleEnum("role").notNull(),
-  passwordHash: text("passwordHash").notNull(),
-  isBlocked: boolean("isBlocked").notNull().default(false),
-  hiredAt: timestamp("hiredAt"),
-  firedAt: timestamp("firedAt"),
-  onlineAt: timestamp("onlineAt"),
-  createdAt: timestamp("createdAt").notNull().defaultNow(),
-  updatedAt: timestamp("updatedAt").notNull().defaultNow(),
+  passwordHash: text("password_hash").notNull(),
+  isBlocked: boolean("is_blocked").notNull().default(false),
+  hiredAt: timestamp("hired_at"),
+  firedAt: timestamp("fired_at"),
+  onlineAt: timestamp("online_at"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
 export const workersToRestaurants = pgTable(
-  "workersToRestaurants",
+  "workers_to_restaurants",
   {
-    workerId: uuid("workerId").notNull(),
-    restaurantId: uuid("restaurantId").notNull(),
+    workerId: uuid("worker_id").notNull(),
+    restaurantId: uuid("restaurant_id").notNull(),
   },
   (t) => [
     primaryKey({

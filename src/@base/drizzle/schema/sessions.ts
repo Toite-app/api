@@ -5,15 +5,15 @@ import { workers } from "./workers";
 
 export const sessions = pgTable("sessions", {
   id: uuid("id").primaryKey().defaultRandom(),
-  previousId: uuid("previousId"),
-  workerId: uuid("workerId").notNull(),
-  httpAgent: text("httpAgent"),
+  previousId: uuid("previous_id"),
+  workerId: uuid("worker_id").notNull(),
+  httpAgent: text("http_agent"),
   ip: text("ip"),
-  isActive: boolean("isActive").notNull().default(true),
-  onlineAt: timestamp("onlineAt").notNull().defaultNow(),
-  refreshedAt: timestamp("refreshedAt").notNull().defaultNow(),
-  createdAt: timestamp("createdAt").notNull().defaultNow(),
-  updatedAt: timestamp("updatedAt").notNull().defaultNow(),
+  isActive: boolean("is_active").notNull().default(true),
+  onlineAt: timestamp("online_at").notNull().defaultNow(),
+  refreshedAt: timestamp("refreshed_at").notNull().defaultNow(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
 export const sessionRelations = relations(sessions, ({ one }) => ({

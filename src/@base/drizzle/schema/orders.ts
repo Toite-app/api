@@ -53,10 +53,10 @@ export const ZodOrderTypeEnum = z.enum(orderTypeEnum.enumValues);
 
 export type OrderTypeEnum = typeof ZodOrderTypeEnum._type;
 
-export const orderNumberBroneering = pgTable("orderNumberBroneering", {
+export const orderNumberBroneering = pgTable("order_number_broneering", {
   id: uuid("id").defaultRandom().primaryKey(),
   number: text("number").notNull(),
-  createdAt: timestamp("createdAt").notNull().defaultNow(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
 export const orders = pgTable(
@@ -65,13 +65,13 @@ export const orders = pgTable(
     id: uuid("id").defaultRandom().primaryKey(),
 
     // Links //
-    guestId: uuid("guestId"),
-    restaurantId: uuid("restaurantId"),
-    paymentMethodId: uuid("paymentMethodId"),
+    guestId: uuid("guest_id"),
+    restaurantId: uuid("restaurant_id"),
+    paymentMethodId: uuid("payment_method_id"),
 
     // Order number //
     number: text("number").notNull(),
-    tableNumber: text("tableNumber"),
+    tableNumber: text("table_number"),
 
     // Order type //
     type: orderTypeEnum("type").notNull(),
@@ -83,18 +83,18 @@ export const orders = pgTable(
     note: text("note"),
 
     // Guest information //
-    guestName: text("guestName"),
-    guestPhone: text("guestPhone"),
-    guestsAmount: integer("guestsAmount"),
+    guestName: text("guest_name"),
+    guestPhone: text("guest_phone"),
+    guestsAmount: integer("guests_amount"),
 
     // Price info //
     subtotal: decimal("subtotal", { precision: 10, scale: 2 })
       .notNull()
       .default("0"),
-    discountAmount: decimal("discountAmount", { precision: 10, scale: 2 })
+    discountAmount: decimal("discount_amount", { precision: 10, scale: 2 })
       .notNull()
       .default("0"),
-    surchargeAmount: decimal("surchargeAmount", { precision: 10, scale: 2 })
+    surchargeAmount: decimal("surcharge_amount", { precision: 10, scale: 2 })
       .notNull()
       .default("0"),
     bonusUsed: decimal("bonusUsed", { precision: 10, scale: 2 })
@@ -103,23 +103,23 @@ export const orders = pgTable(
     total: decimal("total", { precision: 10, scale: 2 }).notNull().default("0"),
 
     // Booleans flags //
-    isHiddenForGuest: boolean("isHiddenForGuest").notNull().default(false),
-    isRemoved: boolean("isRemoved").notNull().default(false),
-    isArchived: boolean("isArchived").notNull().default(false),
+    isHiddenForGuest: boolean("is_hidden_for_guest").notNull().default(false),
+    isRemoved: boolean("is_removed").notNull().default(false),
+    isArchived: boolean("is_archived").notNull().default(false),
 
     // Default timestamps
-    createdAt: timestamp("createdAt").notNull().defaultNow(),
-    updatedAt: timestamp("updatedAt").notNull().defaultNow(),
-    cookingAt: timestamp("cookingAt"),
-    completedAt: timestamp("completedAt"),
-    removedAt: timestamp("removedAt"),
-    delayedTo: timestamp("delayedTo"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at").notNull().defaultNow(),
+    cookingAt: timestamp("cooking_at"),
+    completedAt: timestamp("completed_at"),
+    removedAt: timestamp("removed_at"),
+    delayedTo: timestamp("delayed_to"),
   },
   (table) => [
-    index("orders_restaurantId_idx").on(table.restaurantId),
+    index("orders_restaurant_id_idx").on(table.restaurantId),
     index("orders_created_at_idx").on(table.createdAt),
-    index("orders_isArchived_idx").on(table.isArchived),
-    index("orders_isRemoved_idx").on(table.isRemoved),
+    index("orders_is_archived_idx").on(table.isArchived),
+    index("orders_is_removed_idx").on(table.isRemoved),
     index("order_id_and_created_at_idx").on(table.id, table.createdAt),
   ],
 );

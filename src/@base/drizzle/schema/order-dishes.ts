@@ -27,15 +27,15 @@ export const ZodOrderDishStatusEnum = z.enum(orderDishStatusEnum.enumValues);
 export type OrderDishStatusEnum = typeof ZodOrderDishStatusEnum._type;
 
 export const orderDishes = pgTable(
-  "orderDishes",
+  "order_dishes",
   {
     id: uuid("id").defaultRandom().primaryKey(),
 
     // Relation fields //
-    orderId: uuid("orderId").notNull(),
-    dishId: uuid("dishId").notNull(),
-    discountId: uuid("discountId"),
-    surchargeId: uuid("surchargeId"),
+    orderId: uuid("order_id").notNull(),
+    dishId: uuid("dish_id").notNull(),
+    discountId: uuid("discount_id"),
+    surchargeId: uuid("surcharge_id"),
 
     // Data //
     name: text("name").notNull(),
@@ -43,36 +43,36 @@ export const orderDishes = pgTable(
 
     // Quantity //
     quantity: integer("quantity").notNull(),
-    quantityReturned: integer("quantityReturned").notNull().default(0),
+    quantityReturned: integer("quantity_returned").notNull().default(0),
 
     // Price info //
     price: decimal("price", { precision: 10, scale: 2 }).notNull(),
-    discountPercent: decimal("discountPercent", { precision: 10, scale: 2 })
+    discountPercent: decimal("discount_percent", { precision: 10, scale: 2 })
       .notNull()
       .default("0"),
-    discountAmount: decimal("discountAmount", { precision: 10, scale: 2 })
+    discountAmount: decimal("discount_amount", { precision: 10, scale: 2 })
       .notNull()
       .default("0"),
-    surchargePercent: decimal("surchargePercent", { precision: 10, scale: 2 })
+    surchargePercent: decimal("surcharge_percent", { precision: 10, scale: 2 })
       .notNull()
       .default("0"),
-    surchargeAmount: decimal("surchargeAmount", { precision: 10, scale: 2 })
+    surchargeAmount: decimal("surcharge_amount", { precision: 10, scale: 2 })
       .notNull()
       .default("0"),
-    finalPrice: decimal("finalPrice", { precision: 10, scale: 2 }).notNull(),
+    finalPrice: decimal("final_price", { precision: 10, scale: 2 }).notNull(),
 
     // Booleans flags //
-    isRemoved: boolean("isRemoved").notNull().default(false),
-    isAdditional: boolean("isAdditional").notNull().default(false),
+    isRemoved: boolean("is_removed").notNull().default(false),
+    isAdditional: boolean("is_additional").notNull().default(false),
 
     // Timestamps //
-    createdAt: timestamp("createdAt").notNull().defaultNow(),
-    updatedAt: timestamp("updatedAt").notNull().defaultNow(),
-    cookingAt: timestamp("cookingAt"),
-    readyAt: timestamp("readyAt"),
-    removedAt: timestamp("removedAt"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at").notNull().defaultNow(),
+    cookingAt: timestamp("cooking_at"),
+    readyAt: timestamp("ready_at"),
+    removedAt: timestamp("removed_at"),
   },
-  (table) => [index("orderDishes_orderId_idx").on(table.orderId)],
+  (table) => [index("order_dishes_order_id_idx").on(table.orderId)],
 );
 
 export type IOrderDish = typeof orderDishes.$inferSelect;

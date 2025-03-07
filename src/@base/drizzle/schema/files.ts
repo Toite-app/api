@@ -6,19 +6,19 @@ export const files = pgTable("files", {
   id: uuid("id").defaultRandom().primaryKey(),
 
   // File group id //
-  groupId: uuid("groupId"),
+  groupId: uuid("group_id"),
 
   // Original name of the file //
-  originalName: text("originalName").notNull(),
+  originalName: text("original_name").notNull(),
 
   // Mime type of the file //
-  mimeType: text("mimeType").notNull(),
+  mimeType: text("mime_type").notNull(),
 
   // Extension of the file //
   extension: text("extension").notNull(),
 
   // Bucket name //
-  bucketName: text("bucketName").notNull(),
+  bucketName: text("bucket_name").notNull(),
 
   // Region of the file //
   region: text("region").notNull(),
@@ -30,10 +30,10 @@ export const files = pgTable("files", {
   size: integer("size").notNull().default(0),
 
   // Uploaded by user id //
-  uploadedByUserId: uuid("uploadedByUserId"),
+  uploadedByUserId: uuid("uploaded_by_user_id"),
 
   // Created at //
-  createdAt: timestamp("createdAt").notNull().defaultNow(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
 export type IFile = typeof files.$inferSelect;
