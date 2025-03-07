@@ -72,7 +72,10 @@ export interface PgTransactionConfig {
           ssl: env.NODE_ENV === "production" ? true : false,
         });
 
-        return drizzle(pool, { schema }) as NodePgDatabase<Schema>;
+        return drizzle(pool, {
+          schema,
+          casing: "snake_case",
+        }) as NodePgDatabase<Schema>;
       },
     },
   ],

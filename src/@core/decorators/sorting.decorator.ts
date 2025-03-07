@@ -1,6 +1,7 @@
 import { BadRequestException } from "@core/errors/exceptions/bad-request.exception";
 import { Request } from "@core/interfaces/request";
 import { addMetadata } from "@core/utils/addMetadata";
+import camelToSnakeCase from "@core/utils/camel-to-snake";
 import { createParamDecorator } from "@nestjs/common";
 import { ExecutionContextHost } from "@nestjs/core/helpers/execution-context-host";
 
@@ -58,7 +59,7 @@ export const SortingParams = createParamDecorator(
     }
 
     return {
-      sortBy,
+      sortBy: camelToSnakeCase(sortBy),
       sortOrder,
     };
   },
