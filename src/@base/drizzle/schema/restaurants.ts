@@ -26,7 +26,7 @@ export const restaurants = pgTable("restaurants", {
   name: text("name").notNull(),
 
   // Legal entity of the restaurant (can be a company or a person) //
-  legalEntity: text("legalEntity").notNull(),
+  legalEntity: text("legal_entity").notNull(),
 
   // Address of the restaurant //
   address: text("address").notNull(),
@@ -40,41 +40,42 @@ export const restaurants = pgTable("restaurants", {
   currency: currencyEnum("currency").notNull().default("EUR"),
 
   // Country code of the restaurant (used for mobile phone default and etc.) //
-  countryCode: text("countryCode").notNull().default("EE"),
+  countryCode: text("country_code").notNull().default("EE"),
 
   // Is the restaurant enabled? //
-  isEnabled: boolean("isEnabled").notNull().default(false),
+  isEnabled: boolean("is_enabled").notNull().default(false),
 
   // Is closed forever? //
-  isClosedForever: boolean("isClosedForever").notNull().default(false),
+  isClosedForever: boolean("is_closed_forever").notNull().default(false),
 
   // Owner of the restaurant //
-  ownerId: uuid("ownerId"),
+  ownerId: uuid("owner_id"),
 
   // Timestamps //
-  createdAt: timestamp("createdAt").notNull().defaultNow(),
-  updatedAt: timestamp("updatedAt").notNull().defaultNow(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
-export const restaurantHours = pgTable("restaurantHours", {
+export const restaurantHours = pgTable("restaurant_hours", {
   // Primary key //
   id: uuid("id").defaultRandom().primaryKey(),
 
   // Restaurant //
-  restaurantId: uuid("restaurantId").notNull(),
+  restaurantId: uuid("restaurant_id").notNull(),
 
   // Day of the week //
-  dayOfWeek: dayOfWeekEnum("dayOfWeek").notNull(),
+  dayOfWeek: dayOfWeekEnum("day_of_week").notNull(),
 
   // Opening and closing hours //
-  openingTime: text("openingTime").notNull(),
-  closingTime: text("closingTime").notNull(),
+  openingTime: text("opening_time").notNull(),
+  closingTime: text("closing_time").notNull(),
 
-  isEnabled: boolean("isEnabled").notNull().default(true),
+  // Is enabled? //
+  isEnabled: boolean("is_enabled").notNull().default(true),
 
   // Timestamps //
-  createdAt: timestamp("createdAt").notNull().defaultNow(),
-  updatedAt: timestamp("updatedAt").notNull().defaultNow(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
 export const restaurantRelations = relations(restaurants, ({ one, many }) => ({

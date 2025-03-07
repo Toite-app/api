@@ -8,10 +8,10 @@ import { integer, pgTable, primaryKey, text, uuid } from "drizzle-orm/pg-core";
 // Dishes to dish categories relation  //
 // ----------------------------------- //
 export const dishesToCategories = pgTable(
-  "dishesToCategories",
+  "dishes_to_categories",
   {
-    dishId: uuid("dishId").notNull(),
-    dishCategoryId: uuid("dishCategoryId").notNull(),
+    dishId: uuid("dish_id").notNull(),
+    dishCategoryId: uuid("dish_category_id").notNull(),
   },
   (t) => [
     primaryKey({
@@ -40,12 +40,12 @@ export const dishesToCategoriesRelations = relations(
 // Dishes to images relation           //
 // ----------------------------------- //
 export const dishesToImages = pgTable(
-  "dishesToImages",
+  "dishes_to_images",
   {
-    dishId: uuid("dishId").notNull(),
-    imageFileId: uuid("imageFileId").notNull(),
+    dishId: uuid("dish_id").notNull(),
+    imageFileId: uuid("image_file_id").notNull(),
     alt: text("alt").notNull().default(""),
-    sortIndex: integer("sortIndex").notNull().default(0),
+    sortIndex: integer("sort_index").notNull().default(0),
   },
   (t) => [
     primaryKey({

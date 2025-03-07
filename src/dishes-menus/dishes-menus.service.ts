@@ -25,6 +25,7 @@ export class DishesMenusService {
   ) {}
 
   private async onApplicationBootstrap() {
+    // TODO: replace to CRON
     await this.dishesMenusProducer.createOwnersDefaultMenu();
   }
 

@@ -26,28 +26,28 @@ export const discounts = pgTable("discounts", {
   percent: integer("percent").notNull().default(0),
 
   // Basic conditions //
-  orderFroms: orderFromEnum("orderFroms").array().notNull(),
-  orderTypes: orderTypeEnum("orderTypes").array().notNull(),
-  daysOfWeek: dayOfWeekEnum("daysOfWeek").array().notNull(),
+  orderFroms: orderFromEnum("order_froms").array().notNull(),
+  orderTypes: orderTypeEnum("order_types").array().notNull(),
+  daysOfWeek: dayOfWeekEnum("days_of_week").array().notNull(),
 
   // Advanced conditions //
   promocode: text("promocode"),
-  applyByPromocode: boolean("applyByPromocode").notNull().default(false),
-  applyForFirstOrder: boolean("applyForFirstOrder").notNull().default(false),
-  applyByDefault: boolean("applyByDefault").notNull().default(false),
+  applyByPromocode: boolean("apply_by_promocode").notNull().default(false),
+  applyForFirstOrder: boolean("apply_for_first_order").notNull().default(false),
+  applyByDefault: boolean("apply_by_default").notNull().default(false),
 
   // Boolean flags //
   isEnabled: boolean("isEnabled").notNull().default(true),
 
   // Valid time //
-  startHour: integer("startHour"),
-  endHour: integer("endHour"),
-  activeFrom: timestamp("activeFrom").notNull(),
-  activeTo: timestamp("activeTo").notNull(),
+  startHour: integer("start_hour"),
+  endHour: integer("end_hour"),
+  activeFrom: timestamp("active_from").notNull(),
+  activeTo: timestamp("active_to").notNull(),
 
   // Timestamps //
-  createdAt: timestamp("createdAt").notNull().defaultNow(),
-  updatedAt: timestamp("updatedAt").notNull().defaultNow(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
 export type IDiscount = typeof discounts.$inferSelect;
@@ -57,10 +57,10 @@ export const discountRelations = relations(discounts, ({ many }) => ({
 }));
 
 export const discountsToRestaurants = pgTable(
-  "discountsToRestaurants",
+  "discounts_to_restaurants",
   {
-    discountId: uuid("discountId").notNull(),
-    restaurantId: uuid("restaurantId").notNull(),
+    discountId: uuid("discount_id").notNull(),
+    restaurantId: uuid("restaurant_id").notNull(),
   },
   (t) => [
     primaryKey({

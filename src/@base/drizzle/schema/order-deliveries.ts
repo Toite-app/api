@@ -24,12 +24,12 @@ export const ZodOrderDeliveryStatusEnum = z.enum(
 
 export type OrderDeliveryStatusEnum = typeof ZodOrderDeliveryStatusEnum._type;
 
-export const orderDeliveries = pgTable("orderDeliveries", {
+export const orderDeliveries = pgTable("order_deliveries", {
   id: uuid("id").defaultRandom().primaryKey(),
 
   // Relation fields //
-  orderId: uuid("orderId").notNull(),
-  workerId: uuid("workerId"),
+  orderId: uuid("order_id").notNull(),
+  workerId: uuid("worker_id"),
 
   // Data //
   status: orderDeliveryStatusEnum("status").notNull(),
@@ -40,11 +40,11 @@ export const orderDeliveries = pgTable("orderDeliveries", {
   price: decimal("price", { precision: 10, scale: 2 }).notNull(),
 
   // Timestamps //
-  createdAt: timestamp("createdAt").notNull().defaultNow(),
-  updatedAt: timestamp("updatedAt").notNull().defaultNow(),
-  dispatchedAt: timestamp("dispatchedAt"),
-  estimatedDeliveryAt: timestamp("estimatedDeliveryAt"),
-  deliveredAt: timestamp("deliveredAt"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  dispatchedAt: timestamp("dispatched_at"),
+  estimatedDeliveryAt: timestamp("estimated_delivery_at"),
+  deliveredAt: timestamp("delivered_at"),
 });
 
 export type IOrderDelivery = typeof orderDeliveries.$inferSelect;

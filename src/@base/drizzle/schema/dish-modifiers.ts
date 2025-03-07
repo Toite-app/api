@@ -10,32 +10,32 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 
-export const dishModifiers = pgTable("dishModifiers", {
+export const dishModifiers = pgTable("dish_modifiers", {
   id: uuid("id").defaultRandom().primaryKey(),
 
   // Modifier data //
   name: text("name").notNull(),
 
   // Modifiers should be linked to a restaurant //
-  restaurantId: uuid("restaurantId").notNull(),
+  restaurantId: uuid("restaurant_id").notNull(),
 
   // Boolean fields //
-  isActive: boolean("isActive").notNull().default(true),
-  isRemoved: boolean("isRemoved").notNull().default(false),
+  isActive: boolean("is_active").notNull().default(true),
+  isRemoved: boolean("is_removed").notNull().default(false),
 
   // Default timestamps //
-  createdAt: timestamp("createdAt").notNull().defaultNow(),
-  updatedAt: timestamp("updatedAt").notNull().defaultNow(),
-  removedAt: timestamp("removedAt"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  removedAt: timestamp("removed_at"),
 });
 
 export type IDishModifier = typeof dishModifiers.$inferSelect;
 
 export const dishModifiersToOrderDishes = pgTable(
-  "dishModifiersToOrderDishes",
+  "dish_modifiers_to_order_dishes",
   {
-    dishModifierId: uuid("dishModifierId").notNull(),
-    orderDishId: uuid("orderDishId").notNull(),
+    dishModifierId: uuid("dish_modifier_id").notNull(),
+    orderDishId: uuid("order_dish_id").notNull(),
   },
   (t) => [primaryKey({ columns: [t.dishModifierId, t.orderDishId] })],
 );

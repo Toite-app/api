@@ -7,10 +7,10 @@ export const guests = pgTable("guests", {
   name: text("name").notNull().default(""),
   phone: text("phone").unique().notNull(),
   email: text("email").unique(),
-  bonusBalance: integer("bonusBalance").notNull().default(0),
-  lastVisitAt: timestamp("lastVisitAt").notNull().defaultNow(),
-  createdAt: timestamp("createdAt").notNull().defaultNow(),
-  updatedAt: timestamp("updatedAt").notNull().defaultNow(),
+  bonusBalance: integer("bonus_balance").notNull().default(0),
+  lastVisitAt: timestamp("last_visit_at").notNull().defaultNow(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
 export type IGuest = typeof guests.$inferSelect;

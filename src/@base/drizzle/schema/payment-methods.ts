@@ -24,7 +24,7 @@ export const paymentMethodIconEnum = pgEnum("payment_method_icon", [
 export type IPaymentMethodType =
   (typeof paymentMethodTypeEnum.enumValues)[number];
 
-export const paymentMethods = pgTable("paymentMethods", {
+export const paymentMethods = pgTable("payment_methods", {
   id: uuid("id").defaultRandom().primaryKey(),
 
   // For example "Yoo Kassa" or "Cash"/"Card" //
@@ -32,20 +32,20 @@ export const paymentMethods = pgTable("paymentMethods", {
   type: paymentMethodTypeEnum("type").notNull(),
   icon: paymentMethodIconEnum("icon").notNull(),
 
-  restaurantId: uuid("restaurantId").notNull(),
+  restaurantId: uuid("restaurant_id").notNull(),
 
   // For YOO_KASSA //
-  secretId: text("secretId"),
-  secretKey: text("secretKey"),
+  secretId: text("secret_id"),
+  secretKey: text("secret_key"),
 
   // Boolean fields //
-  isActive: boolean("isActive").notNull().default(false),
-  isRemoved: boolean("isRemoved").notNull().default(false),
+  isActive: boolean("is_active").notNull().default(false),
+  isRemoved: boolean("is_removed").notNull().default(false),
 
   // Default timestamps //
-  createdAt: timestamp("createdAt").notNull().defaultNow(),
-  updatedAt: timestamp("updatedAt").notNull().defaultNow(),
-  removedAt: timestamp("removedAt"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  removedAt: timestamp("removed_at"),
 });
 
 export type IPaymentMethod = typeof paymentMethods.$inferSelect;
