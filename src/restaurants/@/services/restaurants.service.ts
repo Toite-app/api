@@ -94,7 +94,11 @@ export class RestaurantsService {
     }
 
     return await this.pg.query.restaurants.findMany({
-      ...(conditions.length > 0 ? { where: () => and(...conditions) } : {}),
+      ...(conditions.length > 0
+        ? {
+            where: () => and(...conditions),
+          }
+        : {}),
       limit: pagination.size,
       offset: pagination.offset,
     });

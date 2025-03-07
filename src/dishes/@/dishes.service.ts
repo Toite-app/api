@@ -5,7 +5,9 @@ import {
 } from "@core/decorators/pagination.decorator";
 import { ISorting } from "@core/decorators/sorting.decorator";
 import { BadRequestException } from "@core/errors/exceptions/bad-request.exception";
+import { NotFoundException } from "@core/errors/exceptions/not-found.exception";
 import { ServerErrorException } from "@core/errors/exceptions/server-error.exception";
+import { RequestWorker } from "@core/interfaces/request";
 import { Inject, Injectable } from "@nestjs/common";
 import { DrizzleUtils } from "@postgress-db/drizzle-utils";
 import { schema } from "@postgress-db/drizzle.module";
@@ -68,7 +70,7 @@ export class DishesService {
         ]
       : undefined;
 
-    const query = this.pg.query.dishes.findMany({
+    const result = await this.pg.query.dishes.findMany({
       where,
       with: {
         dishesToImages: {
@@ -82,8 +84,6 @@ export class DishesService {
       offset: pagination?.offset ?? 0,
     });
 
-    const result = await query;
-
     return result.map((dish) => ({
       ...dish,
       images: dish.dishesToImages
@@ -96,15 +96,89 @@ export class DishesService {
     }));
   }
 
-  public async create(dto: CreateDishDto): Promise<DishEntity | undefined> {
-    const dishes = await this.pg
+  private async validateMenuId(menuId: string, worker: RequestWorker) {
+    // SYSTEM_ADMIN, CHIEF_ADMIN can create dishes for any menu
+    if (worker.role === "SYSTEM_ADMIN" || worker.role === "CHIEF_ADMIN") {
+      return true;
+    }
+
+    const menu = await this.pg.query.dishesMenus.findFirst({
+      where: eq(schema.dishesMenus.id, menuId),
+      columns: {
+        ownerId: true,
+      },
+      with: {
+        dishesMenusToRestaurants: {
+          columns: {
+            restaurantId: true,
+          },
+        },
+      },
+    });
+
+    if (!menu) {
+      throw new NotFoundException();
+    }
+
+    // If menu doesn't have assigned restaurants, throw error
+    if (menu.dishesMenusToRestaurants.length === 0) {
+      throw new BadRequestException(
+        "errors.dishes.provided-menu-doesnt-have-assigned-restaurants",
+        {
+          property: "menuId",
+        },
+      );
+    }
+
+    // If worker is owner and menu is not owned by him, throw error
+    if (worker.role === "OWNER" && menu.ownerId !== worker.id) {
+      throw new BadRequestException(
+        "errors.dishes.you-dont-have-rights-to-the-provided-menu",
+        {
+          property: "menuId",
+        },
+      );
+    }
+
+    // ADMIN can create dishes for any restaurant that is assigned to him
+    if (worker.role === "ADMIN") {
+      const adminRestaurantIdsSet = new Set(
+        worker.workersToRestaurants.map((wr) => wr.restaurantId),
+      );
+
+      if (
+        !menu.dishesMenusToRestaurants.some((m) =>
+          adminRestaurantIdsSet.has(m.restaurantId),
+        )
+      ) {
+        throw new BadRequestException(
+          "errors.dishes.you-dont-have-rights-to-the-provided-menu",
+          {
+            property: "menuId",
+          },
+        );
+      }
+    }
+
+    return true;
+  }
+
+  public async create(
+    dto: CreateDishDto,
+    options: { worker: RequestWorker },
+  ): Promise<DishEntity | undefined> {
+    const { worker } = options;
+
+    // Validate menu id
+    await this.validateMenuId(dto.menuId, worker);
+
+    const [dish] = await this.pg
       .insert(schema.dishes)
       .values({
         ...dto,
       })
       .returning();
 
-    const dish = dishes[0];
     if (!dish) {
       throw new ServerErrorException("Failed to create dish");
     }
@@ -114,17 +188,38 @@ export class DishesService {
 
   public async update(
     id: string,
-    dto: UpdateDishDto,
+    payload: UpdateDishDto,
+    options: { worker: RequestWorker },
   ): Promise<DishEntity | undefined> {
-    if (Object.keys(dto).length === 0) {
+    const { worker } = options;
+
+    worker;
+
+    const dish = await this.pg.query.dishes.findFirst({
+      where: (dishes, { eq }) => eq(dishes.id, id),
+      columns: {
+        menuId: true,
+      },
+    });
+
+    if (!dish) {
+      throw new NotFoundException();
+    }
+
+    // We need to make sure that worker has rights to the menu and can update dish
+    if (dish.menuId) {
+      await this.validateMenuId(dish.menuId, worker);
+    }
+
+    if (Object.keys(payload).length === 0) {
       throw new BadRequestException(
-        "You should provide at least one field to update",
+        "errors.dishes.you-should-provide-at-least-one-field-to-update",
       );
     }
 
     await this.pg
       .update(schema.dishes)
-      .set(dto)
+      .set(payload)
       .where(eq(schema.dishes.id, id));
 
     return this.findById(id);
