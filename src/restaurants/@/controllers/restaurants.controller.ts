@@ -5,6 +5,7 @@ import {
 } from "@core/decorators/pagination.decorator";
 import { Serializable } from "@core/decorators/serializable.decorator";
 import { Worker } from "@core/decorators/worker.decorator";
+import { ForbiddenException } from "@core/errors/exceptions/forbidden.exception";
 import { RequestWorker } from "@core/interfaces/request";
 import { Body, Delete, Get, Param, Post, Put, Query } from "@nestjs/common";
 import {
@@ -78,7 +79,6 @@ export class RestaurantsController {
     };
   }
 
-  // TODO: configure custom guard for this endpoint
   @EnableAuditLog()
   @Post()
   @Serializable(RestaurantEntity)
@@ -90,12 +90,20 @@ export class RestaurantsController {
     type: RestaurantEntity,
   })
   @ApiForbiddenResponse({
-    description: "Action available only for SYSTEM_ADMIN, CHIEF_ADMIN",
+    description: "Action available only for SYSTEM_ADMIN, CHIEF_ADMIN, OWNER",
   })
   async create(
     @Body() dto: CreateRestaurantDto,
     @Worker() worker: RequestWorker,
   ): Promise<RestaurantEntity> {
+    if (
+      worker.role !== "SYSTEM_ADMIN" &&
+      worker.role !== "CHIEF_ADMIN" &&
+      worker.role !== "OWNER"
+    ) {
+      throw new ForbiddenException();
+    }
+
     return await this.restaurantsService.create(dto, {
       worker,
     });
@@ -149,8 +157,11 @@ export class RestaurantsController {
   async update(
     @Param("id") id: string,
     @Body() dto: UpdateRestaurantDto,
+    @Worker() worker: RequestWorker,
   ): Promise<RestaurantEntity> {
-    return await this.restaurantsService.update(id, dto);
+    return await this.restaurantsService.update(id, dto, {
+      worker,
+    });
   }
 
   @RestaurantGuard({

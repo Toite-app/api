@@ -170,13 +170,32 @@ export class RestaurantsService {
       .insert(schema.restaurants)
       .values({
         ...dto,
-        ...(requestWorker?.role === "OWNER" && { ownerId: requestWorker.id }),
+        ...(requestWorker?.role === "OWNER" && {
+          ownerId: requestWorker.id,
+        }),
       })
       .returning({
         id: schema.restaurants.id,
       });
 
     return await this.findById(data[0].id);
+  }
+
+  private async validateRestaurantOwnerUnasignment(restaurantId: string) {
+    const menus = await this.pg.query.dishesMenusToRestaurants.findMany({
+      where: (dishesMenusToRestaurants, { eq }) =>
+        eq(dishesMenusToRestaurants.restaurantId, restaurantId),
+      columns: {
+        dishesMenuId: true,
+      },
+      limit: 1,
+    });
+
+    if (menus.length > 0) {
+      throw new BadRequestException(
+        "errors.restaurants.restaurant-was-assigned-to-some-owner-menus",
+      );
+    }
   }
 
   /**
@@ -187,9 +206,41 @@ export class RestaurantsService {
    */
   public async update(
     id: string,
-    dto: UpdateRestaurantDto,
+    payload: UpdateRestaurantDto,
+    options: { worker: RequestWorker },
   ): Promise<RestaurantEntity> {
-    if (dto.timezone && !this.timezonesService.checkTimezone(dto.timezone)) {
+    const { worker } = options;
+    const { timezone, ownerId, ...rest } = payload;
+
+    const restaurant = await this.pg.query.restaurants.findFirst({
+      where: (restaurants, { eq }) => eq(restaurants.id, id),
+      columns: {
+        ownerId: true,
+      },
+    });
+
+    if (!restaurant) {
+      throw new NotFoundException();
+    }
+
+    // If role is owner, only owner can update restaurant
+    if (worker.role === "OWNER" && restaurant.ownerId !== worker.id) {
+      throw new BadRequestException(
+        "errors.restaurants.you-dont-have-rights-to-that-restaurant",
+      );
+    }
+
+    // If role is admin, only admins of that restaurant can update it
+    if (
+      worker.role === "ADMIN" &&
+      !worker.workersToRestaurants.some((r) => r.restaurantId === id)
+    ) {
+      throw new BadRequestException(
+        "errors.restaurants.you-dont-have-rights-to-that-restaurant",
+      );
+    }
+
+    if (timezone && !this.timezonesService.checkTimezone(timezone)) {
       throw new BadRequestException(
         "errors.restaurants.provided-timezone-cant-be-set",
         {
@@ -198,14 +249,25 @@ export class RestaurantsService {
       );
     }
 
+    // If trying to unasign restaurant from owner
+    if (restaurant.ownerId && ownerId === null) {
+      await this.validateRestaurantOwnerUnasignment(id);
+    }
+
     // Disable restaurant if it is closed forever
-    if (dto.isClosedForever) {
-      dto.isEnabled = false;
+    if (rest.isClosedForever) {
+      rest.isEnabled = false;
     }
 
     await this.pg
       .update(schema.restaurants)
-      .set(dto)
+      .set({
+        ...rest,
+        // Only system admins and chief admins can update restaurant owner
+        ...(worker.role === "SYSTEM_ADMIN" || worker.role === "CHIEF_ADMIN"
+          ? { ownerId }
+          : {}),
+      })
       .where(eq(schema.restaurants.id, id));
 
     return await this.findById(id);
@@ -216,8 +278,9 @@ export class RestaurantsService {
    * @param id
    * @returns
    */
-
+  // TODO: implement removement of restaurants
   public async delete(id: string): Promise<void> {
+    throw new BadRequestException();
     await this.pg
       .delete(schema.restaurants)
       .where(eq(schema.restaurants.id, id));
