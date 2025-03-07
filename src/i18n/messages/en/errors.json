@@ -68,6 +68,10 @@
     "failed-to-create-dish-category": "Failed to create dish category",
     "with-this-id-doesnt-exist": "Dish category with this id doesn't exist"
   },
+  "dish-pricelist": {
+    "provided-workshop-ids-dont-belong-to-restaurant": "Provided workshop ids don't belong to restaurant",
+    "provided-restaurant-dont-assigned-to-menu": "Provided restaurant doesn't assigned to menu"
+  },
   "orders": {
     "with-this-id-doesnt-exist": "Order with this id doesn't exist",
     "table-number-is-required": "Table number is required",

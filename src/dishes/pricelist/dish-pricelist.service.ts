@@ -1,4 +1,5 @@
-import { BadRequestException, Inject, Injectable } from "@nestjs/common";
+import { BadRequestException } from "@core/errors/exceptions/bad-request.exception";
+import { Inject, Injectable } from "@nestjs/common";
 import { schema } from "@postgress-db/drizzle.module";
 import { and, eq, inArray } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
@@ -89,6 +90,37 @@ export class DishPricelistService {
     restaurantId: string,
     dto: UpdateDishPricelistDto,
   ): Promise<IDishPricelistItem> {
+    const dish = await this.pg.query.dishes.findFirst({
+      where: eq(schema.dishes.id, dishId),
+      columns: {},
+      with: {
+        menu: {
+          columns: {},
+          with: {
+            dishesMenusToRestaurants: {
+              where: eq(
+                schema.dishesMenusToRestaurants.restaurantId,
+                restaurantId,
+              ),
+              columns: {
+                restaurantId: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (
+      !dish ||
+      !dish.menu ||
+      dish.menu.dishesMenusToRestaurants.length === 0
+    ) {
+      throw new BadRequestException(
+        "errors.dish-pricelist.provided-restaurant-dont-assigned-to-menu",
+      );
+    }
+
     // First verify that all workshopIds belong to the restaurant
     const workshops = await this.pg.query.restaurantWorkshops.findMany({
       where: eq(schema.restaurantWorkshops.restaurantId, restaurantId),
@@ -101,56 +133,62 @@ export class DishPricelistService {
 
     if (invalidWorkshopIds.length > 0) {
       throw new BadRequestException(
-        `Workshop IDs ${invalidWorkshopIds.join(", ")} do not belong to restaurant ${restaurantId}`,
+        "errors.dish-pricelist.provided-workshop-ids-dont-belong-to-restaurant",
+        {
+          property: "workshopIds",
+        },
       );
     }
 
-    // Update or create dish-restaurant relation
-    await this.pg
-      .insert(schema.dishesToRestaurants)
-      .values({
-        dishId,
-        restaurantId,
-        price: dto.price.toString(),
-        currency: dto.currency,
-        isInStopList: dto.isInStoplist,
-      })
-      .onConflictDoUpdate({
-        target: [
-          schema.dishesToRestaurants.dishId,
-          schema.dishesToRestaurants.restaurantId,
-        ],
-        set: {
+    await this.pg.transaction(async (tx) => {
+      // Update or create dish-restaurant relation
+      await tx
+        .insert(schema.dishesToRestaurants)
+        .values({
+          dishId,
+          restaurantId,
           price: dto.price.toString(),
           currency: dto.currency,
           isInStopList: dto.isInStoplist,
-          updatedAt: new Date(),
-        },
-      });
+        })
+        .onConflictDoUpdate({
+          target: [
+            schema.dishesToRestaurants.dishId,
+            schema.dishesToRestaurants.restaurantId,
+          ],
+          set: {
+            price: dto.price.toString(),
+            currency: dto.currency,
+            isInStopList: dto.isInStoplist,
+            updatedAt: new Date(),
+          },
+        });
 
-    // Delete all existing workshop relations for this dish in this restaurant
-    await this.pg.delete(schema.dishesToWorkshops).where(
-      and(
-        eq(schema.dishesToWorkshops.dishId, dishId),
-        inArray(
-          schema.dishesToWorkshops.workshopId,
-          workshops.map((w) => w.id),
+      // Delete all existing workshop relations for this dish in this restaurant
+      await tx.delete(schema.dishesToWorkshops).where(
+        and(
+          eq(schema.dishesToWorkshops.dishId, dishId),
+          inArray(
+            schema.dishesToWorkshops.workshopId,
+            workshops.map((w) => w.id),
+          ),
         ),
-      ),
-    );
-
-    // Create new workshop relations
-    if (dto.workshopIds.length > 0) {
-      await this.pg.insert(schema.dishesToWorkshops).values(
-        dto.workshopIds.map((workshopId) => ({
-          dishId,
-          workshopId,
-        })),
       );
-    }
+
+      // Create new workshop relations
+      if (dto.workshopIds.length > 0) {
+        await tx.insert(schema.dishesToWorkshops).values(
+          dto.workshopIds.map((workshopId) => ({
+            dishId,
+            workshopId,
+          })),
+        );
+      }
+    });
 
     // Return updated pricelist item
     const [updatedItem] = await this.getPricelist(dishId);
+
     return updatedItem;
   }
 }
