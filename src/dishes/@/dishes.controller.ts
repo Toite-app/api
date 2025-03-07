@@ -84,7 +84,7 @@ export class DishesController {
       });
     }
 
-    if (menuId) {
+    if (menuId && typeof menuId === "string" && menuId !== "undefined") {
       if (!filters) {
         filters = { filters: [] };
       }
@@ -96,7 +96,9 @@ export class DishesController {
       });
     }
 
-    const total = await this.dishesService.getTotalCount(filters);
+    const total = await this.dishesService.getTotalCount({
+      filters,
+    });
 
     const data = await this.dishesService.findMany({
       pagination,

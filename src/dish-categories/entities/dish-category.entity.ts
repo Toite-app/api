@@ -19,6 +19,14 @@ export class DishCategoryEntity implements IDishCategory {
   id: string;
 
   @Expose()
+  @IsUUID()
+  @ApiProperty({
+    description: "Unique identifier of the menu",
+    example: "d290f1ee-6c54-4b01-90e6-d701748f0851",
+  })
+  menuId: string;
+
+  @Expose()
   @IsString()
   @ApiProperty({
     description: "Name of the category",

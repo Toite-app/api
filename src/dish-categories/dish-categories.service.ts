@@ -9,7 +9,7 @@ import { ServerErrorException } from "@core/errors/exceptions/server-error.excep
 import { Inject, Injectable } from "@nestjs/common";
 import { DrizzleUtils } from "@postgress-db/drizzle-utils";
 import { schema } from "@postgress-db/drizzle.module";
-import { asc, count, desc, eq, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, sql, SQL } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { PG_CONNECTION } from "src/constants";
 
@@ -46,30 +46,37 @@ export class DishCategoriesService {
   }): Promise<DishCategoryEntity[]> {
     const { pagination, sorting, filters } = options ?? {};
 
-    const query = this.pg.select().from(schema.dishCategories);
+    const conditions: SQL[] = [];
 
     if (filters) {
-      query.where(
-        DrizzleUtils.buildFilterConditions(schema.dishCategories, filters),
+      conditions.push(
+        DrizzleUtils.buildFilterConditions(
+          schema.dishCategories,
+          filters,
+        ) as SQL,
       );
     }
 
-    if (sorting) {
-      query.orderBy(
-        sorting.sortOrder === "asc"
-          ? asc(sql.identifier(sorting.sortBy))
-          : desc(sql.identifier(sorting.sortBy)),
-      );
-    }
+    const fetchedCategories = await this.pg.query.dishCategories.findMany({
+      ...(conditions.length > 0 && { where: and(...conditions) }),
+      limit: pagination?.size ?? PAGINATION_DEFAULT_LIMIT,
+      offset: pagination?.offset ?? 0,
+      orderBy: sorting?.sortBy
+        ? [
+            sorting.sortOrder === "asc"
+              ? asc(sql.identifier(sorting.sortBy))
+              : desc(sql.identifier(sorting.sortBy)),
+          ]
+        : undefined,
+    });
 
-    return await query
-      .limit(pagination?.size ?? PAGINATION_DEFAULT_LIMIT)
-      .offset(pagination?.offset ?? 0);
+    return fetchedCategories;
   }
 
   public async create(
     dto: CreateDishCategoryDto,
   ): Promise<DishCategoryEntity | undefined> {
+    const startIndex = 10;
     const sortIndex = await this.pg
       .select({
         value: count(),
@@ -80,7 +87,7 @@ export class DishCategoriesService {
       .insert(schema.dishCategories)
       .values({
         ...dto,
-        sortIndex: sortIndex[0].value,
+        sortIndex: sortIndex[0].value + startIndex,
       })
       .returning();
 

@@ -9,7 +9,7 @@ import { ServerErrorException } from "@core/errors/exceptions/server-error.excep
 import { Inject, Injectable } from "@nestjs/common";
 import { DrizzleUtils } from "@postgress-db/drizzle-utils";
 import { schema } from "@postgress-db/drizzle.module";
-import { asc, count, desc, eq, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, sql, SQL } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { PG_CONNECTION } from "src/constants";
 
@@ -23,7 +23,13 @@ export class DishesService {
     @Inject(PG_CONNECTION) private readonly pg: NodePgDatabase<typeof schema>,
   ) {}
 
-  public async getTotalCount(filters?: IFilters): Promise<number> {
+  public async getTotalCount({
+    filters,
+  }: {
+    filters?: IFilters;
+  }): Promise<number> {
+    const conditions: SQL[] = [];
+
     const query = this.pg
       .select({
         value: count(),
@@ -31,7 +37,13 @@ export class DishesService {
       .from(schema.dishes);
 
     if (filters) {
-      query.where(DrizzleUtils.buildFilterConditions(schema.dishes, filters));
+      conditions.push(
+        DrizzleUtils.buildFilterConditions(schema.dishes, filters) as SQL,
+      );
+    }
+
+    if (conditions.length > 0) {
+      query.where(and(...conditions));
     }
 
     return await query.then((res) => res[0].value);

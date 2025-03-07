@@ -1,3 +1,4 @@
+import { dishCategories } from "@postgress-db/schema/dish-categories";
 import { dishes } from "@postgress-db/schema/dishes";
 import { restaurants } from "@postgress-db/schema/restaurants";
 import { workers } from "@postgress-db/schema/workers";
@@ -61,6 +62,7 @@ export const dishesMenusToRestaurantsRelations = relations(
 export const dishesMenusRelations = relations(dishesMenus, ({ one, many }) => ({
   dishes: many(dishes),
   dishesMenusToRestaurants: many(dishesMenusToRestaurants),
+  dishCategories: many(dishCategories),
   owner: one(workers, {
     fields: [dishesMenus.ownerId],
     references: [workers.id],

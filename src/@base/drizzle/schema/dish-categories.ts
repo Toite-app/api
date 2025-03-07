@@ -1,9 +1,10 @@
+import { dishesMenus } from "@postgress-db/schema/dishes-menus";
 import { dishesToCategories } from "@postgress-db/schema/many-to-many";
 import { relations } from "drizzle-orm";
 import {
   boolean,
-  integer,
   pgTable,
+  serial,
   text,
   timestamp,
   uuid,
@@ -13,7 +14,7 @@ export const dishCategories = pgTable("dish_categories", {
   id: uuid("id").defaultRandom().primaryKey(),
 
   // Category belongs to a menu //
-  // menuId: uuid("menu_id").notNull(),
+  menuId: uuid("menu_id").notNull(),
 
   // Name of the category //
   name: text("name").notNull().default(""),
@@ -25,7 +26,7 @@ export const dishCategories = pgTable("dish_categories", {
   showForGuests: boolean("show_for_guests").notNull().default(false),
 
   // Sorting index in the admin menu //
-  sortIndex: integer("sort_index").notNull(),
+  sortIndex: serial("sort_index").notNull(),
 
   // Default timestamps //
   createdAt: timestamp("created_at").notNull().defaultNow(),
@@ -34,6 +35,13 @@ export const dishCategories = pgTable("dish_categories", {
 
 export type IDishCategory = typeof dishCategories.$inferSelect;
 
-export const dishCategoryRelations = relations(dishCategories, ({ many }) => ({
-  dishesToCategories: many(dishesToCategories),
-}));
+export const dishCategoryRelations = relations(
+  dishCategories,
+  ({ one, many }) => ({
+    dishesToCategories: many(dishesToCategories),
+    menu: one(dishesMenus, {
+      fields: [dishCategories.menuId],
+      references: [dishesMenus.id],
+    }),
+  }),
+);
