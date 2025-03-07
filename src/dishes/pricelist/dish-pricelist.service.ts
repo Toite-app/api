@@ -14,8 +14,37 @@ export class DishPricelistService {
   ) {}
 
   async getPricelist(dishId: string): Promise<IDishPricelistItem[]> {
+    const dish = await this.pg.query.dishes.findFirst({
+      where: (dishes, { eq }) => eq(dishes.id, dishId),
+      columns: {
+        menuId: true,
+      },
+      with: {
+        menu: {
+          columns: {},
+          with: {
+            dishesMenusToRestaurants: {
+              columns: {
+                restaurantId: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    const restaurantIds = (dish?.menu?.dishesMenusToRestaurants ?? []).map(
+      (r) => r.restaurantId,
+    );
+
+    if (restaurantIds.length === 0) {
+      return [];
+    }
+
     // Get all restaurants with their workshops and dish relationships
     const restaurants = await this.pg.query.restaurants.findMany({
+      where: (restaurants, { inArray }) =>
+        inArray(restaurants.id, restaurantIds ?? []),
       with: {
         workshops: {
           with: {
