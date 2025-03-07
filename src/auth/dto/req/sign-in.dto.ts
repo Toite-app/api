@@ -13,7 +13,7 @@ export class SignInDto implements z.infer<typeof signInSchema> {
   @Expose()
   @ApiProperty({
     description: "Login of the worker",
-    example: "dana.keller",
+    example: "vi.keller",
   })
   login: string;
 

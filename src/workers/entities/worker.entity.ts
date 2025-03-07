@@ -67,7 +67,7 @@ export class WorkerEntity implements IWorker {
   @Expose()
   @ApiProperty({
     description: "Login of the worker",
-    example: "v.keller",
+    example: "vi.keller",
   })
   login: string;
 

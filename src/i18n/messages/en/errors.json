@@ -59,7 +59,10 @@
   },
   "dishes": {
     "failed-to-create-dish": "Failed to create dish",
-    "with-this-id-doesnt-exist": "Dish with this id doesn't exist"
+    "with-this-id-doesnt-exist": "Dish with this id doesn't exist",
+    "provided-menu-doesnt-have-assigned-restaurants": "Provided menu doesn't have assigned restaurants",
+    "you-dont-have-rights-to-the-provided-menu": "You don't have rights to the provided menu",
+    "you-should-provide-at-least-one-field-to-update": "You should provide at least one field to update"
   },
   "dish-categories": {
     "failed-to-create-dish-category": "Failed to create dish category",

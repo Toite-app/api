@@ -11,8 +11,11 @@ import {
 import SearchParam from "@core/decorators/search.decorator";
 import { Serializable } from "@core/decorators/serializable.decorator";
 import { ISorting, SortingParams } from "@core/decorators/sorting.decorator";
+import { Worker } from "@core/decorators/worker.decorator";
 import { BadRequestException } from "@core/errors/exceptions/bad-request.exception";
+import { ForbiddenException } from "@core/errors/exceptions/forbidden.exception";
 import { NotFoundException } from "@core/errors/exceptions/not-found.exception";
+import { RequestWorker } from "@core/interfaces/request";
 import { Body, Get, Param, Post, Put, Query } from "@nestjs/common";
 import {
   ApiBadRequestResponse,
@@ -118,10 +121,36 @@ export class DishesController {
   @EnableAuditLog()
   @Post()
   @Serializable(DishEntity)
-  @ApiOperation({ summary: "Creates a new dish" })
-  @ApiCreatedResponse({ description: "Dish has been successfully created" })
-  async create(@Body() data: CreateDishDto): Promise<DishEntity> {
-    const dish = await this.dishesService.create(data);
+  @ApiOperation({
+    summary: "Creates a new dish",
+  })
+  @ApiCreatedResponse({
+    description: "Dish has been successfully created",
+    type: DishEntity,
+  })
+  @ApiBadRequestResponse({
+    description: "Failed to create dish",
+  })
+  @ApiForbiddenResponse({
+    description:
+      "Only SYSTEM_ADMIN, CHIEF_ADMIN, OWNER, ADMIN can create dishes",
+  })
+  async create(
+    @Body() data: CreateDishDto,
+    @Worker() worker: RequestWorker,
+  ): Promise<DishEntity> {
+    if (
+      worker.role !== "SYSTEM_ADMIN" &&
+      worker.role !== "CHIEF_ADMIN" &&
+      worker.role !== "OWNER" &&
+      worker.role !== "ADMIN"
+    ) {
+      throw new ForbiddenException();
+    }
+
+    const dish = await this.dishesService.create(data, {
+      worker,
+    });
 
     if (!dish) {
       throw new BadRequestException("errors.dishes.failed-to-create-dish");
@@ -174,9 +203,14 @@ export class DishesController {
   @ApiBadRequestResponse({
     description: "Id must be a string and provided",
   })
+  @ApiForbiddenResponse({
+    description:
+      "Only SYSTEM_ADMIN, CHIEF_ADMIN, OWNER, ADMIN can update dishes",
+  })
   async update(
     @Param("id") id: string,
     @Body() data: UpdateDishDto,
+    @Worker() worker: RequestWorker,
   ): Promise<DishEntity> {
     if (!id) {
       throw new BadRequestException(
@@ -184,10 +218,16 @@ export class DishesController {
       );
     }
 
-    const updatedDish = await this.dishesService.update(id, {
-      ...data,
-      updatedAt: new Date(),
-    });
+    const updatedDish = await this.dishesService.update(
+      id,
+      {
+        ...data,
+        updatedAt: new Date(),
+      },
+      {
+        worker,
+      },
+    );
 
     if (!updatedDish) {
       throw new NotFoundException("errors.dishes.with-this-id-doesnt-exist");
