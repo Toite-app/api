@@ -45,6 +45,7 @@ export class DishPricelistController {
     @Param("restaurantId") restaurantId: string,
     @Body() dto: UpdateDishPricelistDto,
   ) {
+    // TODO: Add validation of worker role/restaurant access
     return this.dishPricelistService.updatePricelist(dishId, restaurantId, dto);
   }
 }
