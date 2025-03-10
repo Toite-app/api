@@ -40,12 +40,4 @@ export class OrderMenuController {
       data,
     };
   }
-
-  @EnableAuditLog({ onlyErrors: true })
-  @Get("dish-categories")
-  @ApiOperation({
-    summary:
-      "Gets dish categories that exist for the dishes that can be added to the order",
-  })
-  async getDishCategories(@Param("orderId") orderId: string) {}
 }
