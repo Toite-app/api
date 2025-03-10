@@ -10,6 +10,7 @@ import {
 } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 import * as requestIp from "@supercharge/request-ip";
+import { RedlockService } from "src/@base/redlock/redlock.service";
 import { AUTH_COOKIES } from "src/auth/auth.types";
 import { IS_PUBLIC_KEY } from "src/auth/decorators/public.decorator";
 import { SessionsService } from "src/auth/services/sessions.service";
@@ -21,6 +22,7 @@ export class SessionAuthGuard implements CanActivate {
   constructor(
     private readonly reflector: Reflector,
     private readonly sessionsService: SessionsService,
+    private readonly redlockService: RedlockService,
   ) {}
 
   private getUserIp(req: Request) {
@@ -48,7 +50,6 @@ export class SessionAuthGuard implements CanActivate {
   }
 
   private async _handleSession(req: Request, res: Response) {
-    res;
     const jwtSign = this.getCookie(req, AUTH_COOKIES.token);
 
     if (!jwtSign) throw new UnauthorizedException();
@@ -71,20 +72,43 @@ export class SessionAuthGuard implements CanActivate {
       this.sessionsService.isSessionRequireRefresh(session);
 
     if (isRequireRefresh && !isRefreshDisabled) {
-      const newSignedJWT = await this.sessionsService.refreshSignedSession(
-        jwtSign,
-        {
-          httpAgent,
-          ip: ip ?? "N/A",
-        },
-      );
+      let lock;
+      try {
+        // Try to acquire the lock with no retries and minimal retry delay
+        lock = await this.redlockService.acquire(
+          [`session-refresh:${session.id}`],
+          10000, // 10 second lock duration
+          {
+            retryCount: 0, // Don't retry if lock can't be acquired
+            retryDelay: 0,
+          },
+        );
+      } catch (error) {
+        // If we couldn't acquire the lock, another request is handling the refresh
+        // Just continue without refreshing
+        return true;
+      }
 
-      res.cookie(AUTH_COOKIES.token, newSignedJWT, {
-        maxAge: 60 * 60 * 24 * 365, // 1 year
-        httpOnly: true,
-        secure: env.NODE_ENV === "production",
-        sameSite: "strict",
-      });
+      try {
+        const newSignedJWT = await this.sessionsService.refreshSignedSession(
+          jwtSign,
+          {
+            httpAgent,
+            ip: ip ?? "N/A",
+          },
+        );
+
+        res.cookie(AUTH_COOKIES.token, newSignedJWT, {
+          maxAge: 60 * 60 * 24 * 365, // 1 year
+          httpOnly: true,
+          secure: env.NODE_ENV === "production",
+          sameSite: "strict",
+        });
+      } finally {
+        if (lock) {
+          await this.redlockService.release(lock);
+        }
+      }
     }
 
     return true;
