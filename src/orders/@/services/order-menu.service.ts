@@ -23,9 +23,10 @@ export class OrderMenuService {
     orderId: string,
     opts?: {
       cursor: ICursor;
+      search?: string;
     },
   ): Promise<OrderMenuDishEntity[]> {
-    const { cursor } = opts ?? {};
+    const { cursor, search } = opts ?? {};
 
     const order = await this.pg.query.orders.findFirst({
       where: (orders, { eq }) => eq(orders.id, orderId),
@@ -97,8 +98,12 @@ export class OrderMenuService {
     }
 
     const fetchedDishes = await this.pg.query.dishes.findMany({
-      where: (dishes, { and, eq, exists, inArray }) =>
+      where: (dishes, { and, eq, exists, inArray, ilike }) =>
         and(
+          // insensetive search
+          search && search !== "null"
+            ? ilike(dishes.name, `%${search}%`)
+            : undefined,
           // From the menu that is assigned to the order restaurant
           inArray(dishes.menuId, menuIds),
           // Select only dishes that was assigned to the order restaurant
