@@ -46,6 +46,9 @@ export class OrderMenuService {
             dishId: true,
             price: true,
             quantity: true,
+            discountPercent: true,
+            surchargePercent: true,
+            finalPrice: true,
           },
           with: {
             dishModifiersToOrderDishes: {

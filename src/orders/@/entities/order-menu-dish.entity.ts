@@ -1,4 +1,4 @@
-import { IsBoolean, IsDecimal, ValidateNested } from "@i18n-class-validator";
+import { IsBoolean, ValidateNested } from "@i18n-class-validator";
 import {
   ApiProperty,
   ApiPropertyOptional,
@@ -11,7 +11,15 @@ import { OrderDishEntity } from "src/orders/@/entities/order-dish.entity";
 import { OrderEntity } from "src/orders/@/entities/order.entity";
 
 export class OrderMenuDishOrderDishEntity extends IntersectionType(
-  PickType(OrderDishEntity, ["price", "quantity", "modifiers"]),
+  PickType(OrderDishEntity, [
+    "price",
+    "quantity",
+    "modifiers",
+    "id",
+    "discountPercent",
+    "surchargePercent",
+    "finalPrice",
+  ]),
   PickType(OrderEntity, ["currency"]),
 ) {}
 
