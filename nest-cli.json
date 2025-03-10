@@ -7,7 +7,7 @@
       {
         "include": "i18n/messages/**/*",
         "watchAssets": true,
-        "outDir": "dist"
+        "outDir": "dist/src"
       }
     ],
     "deleteOutDir": true

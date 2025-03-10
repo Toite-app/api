@@ -3,9 +3,11 @@ import { DrizzleModule } from "@postgress-db/drizzle.module";
 import { GuestsModule } from "src/guests/guests.module";
 import { OrderActionsController } from "src/orders/@/order-actions.controller";
 import { OrderDishesController } from "src/orders/@/order-dishes.controller";
+import { OrderMenuController } from "src/orders/@/order-menu.controller";
 import { OrdersController } from "src/orders/@/orders.controller";
 import { OrderActionsService } from "src/orders/@/services/order-actions.service";
 import { OrderDishesService } from "src/orders/@/services/order-dishes.service";
+import { OrderMenuService } from "src/orders/@/services/order-menu.service";
 import { OrderPricesService } from "src/orders/@/services/order-prices.service";
 import { OrdersService } from "src/orders/@/services/orders.service";
 import { OrdersQueueModule } from "src/orders/@queue/orders-queue.module";
@@ -22,12 +24,14 @@ import { KitchenerOrdersService } from "src/orders/kitchener/kitchener-orders.se
     DispatcherOrdersService,
     KitchenerOrdersService,
     OrderDishesService,
+    OrderMenuService,
     OrderPricesService,
     OrderActionsService,
     KitchenerOrderActionsService,
   ],
   controllers: [
     OrdersController,
+    OrderMenuController,
     OrderDishesController,
     DispatcherOrdersController,
     KitchenerOrdersController,
