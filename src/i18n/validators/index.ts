@@ -9,6 +9,7 @@ import {
   IsInt as _IsInt,
   IsISO8601 as _IsISO8601,
   IsLatitude as _IsLatitude,
+  IsNotEmpty as _IsNotEmpty,
   IsNumber as _IsNumber,
   IsObject as _IsObject,
   IsOptional as _IsOptional,
@@ -42,6 +43,11 @@ const mergeI18nValidation = (
   message: i18nValidationMessage(`validation.validators.${key}`),
   ...validationOptions,
 });
+
+export const IsNotEmpty = (validationOptions?: ValidationOptions) =>
+  applyDecorators(
+    _IsNotEmpty(mergeI18nValidation("isNotEmpty", validationOptions)),
+  );
 
 export const IsString = (validationOptions?: ValidationOptions) =>
   applyDecorators(

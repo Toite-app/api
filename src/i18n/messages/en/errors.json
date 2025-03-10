@@ -120,5 +120,8 @@
     "some-restaurant-are-not-owned-by-the-owner": "Some restaurants are not owned by the owner",
     "unable-to-remove-menu": "Unable to remove menu",
     "menu-has-restaurants": "Menu has restaurants"
+  },
+  "order-menu": {
+    "order-doesnt-have-restaurant": "Order doesn't have restaurant"
   }
 }
