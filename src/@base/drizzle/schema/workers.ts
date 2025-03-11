@@ -1,6 +1,11 @@
 import { dishesMenus } from "@postgress-db/schema/dishes-menus";
 import { orderDeliveries } from "@postgress-db/schema/order-deliveries";
 import { restaurants } from "@postgress-db/schema/restaurants";
+import { workshiftPayments } from "@postgress-db/schema/workshift-payments";
+import {
+  workersToWorkshifts,
+  workshifts,
+} from "@postgress-db/schema/workshifts";
 import { relations } from "drizzle-orm";
 import {
   boolean,
@@ -91,6 +96,11 @@ export const workerRelations = relations(workers, ({ many }) => ({
   deliveries: many(orderDeliveries),
   ownedRestaurants: many(restaurants),
   ownedDishesMenus: many(dishesMenus),
+  workshiftsOpened: many(workshifts),
+  workshiftsClosed: many(workshifts),
+  workersToWorkshifts: many(workersToWorkshifts),
+  workshiftPayments: many(workshiftPayments),
+  removedWorkshiftPayments: many(workshiftPayments),
 }));
 
 export type IWorker = typeof workers.$inferSelect;
