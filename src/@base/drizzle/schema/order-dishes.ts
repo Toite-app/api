@@ -1,6 +1,7 @@
 import { dishModifiersToOrderDishes } from "@postgress-db/schema/dish-modifiers";
 import { dishes } from "@postgress-db/schema/dishes";
 import { orders } from "@postgress-db/schema/orders";
+import { workers } from "@postgress-db/schema/workers";
 import { relations } from "drizzle-orm";
 import {
   boolean,
@@ -87,4 +88,39 @@ export const orderDishRelations = relations(orderDishes, ({ one, many }) => ({
     references: [dishes.id],
   }),
   dishModifiersToOrderDishes: many(dishModifiersToOrderDishes),
+  returnments: many(orderDishesReturnments),
 }));
+
+export const orderDishesReturnments = pgTable("order_dishes_returnments", {
+  id: uuid("id").defaultRandom().primaryKey(),
+
+  // Relations //
+  orderDishId: uuid("order_dish_id").notNull(),
+  workerId: uuid("worker_id").notNull(),
+
+  // Returned quantity //
+  quantity: integer("quantity").notNull(),
+
+  // Reason //
+  reason: text("reason").notNull(),
+
+  // Timestamps //
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export type IOrderDishReturnment = typeof orderDishesReturnments.$inferSelect;
+
+export const orderDishReturnmentRelations = relations(
+  orderDishesReturnments,
+  ({ one }) => ({
+    orderDish: one(orderDishes, {
+      fields: [orderDishesReturnments.orderDishId],
+      references: [orderDishes.id],
+    }),
+    worker: one(workers, {
+      fields: [orderDishesReturnments.workerId],
+      references: [workers.id],
+    }),
+  }),
+);

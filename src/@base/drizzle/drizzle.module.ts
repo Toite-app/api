@@ -23,6 +23,8 @@ import * as restaurantWorkshops from "./schema/restaurant-workshop";
 import * as restaurants from "./schema/restaurants";
 import * as sessions from "./schema/sessions";
 import * as workers from "./schema/workers";
+import * as workshiftPayments from "./schema/workshift-payments";
+import * as workshifts from "./schema/workshifts";
 
 export const schema = {
   ...general,
@@ -42,6 +44,8 @@ export const schema = {
   ...dishModifiers,
   ...discounts,
   ...dishesMenus,
+  ...workshifts,
+  ...workshiftPayments,
 };
 
 export type Schema = typeof schema;
