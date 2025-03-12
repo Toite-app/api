@@ -1,4 +1,5 @@
 import { BadRequestException } from "@core/errors/exceptions/bad-request.exception";
+import { ForbiddenException } from "@core/errors/exceptions/forbidden.exception";
 import { NotFoundException } from "@core/errors/exceptions/not-found.exception";
 import { RequestWorker } from "@core/interfaces/request";
 import { Inject, Injectable } from "@nestjs/common";
@@ -23,7 +24,43 @@ export class KitchenerOrderActionsService {
   ) {
     const orderDish = await this.pg.query.orderDishes.findFirst({
       where: (orderDishes, { eq }) => eq(orderDishes.id, orderDishId),
+      with: {
+        order: {
+          columns: {
+            restaurantId: true,
+          },
+        },
+      },
     });
+
+    if (opts?.worker && orderDish?.order.restaurantId) {
+      const { worker } = opts;
+
+      if (worker.role === "SYSTEM_ADMIN" || worker.role === "CHIEF_ADMIN") {
+      }
+      // Check if owner has access to restaurant
+      else if (
+        worker.role === "OWNER" &&
+        !worker.ownedRestaurants.some(
+          (r) => r.id === orderDish.order.restaurantId,
+        )
+      ) {
+        throw new ForbiddenException(
+          "errors.order-dishes.cant-force-ready-dish",
+        );
+      }
+      // Restrict to restaurant scope admins
+      else if (
+        worker.role === "ADMIN" &&
+        !worker.workersToRestaurants.some(
+          (r) => r.restaurantId === orderDish.order.restaurantId,
+        )
+      ) {
+        throw new ForbiddenException(
+          "errors.order-dishes.cant-force-ready-dish",
+        );
+      }
+    }
 
     if (!orderDish) {
       throw new NotFoundException("errors.order-dishes.order-dish-not-found");

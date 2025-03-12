@@ -1,13 +1,23 @@
+import { currencyEnum } from "@postgress-db/schema/general";
 import { workers } from "@postgress-db/schema/workers";
 import { workshifts } from "@postgress-db/schema/workshifts";
 import { relations } from "drizzle-orm";
-import { boolean, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import {
+  boolean,
+  decimal,
+  pgTable,
+  text,
+  timestamp,
+  uuid,
+} from "drizzle-orm/pg-core";
 
 export const workshiftPayments = pgTable("workshift_payments", {
   id: uuid("id").defaultRandom().primaryKey(),
 
-  // Note //
+  // Fields //
   note: text("note"),
+  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
+  currency: currencyEnum("currency").notNull(),
 
   // Workshift ID //
   workshiftId: uuid("workshift_id").notNull(),
