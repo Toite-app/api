@@ -5,6 +5,7 @@ import {
   IsString,
   IsUUID,
   Min,
+  MinLength,
 } from "@i18n-class-validator";
 import { ApiProperty } from "@nestjs/swagger";
 import { IOrderDishReturnment } from "@postgress-db/schema/order-dishes";
@@ -45,6 +46,7 @@ export class OrderDishReturnmentEntity implements IOrderDishReturnment {
   quantity: number;
 
   @IsString()
+  @MinLength(3)
   @Expose()
   @ApiProperty({
     description: "Reason for the returnment",
