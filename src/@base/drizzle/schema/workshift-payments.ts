@@ -47,10 +47,12 @@ export const workshiftPaymentRelations = relations(
     worker: one(workers, {
       fields: [workshiftPayments.workerId],
       references: [workers.id],
+      relationName: "workshiftPaymentsWorker",
     }),
     removedByWorker: one(workers, {
       fields: [workshiftPayments.removedByWorkerId],
       references: [workers.id],
+      relationName: "workshiftPaymentsRemovedByWorker",
     }),
   }),
 );

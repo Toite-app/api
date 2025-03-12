@@ -11,9 +11,11 @@ import {
 } from "@nestjs/swagger";
 import { EnableAuditLog } from "src/@base/audit-logs/decorators/audit-logs.decorator";
 import { AddOrderDishDto } from "src/orders/@/dtos/add-order-dish.dto";
+import { CreateOrderDishReturnmentDto } from "src/orders/@/dtos/create-order-dish-returnment.dto";
 import { PutOrderDishModifiersDto } from "src/orders/@/dtos/put-order-dish-modifiers";
 import { UpdateOrderDishDto } from "src/orders/@/dtos/update-order-dish.dto";
 import { OrderEntity } from "src/orders/@/entities/order.entity";
+import { OrderActionsService } from "src/orders/@/services/order-actions.service";
 import { OrderDishesService } from "src/orders/@/services/order-dishes.service";
 import { OrdersService } from "src/orders/@/services/orders.service";
 import { KitchenerOrderActionsService } from "src/orders/kitchener/kitchener-order-actions.service";
@@ -26,6 +28,7 @@ export class OrderDishesController {
     private readonly ordersService: OrdersService,
     private readonly orderDishesService: OrderDishesService,
     private readonly kitchenerOrderActionsService: KitchenerOrderActionsService,
+    private readonly orderActionsService: OrderActionsService,
   ) {}
 
   @EnableAuditLog()
@@ -116,6 +119,31 @@ export class OrderDishesController {
     await this.kitchenerOrderActionsService.markDishAsReady(orderDishId, {
       worker,
     });
+
+    return this.ordersService.findById(orderId);
+  }
+
+  @EnableAuditLog()
+  @Post(":orderDishId/return")
+  @ApiOperation({
+    summary: "Makes an returnment of a dish",
+  })
+  @ApiOkResponse({
+    description: "Dish has been successfully returned",
+  })
+  async returnDish(
+    @Param("id") orderId: string,
+    @Param("orderDishId") orderDishId: string,
+    @Body() payload: CreateOrderDishReturnmentDto,
+    @Worker() worker: RequestWorker,
+  ) {
+    await this.orderActionsService.makeOrderDishReturnment(
+      orderDishId,
+      payload,
+      {
+        worker,
+      },
+    );
 
     return this.ordersService.findById(orderId);
   }
