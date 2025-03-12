@@ -90,17 +90,6 @@ export class OrdersQueueProcessor extends WorkerHost {
   }
 
   private async dishCrudUpdate(data: OrderDishCrudUpdateJobDto) {
-    // make snapshot
-    await this.snapshotsProducer.create({
-      model: "ORDER_DISHES",
-      action: data.action,
-      data: plainToClass(OrderDishSnapshotEntity, data.orderDish, {
-        excludeExtraneousValues: true,
-      }),
-      documentId: data.orderDishId,
-      workerId: data.calledByWorkerId,
-    });
-
     // notify users
     await this.ordersSocketNotifier.handleById(data.orderDish.orderId);
   }
