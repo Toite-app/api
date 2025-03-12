@@ -1,10 +1,12 @@
 import { Module } from "@nestjs/common";
 import { DrizzleModule } from "@postgress-db/drizzle.module";
+import { SnapshotsModule } from "src/@base/snapshots/snapshots.module";
 import { GuestsModule } from "src/guests/guests.module";
 import { OrderActionsController } from "src/orders/@/order-actions.controller";
 import { OrderDishesController } from "src/orders/@/order-dishes.controller";
 import { OrderMenuController } from "src/orders/@/order-menu.controller";
 import { OrdersController } from "src/orders/@/orders.controller";
+import { OrderDishesRepository } from "src/orders/@/repositories/order-dishes.repository";
 import { OrderActionsService } from "src/orders/@/services/order-actions.service";
 import { OrderDishesService } from "src/orders/@/services/order-dishes.service";
 import { OrderMenuService } from "src/orders/@/services/order-menu.service";
@@ -18,8 +20,9 @@ import { KitchenerOrdersController } from "src/orders/kitchener/kitchener-orders
 import { KitchenerOrdersService } from "src/orders/kitchener/kitchener-orders.service";
 
 @Module({
-  imports: [DrizzleModule, GuestsModule, OrdersQueueModule],
+  imports: [DrizzleModule, GuestsModule, OrdersQueueModule, SnapshotsModule],
   providers: [
+    OrderDishesRepository,
     OrdersService,
     DispatcherOrdersService,
     KitchenerOrdersService,
@@ -37,6 +40,6 @@ import { KitchenerOrdersService } from "src/orders/kitchener/kitchener-orders.se
     KitchenerOrdersController,
     OrderActionsController,
   ],
-  exports: [OrdersService, OrderDishesService],
+  exports: [OrdersService, OrderDishesService, OrderDishesRepository],
 })
 export class OrdersModule {}

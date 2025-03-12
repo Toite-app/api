@@ -3,14 +3,13 @@ import { NotFoundException } from "@core/errors/exceptions/not-found.exception";
 import { Inject, Injectable } from "@nestjs/common";
 import { Schema } from "@postgress-db/drizzle.module";
 import { dishModifiersToOrderDishes } from "@postgress-db/schema/dish-modifiers";
-import { orderDishes } from "@postgress-db/schema/order-dishes";
 import { eq, sql } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { PG_CONNECTION } from "src/constants";
 import { AddOrderDishDto } from "src/orders/@/dtos/add-order-dish.dto";
 import { PutOrderDishModifiersDto } from "src/orders/@/dtos/put-order-dish-modifiers";
 import { UpdateOrderDishDto } from "src/orders/@/dtos/update-order-dish.dto";
-import { OrderPricesService } from "src/orders/@/services/order-prices.service";
+import { OrderDishesRepository } from "src/orders/@/repositories/order-dishes.repository";
 import { OrdersQueueProducer } from "src/orders/@queue/orders-queue.producer";
 
 @Injectable()
@@ -18,8 +17,8 @@ export class OrderDishesService {
   constructor(
     @Inject(PG_CONNECTION)
     private readonly pg: NodePgDatabase<Schema>,
+    private readonly repository: OrderDishesRepository,
     private readonly ordersProducer: OrdersQueueProducer,
-    private readonly orderPricesService: OrderPricesService,
   ) {}
 
   private readonly getOrderStatement = this.pg.query.orders
@@ -149,27 +148,21 @@ export class OrderDishesService {
 
     const price = Number(dish.price);
 
-    const orderDish = await this.pg.transaction(async (tx) => {
-      const [orderDish] = await tx
-        .insert(orderDishes)
-        .values({
-          orderId,
-          dishId: payload.dishId,
-          name: dish.name,
-          status: "pending",
-          quantity,
-          isAdditional,
-          price: String(price),
-          finalPrice: String(price),
-        })
-        .returning();
-
-      await this.orderPricesService.calculateOrderTotals(orderId, {
-        tx,
-      });
-
-      return orderDish;
-    });
+    const orderDish = await this.repository.create(
+      {
+        orderId,
+        dishId: payload.dishId,
+        name: dish.name,
+        status: "pending",
+        quantity,
+        isAdditional,
+        price: String(price),
+        finalPrice: String(price),
+      },
+      {
+        workerId: opts?.workerId,
+      },
+    );
 
     await this.ordersProducer.dishCrudUpdate({
       action: "CREATE",
@@ -206,21 +199,15 @@ export class OrderDishesService {
       throw new BadRequestException("errors.order-dishes.is-removed");
     }
 
-    const updatedOrderDish = await this.pg.transaction(async (tx) => {
-      const [updatedOrderDish] = await tx
-        .update(orderDishes)
-        .set({
-          quantity,
-        })
-        .where(eq(orderDishes.id, orderDishId))
-        .returning();
-
-      await this.orderPricesService.calculateOrderTotals(orderDish.orderId, {
-        tx,
-      });
-
-      return updatedOrderDish;
-    });
+    const updatedOrderDish = await this.repository.update(
+      orderDishId,
+      {
+        quantity,
+      },
+      {
+        workerId: opts?.workerId,
+      },
+    );
 
     await this.ordersProducer.dishCrudUpdate({
       action: "UPDATE",
@@ -239,19 +226,16 @@ export class OrderDishesService {
       throw new BadRequestException("errors.order-dishes.already-removed");
     }
 
-    const removedOrderDish = await this.pg.transaction(async (tx) => {
-      const [removedOrderDish] = await tx
-        .update(orderDishes)
-        .set({ isRemoved: true, removedAt: new Date() })
-        .where(eq(orderDishes.id, orderDishId))
-        .returning();
-
-      await this.orderPricesService.calculateOrderTotals(orderDish.orderId, {
-        tx,
-      });
-
-      return removedOrderDish;
-    });
+    const removedOrderDish = await this.repository.update(
+      orderDishId,
+      {
+        isRemoved: true,
+        removedAt: new Date(),
+      },
+      {
+        workerId: opts?.workerId,
+      },
+    );
 
     await this.ordersProducer.dishCrudUpdate({
       action: "DELETE",
