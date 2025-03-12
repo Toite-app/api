@@ -257,7 +257,13 @@ export class OrderDishesService {
       throw new BadRequestException("errors.order-dishes.is-removed");
     }
 
-    if (orderDish.status !== "pending" && orderDish.status !== "cooking") {
+    if (orderDish.status === "cooking") {
+      throw new BadRequestException(
+        "errors.order-dishes.cant-update-cooking-dish",
+      );
+    }
+
+    if (orderDish.status !== "pending") {
       throw new BadRequestException(
         "errors.order-dishes.cant-update-ready-dish",
       );
