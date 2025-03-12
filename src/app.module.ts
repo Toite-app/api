@@ -35,6 +35,7 @@ import { OrdersModule } from "src/orders/orders.module";
 import { PaymentMethodsModule } from "src/payment-methods/payment-methods.module";
 import { RestaurantGuard } from "src/restaurants/@/guards/restaurant.guard";
 import { TimezonesModule } from "src/timezones/timezones.module";
+import { WorkshiftsModule } from "src/workshifts/workshifts.module";
 
 import { DrizzleModule } from "./@base/drizzle/drizzle.module";
 import { AuthModule } from "./auth/auth.module";
@@ -104,6 +105,7 @@ import { WorkersModule } from "./workers/workers.module";
     SocketModule,
     PaymentMethodsModule,
     DiscountsModule,
+    WorkshiftsModule,
   ],
   providers: [
     {
