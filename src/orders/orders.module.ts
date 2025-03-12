@@ -7,6 +7,7 @@ import { OrderDishesController } from "src/orders/@/order-dishes.controller";
 import { OrderMenuController } from "src/orders/@/order-menu.controller";
 import { OrdersController } from "src/orders/@/orders.controller";
 import { OrderDishesRepository } from "src/orders/@/repositories/order-dishes.repository";
+import { OrdersRepository } from "src/orders/@/repositories/orders.repository";
 import { OrderActionsService } from "src/orders/@/services/order-actions.service";
 import { OrderDishesService } from "src/orders/@/services/order-dishes.service";
 import { OrderMenuService } from "src/orders/@/services/order-menu.service";
@@ -22,6 +23,7 @@ import { KitchenerOrdersService } from "src/orders/kitchener/kitchener-orders.se
 @Module({
   imports: [DrizzleModule, GuestsModule, OrdersQueueModule, SnapshotsModule],
   providers: [
+    OrdersRepository,
     OrderDishesRepository,
     OrdersService,
     DispatcherOrdersService,
@@ -40,6 +42,11 @@ import { KitchenerOrdersService } from "src/orders/kitchener/kitchener-orders.se
     KitchenerOrdersController,
     OrderActionsController,
   ],
-  exports: [OrdersService, OrderDishesService, OrderDishesRepository],
+  exports: [
+    OrdersService,
+    OrderDishesService,
+    OrdersRepository,
+    OrderDishesRepository,
+  ],
 })
 export class OrdersModule {}

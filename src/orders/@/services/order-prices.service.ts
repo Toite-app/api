@@ -1,9 +1,8 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
 import { DrizzleTransaction, Schema } from "@postgress-db/drizzle.module";
-import { orders } from "@postgress-db/schema/orders";
-import { eq } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { PG_CONNECTION } from "src/constants";
+import { OrdersRepository } from "src/orders/@/repositories/orders.repository";
 
 @Injectable()
 export class OrderPricesService {
@@ -12,6 +11,7 @@ export class OrderPricesService {
   constructor(
     @Inject(PG_CONNECTION)
     private readonly pg: NodePgDatabase<Schema>,
+    private readonly repository: OrdersRepository,
   ) {}
 
   public async calculateOrderTotals(
@@ -54,14 +54,17 @@ export class OrderPricesService {
       { subtotal: 0, surchargeAmount: 0, discountAmount: 0, total: 0 },
     );
 
-    await tx
-      .update(orders)
-      .set({
+    await this.repository.update(
+      orderId,
+      {
         subtotal: prices.subtotal.toString(),
         surchargeAmount: prices.surchargeAmount.toString(),
         discountAmount: prices.discountAmount.toString(),
         total: prices.total.toString(),
-      })
-      .where(eq(orders.id, orderId));
+      },
+      {
+        tx: opts?.tx,
+      },
+    );
   }
 }
