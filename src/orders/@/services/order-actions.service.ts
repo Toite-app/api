@@ -4,11 +4,11 @@ import { RequestWorker } from "@core/interfaces/request";
 import { Inject, Injectable } from "@nestjs/common";
 import { Schema } from "@postgress-db/drizzle.module";
 import { orderDishes } from "@postgress-db/schema/order-dishes";
-import { orders } from "@postgress-db/schema/orders";
-import { eq, inArray } from "drizzle-orm";
+import { inArray } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { PG_CONNECTION } from "src/constants";
 import { OrderAvailableActionsEntity } from "src/orders/@/entities/order-available-actions.entity";
+import { OrdersRepository } from "src/orders/@/repositories/orders.repository";
 import { OrdersQueueProducer } from "src/orders/@queue/orders-queue.producer";
 
 @Injectable()
@@ -17,6 +17,7 @@ export class OrderActionsService {
     @Inject(PG_CONNECTION)
     private readonly pg: NodePgDatabase<Schema>,
     private readonly ordersProducer: OrdersQueueProducer,
+    private readonly repository: OrdersRepository,
   ) {}
 
   public async getAvailableActions(
@@ -120,14 +121,17 @@ export class OrderActionsService {
         );
 
       // Set cooking status for order
-      await tx
-        .update(orders)
-        .set({
+      await this.repository.update(
+        orderId,
+        {
           status: "cooking",
           cookingAt:
             order && order.cookingAt ? new Date(order.cookingAt) : new Date(),
-        })
-        .where(eq(orders.id, orderId));
+        },
+        {
+          workerId: opts?.worker?.id,
+        },
+      );
     });
   }
 }

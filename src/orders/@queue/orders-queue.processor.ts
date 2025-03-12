@@ -24,7 +24,6 @@ export class OrdersQueueProcessor extends WorkerHost {
     @Inject(PG_CONNECTION)
     private readonly pg: NodePgDatabase<Schema>,
     private readonly ordersSocketNotifier: OrdersSocketNotifier,
-    private readonly snapshotsProducer: SnapshotsProducer,
   ) {
     super();
   }
@@ -74,17 +73,6 @@ export class OrdersQueueProcessor extends WorkerHost {
   }
 
   private async crudUpdate(data: OrderCrudUpdateJobDto) {
-    // make snapshot
-    await this.snapshotsProducer.create({
-      model: "ORDERS",
-      action: data.action,
-      data: plainToClass(OrderSnapshotEntity, data.order, {
-        excludeExtraneousValues: true,
-      }),
-      documentId: data.orderId,
-      workerId: data.calledByWorkerId,
-    });
-
     // notify users
     await this.ordersSocketNotifier.handle(data.order);
   }

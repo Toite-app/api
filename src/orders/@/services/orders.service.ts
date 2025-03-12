@@ -5,7 +5,7 @@ import { Inject, Injectable } from "@nestjs/common";
 import { DrizzleUtils } from "@postgress-db/drizzle-utils";
 import { Schema } from "@postgress-db/drizzle.module";
 import { orderNumberBroneering, orders } from "@postgress-db/schema/orders";
-import { count, desc, eq, sql } from "drizzle-orm";
+import { count, desc, sql } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { PG_CONNECTION } from "src/constants";
 import { GuestsService } from "src/guests/guests.service";
@@ -13,6 +13,7 @@ import { CreateOrderDto } from "src/orders/@/dtos/create-order.dto";
 import { UpdateOrderDto } from "src/orders/@/dtos/update-order.dto";
 import { OrderDishModifierEntity } from "src/orders/@/entities/order-dish-modifier.entity";
 import { OrderEntity } from "src/orders/@/entities/order.entity";
+import { OrdersRepository } from "src/orders/@/repositories/orders.repository";
 import { OrdersQueueProducer } from "src/orders/@queue/orders-queue.producer";
 
 @Injectable()
@@ -22,6 +23,7 @@ export class OrdersService {
     private readonly pg: NodePgDatabase<Schema>,
     private readonly guestsService: GuestsService,
     private readonly ordersQueueProducer: OrdersQueueProducer,
+    private readonly repository: OrdersRepository,
   ) {}
 
   private async generateOrderNumber() {
@@ -184,9 +186,8 @@ export class OrdersService {
     const number = await this.generateOrderNumber();
     const guest = await this.guestsService.findByPhoneNumber(guestPhone);
 
-    const [createdOrder] = await this.pg
-      .insert(orders)
-      .values({
+    const createdOrder = await this.repository.create(
+      {
         number,
         tableNumber,
         type,
@@ -203,10 +204,11 @@ export class OrdersService {
         guestId: guest?.id,
         guestName: guestName ?? guest?.name,
         guestPhone,
-      })
-      .returning({
-        id: orders.id,
-      });
+      },
+      {
+        workerId: opts?.workerId,
+      },
+    );
 
     const order = await this.findById(createdOrder.id);
 
@@ -263,9 +265,9 @@ export class OrdersService {
       guestName = guest.name;
     }
 
-    const [updatedOrder] = await this.pg
-      .update(orders)
-      .set({
+    const updatedOrder = await this.repository.update(
+      id,
+      {
         ...(tableNumber ? { tableNumber } : {}),
         ...(restaurantId ? { restaurantId } : {}),
         ...(delayedTo ? { delayedTo: new Date(delayedTo) } : {}),
@@ -276,9 +278,11 @@ export class OrdersService {
         ...(guestsAmount ? { guestsAmount } : {}),
         ...(type ? { type } : {}),
         ...(paymentMethodId ? { paymentMethodId } : {}),
-      })
-      .where(eq(orders.id, id))
-      .returning({ id: orders.id });
+      },
+      {
+        workerId: opts?.workerId,
+      },
+    );
 
     const updatedOrderEntity = await this.findById(updatedOrder.id);
 
