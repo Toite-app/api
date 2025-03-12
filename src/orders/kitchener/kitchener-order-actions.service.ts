@@ -4,10 +4,9 @@ import { NotFoundException } from "@core/errors/exceptions/not-found.exception";
 import { RequestWorker } from "@core/interfaces/request";
 import { Inject, Injectable } from "@nestjs/common";
 import { Schema } from "@postgress-db/drizzle.module";
-import { orderDishes } from "@postgress-db/schema/order-dishes";
-import { eq } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { PG_CONNECTION } from "src/constants";
+import { OrderDishesRepository } from "src/orders/@/repositories/order-dishes.repository";
 import { OrdersQueueProducer } from "src/orders/@queue/orders-queue.producer";
 
 @Injectable()
@@ -16,6 +15,7 @@ export class KitchenerOrderActionsService {
     @Inject(PG_CONNECTION)
     private readonly pg: NodePgDatabase<Schema>,
     private readonly ordersProducer: OrdersQueueProducer,
+    private readonly repository: OrderDishesRepository,
   ) {}
 
   public async markDishAsReady(
@@ -72,18 +72,16 @@ export class KitchenerOrderActionsService {
       );
     }
 
-    const updatedOrderDish = await this.pg.transaction(async (tx) => {
-      const [updatedOrderDish] = await tx
-        .update(orderDishes)
-        .set({
-          status: "ready",
-          readyAt: new Date(),
-        })
-        .where(eq(orderDishes.id, orderDishId))
-        .returning();
-
-      return updatedOrderDish;
-    });
+    const updatedOrderDish = await this.repository.update(
+      orderDishId,
+      {
+        status: "ready",
+        readyAt: new Date(),
+      },
+      {
+        workerId: opts?.worker?.id,
+      },
+    );
 
     await this.ordersProducer.dishCrudUpdate({
       action: "UPDATE",

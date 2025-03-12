@@ -8,6 +8,7 @@ import { inArray } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { PG_CONNECTION } from "src/constants";
 import { OrderAvailableActionsEntity } from "src/orders/@/entities/order-available-actions.entity";
+import { OrderDishesRepository } from "src/orders/@/repositories/order-dishes.repository";
 import { OrdersRepository } from "src/orders/@/repositories/orders.repository";
 import { OrdersQueueProducer } from "src/orders/@queue/orders-queue.producer";
 
@@ -18,6 +19,7 @@ export class OrderActionsService {
     private readonly pg: NodePgDatabase<Schema>,
     private readonly ordersProducer: OrdersQueueProducer,
     private readonly repository: OrdersRepository,
+    private readonly orderDishesRepository: OrderDishesRepository,
   ) {}
 
   public async getAvailableActions(
@@ -105,6 +107,7 @@ export class OrderActionsService {
 
     await this.pg.transaction(async (tx) => {
       // Set cooking status for dishes and isAdditional flag
+      // TODO: Implement order-dishes repository updateMany method
       await tx
         .update(orderDishes)
         .set({
