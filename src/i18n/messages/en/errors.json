@@ -95,7 +95,8 @@
     "is-removed": "You can't do anything with removed dish",
     "already-removed": "Dish already removed",
     "cant-force-not-cooking-dish": "You can't force ready not cooking dish",
-    "cant-update-ready-dish": "You can't update ready dish"
+    "cant-update-ready-dish": "You can't update ready dish",
+    "cant-force-ready-dish": "You can't force ready dish"
   },
   "order-dish-modifiers": {
     "some-dish-modifiers-not-found": "Some dish modifiers not found",
