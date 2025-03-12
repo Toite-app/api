@@ -33,7 +33,7 @@ export const dishesMenus = pgTable("dishes_menus", {
 export type IDishesMenu = typeof dishesMenus.$inferSelect;
 
 export const dishesMenusToRestaurants = pgTable(
-  "dishesMenusToRestaurants",
+  "dishes_menus_to_restaurants",
   {
     restaurantId: uuid("restaurant_id").notNull(),
     dishesMenuId: uuid("dishes_menu_id").notNull(),

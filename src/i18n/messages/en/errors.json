@@ -96,7 +96,11 @@
     "already-removed": "Dish already removed",
     "cant-force-not-cooking-dish": "You can't force ready not cooking dish",
     "cant-update-ready-dish": "You can't update ready dish",
-    "cant-force-ready-dish": "You can't force ready dish"
+    "cant-force-ready-dish": "You can't force ready dish",
+    "not-enough-rights-to-make-returnment": "You don't have rights to make returnment",
+    "cant-make-returnment-for-not-completed-or-ready-dish": "You can't make returnment for not completed or ready dish",
+    "cant-make-returnment-for-more-than-added": "You can't make returnment for more than added",
+    "cant-make-returnment-for-dish-with-zero-quantity": "You can't make returnment for dish with zero quantity"
   },
   "order-dish-modifiers": {
     "some-dish-modifiers-not-found": "Some dish modifiers not found",

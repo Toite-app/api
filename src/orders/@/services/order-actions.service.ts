@@ -1,12 +1,17 @@
 import { BadRequestException } from "@core/errors/exceptions/bad-request.exception";
+import { ForbiddenException } from "@core/errors/exceptions/forbidden.exception";
 import { NotFoundException } from "@core/errors/exceptions/not-found.exception";
 import { RequestWorker } from "@core/interfaces/request";
 import { Inject, Injectable } from "@nestjs/common";
 import { Schema } from "@postgress-db/drizzle.module";
-import { orderDishes } from "@postgress-db/schema/order-dishes";
+import {
+  orderDishes,
+  orderDishesReturnments,
+} from "@postgress-db/schema/order-dishes";
 import { inArray } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { PG_CONNECTION } from "src/constants";
+import { CreateOrderDishReturnmentDto } from "src/orders/@/dtos/create-order-dish-returnment.dto";
 import { OrderAvailableActionsEntity } from "src/orders/@/entities/order-available-actions.entity";
 import { OrderDishesRepository } from "src/orders/@/repositories/order-dishes.repository";
 import { OrdersRepository } from "src/orders/@/repositories/orders.repository";
@@ -135,6 +140,115 @@ export class OrderActionsService {
           workerId: opts?.worker?.id,
         },
       );
+    });
+  }
+
+  public async makeOrderDishReturnment(
+    orderDishId: string,
+    payload: CreateOrderDishReturnmentDto,
+    opts: { worker: RequestWorker },
+  ) {
+    const orderDish = await this.pg.query.orderDishes.findFirst({
+      where: (orderDishes, { eq, and }) =>
+        and(eq(orderDishes.id, orderDishId), eq(orderDishes.isRemoved, false)),
+      columns: {
+        status: true,
+        quantity: true,
+        quantityReturned: true,
+      },
+      with: {
+        order: {
+          columns: {
+            restaurantId: true,
+          },
+        },
+      },
+    });
+
+    if (!orderDish || !orderDish.order) {
+      throw new NotFoundException();
+    }
+
+    if (
+      opts.worker.role === "SYSTEM_ADMIN" ||
+      opts.worker.role === "CHIEF_ADMIN"
+    ) {
+    }
+    // Owner role handling
+    else if (opts.worker.role === "OWNER") {
+      if (
+        !opts.worker.ownedRestaurants.some(
+          (r) => r.id === orderDish.order.restaurantId,
+        )
+      ) {
+        throw new ForbiddenException(
+          "errors.order-actions.not-enough-rights-to-make-returnment",
+        );
+      }
+    }
+    // Assigned admins or cashiers
+    else if (opts.worker.role === "ADMIN" || opts.worker.role === "CASHIER") {
+      if (
+        !opts.worker.workersToRestaurants.some(
+          (w) => w.restaurantId === orderDish.order.restaurantId,
+        )
+      ) {
+        throw new ForbiddenException(
+          "errors.order-actions.not-enough-rights-to-make-returnment",
+        );
+      }
+    }
+    // Other roles
+    else {
+      throw new ForbiddenException(
+        "errors.order-actions.not-enough-rights-to-make-returnment",
+      );
+    }
+
+    if (orderDish.status !== "completed" && orderDish.status !== "ready") {
+      throw new BadRequestException(
+        "errors.order-dishes.cant-make-returnment-for-not-completed-or-ready-dish",
+      );
+    }
+
+    if (orderDish.quantity === 0) {
+      throw new BadRequestException(
+        "errors.order-dishes.cant-make-returnment-for-dish-with-zero-quantity",
+      );
+    }
+
+    if (payload.quantity > orderDish.quantity) {
+      throw new BadRequestException(
+        "errors.order-  dishes.cant-make-returnment-for-more-than-added",
+      );
+    }
+
+    const quantity = orderDish.quantity - payload.quantity;
+    const quantityReturned = orderDish.quantityReturned + payload.quantity;
+
+    await this.pg.transaction(async (tx) => {
+      // Update order dish
+      await this.orderDishesRepository.update(
+        orderDishId,
+        {
+          quantity,
+          quantityReturned,
+        },
+        {
+          tx,
+          workerId: opts.worker.id,
+        },
+      );
+
+      // Create returnment
+      await this.pg.insert(orderDishesReturnments).values({
+        orderDishId,
+        quantity: payload.quantity,
+        reason: payload.reason,
+        workerId: opts.worker.id,
+        // TODO: Implement isDoneAfterPrecheck flag
+        isDoneAfterPrecheck: false,
+      });
     });
   }
 }

@@ -97,11 +97,19 @@ export const workerRelations = relations(workers, ({ many }) => ({
   deliveries: many(orderDeliveries),
   ownedRestaurants: many(restaurants),
   ownedDishesMenus: many(dishesMenus),
-  workshiftsOpened: many(workshifts),
-  workshiftsClosed: many(workshifts),
+  workshiftsOpened: many(workshifts, {
+    relationName: "workshiftsOpened",
+  }),
+  workshiftsClosed: many(workshifts, {
+    relationName: "workshiftsClosed",
+  }),
   workersToWorkshifts: many(workersToWorkshifts),
-  workshiftPayments: many(workshiftPayments),
-  removedWorkshiftPayments: many(workshiftPayments),
+  workshiftPayments: many(workshiftPayments, {
+    relationName: "workshiftPaymentsWorker",
+  }),
+  removedWorkshiftPayments: many(workshiftPayments, {
+    relationName: "workshiftPaymentsRemovedByWorker",
+  }),
   orderDishesReturnments: many(orderDishesReturnments),
 }));
 

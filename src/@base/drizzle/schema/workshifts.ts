@@ -55,10 +55,12 @@ export const workshiftsRelations = relations(workshifts, ({ one, many }) => ({
   openedByWorker: one(workers, {
     fields: [workshifts.openedByWorkerId],
     references: [workers.id],
+    relationName: "workshiftsOpened",
   }),
   closedByWorker: one(workers, {
     fields: [workshifts.closedByWorkerId],
     references: [workers.id],
+    relationName: "workshiftsClosed",
   }),
   workersToWorkshifts: many(workersToWorkshifts),
   payments: many(workshiftPayments),

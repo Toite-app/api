@@ -104,6 +104,11 @@ export const orderDishesReturnments = pgTable("order_dishes_returnments", {
   // Reason //
   reason: text("reason").notNull(),
 
+  // Flags //
+  isDoneAfterPrecheck: boolean("is_done_after_precheck")
+    .notNull()
+    .default(false),
+
   // Timestamps //
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
