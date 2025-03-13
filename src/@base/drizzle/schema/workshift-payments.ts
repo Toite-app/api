@@ -1,18 +1,28 @@
 import { currencyEnum } from "@postgress-db/schema/general";
 import { workers } from "@postgress-db/schema/workers";
+import { workshiftPaymentCategories } from "@postgress-db/schema/workshift-payment-category";
 import { workshifts } from "@postgress-db/schema/workshifts";
 import { relations } from "drizzle-orm";
 import {
   boolean,
   decimal,
+  pgEnum,
   pgTable,
   text,
   timestamp,
   uuid,
 } from "drizzle-orm/pg-core";
 
+export const workshiftPaymentTypeEnum = pgEnum("workshift_payment_type", [
+  "INCOME",
+  "EXPENSE",
+  "CASHLESS",
+]);
+
 export const workshiftPayments = pgTable("workshift_payments", {
   id: uuid("id").defaultRandom().primaryKey(),
+  categoryId: uuid("category_id").notNull(),
+  type: workshiftPaymentTypeEnum("type").notNull(),
 
   // Fields //
   note: text("note"),
@@ -40,6 +50,10 @@ export type IWorkshiftPayment = typeof workshiftPayments.$inferSelect;
 export const workshiftPaymentRelations = relations(
   workshiftPayments,
   ({ one }) => ({
+    category: one(workshiftPaymentCategories, {
+      fields: [workshiftPayments.categoryId],
+      references: [workshiftPaymentCategories.id],
+    }),
     workshift: one(workshifts, {
       fields: [workshiftPayments.workshiftId],
       references: [workshifts.id],

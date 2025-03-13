@@ -5,6 +5,7 @@ import { dishesMenusToRestaurants } from "@postgress-db/schema/dishes-menus";
 import { orders } from "@postgress-db/schema/orders";
 import { paymentMethods } from "@postgress-db/schema/payment-methods";
 import { restaurantWorkshops } from "@postgress-db/schema/restaurant-workshop";
+import { workshiftPaymentCategories } from "@postgress-db/schema/workshift-payment-category";
 import { workshifts } from "@postgress-db/schema/workshifts";
 import { relations } from "drizzle-orm";
 import {
@@ -94,6 +95,7 @@ export const restaurantRelations = relations(restaurants, ({ one, many }) => ({
   discountsToRestaurants: many(discountsToRestaurants),
   dishesMenusToRestaurants: many(dishesMenusToRestaurants),
   workshifts: many(workshifts),
+  workshiftPaymentCategories: many(workshiftPaymentCategories),
 }));
 
 export const restaurantHourRelations = relations(
