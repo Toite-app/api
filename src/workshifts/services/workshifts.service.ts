@@ -103,6 +103,20 @@ export class WorkshiftsService {
             name: true,
           },
         },
+        openedByWorker: {
+          columns: {
+            id: true,
+            name: true,
+            role: true,
+          },
+        },
+        closedByWorker: {
+          columns: {
+            id: true,
+            name: true,
+            role: true,
+          },
+        },
       },
     });
 
@@ -136,6 +150,20 @@ export class WorkshiftsService {
             name: true,
           },
         },
+        openedByWorker: {
+          columns: {
+            id: true,
+            name: true,
+            role: true,
+          },
+        },
+        closedByWorker: {
+          columns: {
+            id: true,
+            name: true,
+            role: true,
+          },
+        },
       },
       orderBy: [desc(workshifts.createdAt)],
       limit: pagination?.size ?? PAGINATION_DEFAULT_LIMIT,
@@ -143,6 +171,32 @@ export class WorkshiftsService {
     });
 
     return result;
+  }
+
+  /**
+   * Checks if the worker has enough rights to perform the action
+   * @param worker - Worker who is performing the action
+   * @param restaurantId - Id of the restaurant
+   */
+  private _checkRights(worker: RequestWorker, restaurantId: string) {
+    if (worker.role === "SYSTEM_ADMIN" || worker.role === "CHIEF_ADMIN") {
+    } else if (worker.role === "OWNER") {
+      // Check if worker owns the restaurant
+      if (!worker.ownedRestaurants.some((r) => r.id === restaurantId)) {
+        throw new ForbiddenException("errors.workshifts.not-enough-rights");
+      }
+    } else if (worker.role === "ADMIN" || worker.role === "CASHIER") {
+      // Check if worker is assigned to the restaurant
+      if (
+        !worker.workersToRestaurants.some(
+          (r) => r.restaurantId === restaurantId,
+        )
+      ) {
+        throw new ForbiddenException("errors.workshifts.not-enough-rights");
+      }
+    } else {
+      throw new ForbiddenException("errors.workshifts.not-enough-rights");
+    }
   }
 
   /**
@@ -173,22 +227,8 @@ export class WorkshiftsService {
       throw new NotFoundException("errors.workshifts.restaurant-not-available");
     }
 
-    if (worker.role === "SYSTEM_ADMIN" || worker.role === "CHIEF_ADMIN") {
-    } else if (worker.role === "OWNER") {
-      // Check if worker owns the restaurant
-      if (!worker.ownedRestaurants.some((r) => r.id === restaurantId)) {
-        throw new ForbiddenException("errors.workshifts.not-enough-rights");
-      }
-    } else if (worker.role === "ADMIN" || worker.role === "CASHIER") {
-      // Check if worker is assigned to the restaurant
-      if (
-        !worker.workersToRestaurants.some(
-          (r) => r.restaurantId === restaurantId,
-        )
-      ) {
-        throw new ForbiddenException("errors.workshifts.not-enough-rights");
-      }
-    }
+    // Check if worker has enough rights to create workshift for this restaurant
+    this._checkRights(worker, restaurantId);
 
     const [prevWorkshift] = await this.pg.query.workshifts.findMany({
       where: (_, { and, eq }) => and(eq(workshifts.restaurantId, restaurantId)),
@@ -212,12 +252,54 @@ export class WorkshiftsService {
         status: "OPENED",
         restaurantId,
         openedByWorkerId: worker.id,
+        openedAt: new Date(),
       })
       .returning({
         id: workshifts.id,
       });
 
     return (await this.findOne(createdWorkshift.id, {
+      worker,
+    })) as WorkshiftEntity;
+  }
+
+  public async close(
+    workshiftId: string,
+    opts: { worker: RequestWorker },
+  ): Promise<WorkshiftEntity> {
+    const { worker } = opts;
+
+    const workshift = await this.pg.query.workshifts.findFirst({
+      where: (workshifts, { and, eq }) => and(eq(workshifts.id, workshiftId)),
+      columns: {
+        status: true,
+        restaurantId: true,
+      },
+    });
+
+    if (!workshift) {
+      throw new NotFoundException();
+    }
+
+    // Check if worker has enough rights to create workshift for this restaurant
+    this._checkRights(worker, workshift.restaurantId);
+
+    if (workshift.status === "CLOSED") {
+      throw new BadRequestException(
+        "errors.workshifts.workshift-already-closed",
+      );
+    }
+
+    await this.pg
+      .update(workshifts)
+      .set({
+        status: "CLOSED",
+        closedByWorkerId: worker.id,
+        closedAt: new Date(),
+      })
+      .where(eq(workshifts.id, workshiftId));
+
+    return (await this.findOne(workshiftId, {
       worker,
     })) as WorkshiftEntity;
   }
