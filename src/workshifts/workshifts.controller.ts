@@ -6,8 +6,8 @@ import {
 import { Serializable } from "@core/decorators/serializable.decorator";
 import { Worker } from "@core/decorators/worker.decorator";
 import { RequestWorker } from "@core/interfaces/request";
-import { Body, Get, Param, Post } from "@nestjs/common";
-import { ApiOkResponse, ApiOperation } from "@nestjs/swagger";
+import { Body, Get, Param, Post, Query } from "@nestjs/common";
+import { ApiOkResponse, ApiOperation, ApiQuery } from "@nestjs/swagger";
 import { EnableAuditLog } from "src/@base/audit-logs/decorators/audit-logs.decorator";
 import { CreateWorkshiftDto } from "src/workshifts/dto/create-workshift.dto";
 import { WorkshiftEntity } from "src/workshifts/entity/workshift.entity";
@@ -26,17 +26,30 @@ export class WorkshiftsController {
     description: "Workshifts fetched successfully",
     type: WorkshiftsPaginatedEntity,
   })
+  @ApiQuery({
+    name: "restaurantId",
+    type: String,
+    required: false,
+  })
   async getWorkshifts(
     @PaginationParams() pagination: IPagination,
     @Worker() worker: RequestWorker,
+    @Query("restaurantId") _restaurantId?: string,
   ): Promise<WorkshiftsPaginatedEntity> {
+    const restaurantId =
+      _restaurantId && _restaurantId !== "null" && _restaurantId !== "undefined"
+        ? _restaurantId
+        : undefined;
+
     const total = await this.workshiftsService.getTotalCount({
       worker,
+      restaurantId,
     });
 
     const data = await this.workshiftsService.findMany({
       worker,
       pagination,
+      restaurantId,
     });
 
     return {

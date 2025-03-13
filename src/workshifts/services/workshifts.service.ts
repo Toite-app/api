@@ -55,10 +55,15 @@ export class WorkshiftsService {
 
   public async getTotalCount(options: {
     worker: RequestWorker;
+    restaurantId?: string;
   }): Promise<number> {
-    const { worker } = options;
+    const { worker, restaurantId } = options;
 
     const conditions: SQL[] = [...this._buildWorkerWhere(worker)];
+
+    if (restaurantId) {
+      conditions.push(eq(workshifts.restaurantId, restaurantId));
+    }
 
     const query = this.pg
       .select({
@@ -133,13 +138,18 @@ export class WorkshiftsService {
   public async findMany(options: {
     worker: RequestWorker;
     pagination?: IPagination;
+    restaurantId?: string;
   }): Promise<WorkshiftEntity[]> {
-    const { worker, pagination } = options;
+    const { worker, pagination, restaurantId } = options;
 
     const conditions: SQL[] = [
       // Worker
       ...this._buildWorkerWhere(worker),
     ];
+
+    if (restaurantId) {
+      conditions.push(eq(workshifts.restaurantId, restaurantId));
+    }
 
     const result = await this.pg.query.workshifts.findMany({
       where: (_, { and }) => and(...conditions),
