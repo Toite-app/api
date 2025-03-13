@@ -13,6 +13,12 @@ export class WorkshiftRestaurantEntity extends PickType(RestaurantEntity, [
   "name",
 ]) {}
 
+export class WorkshiftWorkerEntity extends PickType(WorkerEntity, [
+  "id",
+  "name",
+  "role",
+]) {}
+
 export class WorkshiftEntity implements IWorkshift {
   @IsUUID()
   @Expose()
@@ -101,20 +107,20 @@ export class WorkshiftEntity implements IWorkshift {
   closedAt: Date | null;
 
   @Expose()
-  @Type(() => WorkerEntity)
+  @Type(() => WorkshiftWorkerEntity)
   @ApiPropertyOptional({
     description: "Worker who opened the workshift",
-    type: WorkerEntity,
+    type: WorkshiftWorkerEntity,
   })
-  openedByWorker?: WorkerEntity;
+  openedByWorker?: WorkshiftWorkerEntity | null;
 
   @Expose()
-  @Type(() => WorkerEntity)
+  @Type(() => WorkshiftWorkerEntity)
   @ApiPropertyOptional({
     description: "Worker who closed the workshift",
-    type: WorkerEntity,
+    type: WorkshiftWorkerEntity,
   })
-  closedByWorker?: WorkerEntity;
+  closedByWorker?: WorkshiftWorkerEntity | null;
 
   @Expose()
   @Type(() => WorkerEntity)

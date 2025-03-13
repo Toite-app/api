@@ -6,7 +6,7 @@ import {
 import { Serializable } from "@core/decorators/serializable.decorator";
 import { Worker } from "@core/decorators/worker.decorator";
 import { RequestWorker } from "@core/interfaces/request";
-import { Body, Get, Post } from "@nestjs/common";
+import { Body, Get, Param, Post } from "@nestjs/common";
 import { ApiOkResponse, ApiOperation } from "@nestjs/swagger";
 import { EnableAuditLog } from "src/@base/audit-logs/decorators/audit-logs.decorator";
 import { CreateWorkshiftDto } from "src/workshifts/dto/create-workshift.dto";
@@ -61,6 +61,23 @@ export class WorkshiftsController {
     @Worker() worker: RequestWorker,
   ): Promise<WorkshiftEntity> {
     return await this.workshiftsService.create(payload, {
+      worker,
+    });
+  }
+
+  @EnableAuditLog()
+  @Post(":workshiftId/close")
+  @Serializable(WorkshiftEntity)
+  @ApiOperation({ summary: "Close workshift" })
+  @ApiOkResponse({
+    description: "Workshift closed successfully",
+    type: WorkshiftEntity,
+  })
+  async closeWorkshift(
+    @Param("workshiftId") workshiftId: string,
+    @Worker() worker: RequestWorker,
+  ) {
+    return await this.workshiftsService.close(workshiftId, {
       worker,
     });
   }
