@@ -15,6 +15,8 @@ import { PG_CONNECTION } from "src/constants";
 import { CreateWorkshiftDto } from "src/workshifts/dto/create-workshift.dto";
 import { WorkshiftEntity } from "src/workshifts/entity/workshift.entity";
 
+import { WorkshiftNavigationEntity } from "../entity/workshift-navigation.entity";
+
 @Injectable()
 export class WorkshiftsService {
   constructor(
@@ -175,7 +177,7 @@ export class WorkshiftsService {
           },
         },
       },
-      orderBy: [desc(workshifts.createdAt)],
+      orderBy: [desc(workshifts.createdAt), desc(workshifts.id)],
       limit: pagination?.size ?? PAGINATION_DEFAULT_LIMIT,
       offset: pagination?.offset ?? 0,
     });
@@ -312,5 +314,67 @@ export class WorkshiftsService {
     return (await this.findOne(workshiftId, {
       worker,
     })) as WorkshiftEntity;
+  }
+
+  /**
+   * Gets the next and previous workshift IDs for a given workshift
+   * @param workshiftId - ID of the current workshift
+   * @param options - Options for finding navigation
+   * @param options.worker - Worker who is requesting the navigation
+   * @returns Object containing next and previous workshift IDs
+   */
+  public async getNavigation(
+    workshiftId: string,
+    options: {
+      worker: RequestWorker;
+    },
+  ): Promise<WorkshiftNavigationEntity> {
+    const { worker } = options;
+
+    const currentWorkshift = await this.findOne(workshiftId, { worker });
+
+    if (!currentWorkshift) {
+      throw new NotFoundException();
+    }
+
+    const conditions = [
+      ...this._buildWorkerWhere(worker),
+      eq(workshifts.restaurantId, currentWorkshift.restaurantId),
+    ];
+
+    // Get previous workshift
+    const [prevWorkshift] = await this.pg.query.workshifts.findMany({
+      where: (workshifts, { and, lt }) =>
+        and(
+          ...conditions,
+          lt(workshifts.createdAt, currentWorkshift.createdAt),
+          lt(workshifts.id, currentWorkshift.id),
+        ),
+      columns: {
+        id: true,
+      },
+      orderBy: [desc(workshifts.createdAt)],
+      limit: 1,
+    });
+
+    // Get next workshift
+    const [nextWorkshift] = await this.pg.query.workshifts.findMany({
+      where: (workshifts, { and, gt }) =>
+        and(
+          ...conditions,
+          gt(workshifts.createdAt, currentWorkshift.createdAt),
+          gt(workshifts.id, currentWorkshift.id),
+        ),
+      columns: {
+        id: true,
+      },
+      orderBy: [workshifts.createdAt],
+      limit: 1,
+    });
+
+    return {
+      prevId: prevWorkshift?.id ?? null,
+      nextId: nextWorkshift?.id ?? null,
+    };
   }
 }
