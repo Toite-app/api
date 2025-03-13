@@ -129,5 +129,10 @@
   },
   "order-menu": {
     "order-doesnt-have-restaurant": "Order doesn't have restaurant"
+  },
+  "workshifts": {
+    "restaurant-not-available": "Restaurant not available",
+    "not-enough-rights": "You don't have enough rights to do this",
+    "close-previous-workshift": "You can't create new workshift because previous one is still opened"
   }
 }

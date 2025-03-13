@@ -2,14 +2,17 @@ import {
   IPagination,
   PAGINATION_DEFAULT_LIMIT,
 } from "@core/decorators/pagination.decorator";
+import { BadRequestException } from "@core/errors/exceptions/bad-request.exception";
 import { ForbiddenException } from "@core/errors/exceptions/forbidden.exception";
+import { NotFoundException } from "@core/errors/exceptions/not-found.exception";
 import { RequestWorker } from "@core/interfaces/request";
 import { Inject, Injectable } from "@nestjs/common";
 import { schema } from "@postgress-db/drizzle.module";
 import { workshifts } from "@postgress-db/schema/workshifts";
-import { and, count, desc, inArray, SQL } from "drizzle-orm";
+import { and, count, desc, eq, inArray, SQL } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { PG_CONNECTION } from "src/constants";
+import { CreateWorkshiftDto } from "src/workshifts/dto/create-workshift.dto";
 import { WorkshiftEntity } from "src/workshifts/entity/workshift.entity";
 
 @Injectable()
@@ -71,6 +74,42 @@ export class WorkshiftsService {
   }
 
   /**
+   * Finds a workshift by id
+   * @param options - Options for finding a workshift
+   * @param options.worker - Worker who is requesting the workshift
+   * @param options.id - Id of the workshift
+   * @returns The found workshift or null if not found
+   */
+  public async findOne(
+    id: string,
+    options: {
+      worker: RequestWorker;
+    },
+  ): Promise<WorkshiftEntity | null> {
+    const { worker } = options;
+
+    const conditions: SQL[] = [
+      // Worker
+      ...this._buildWorkerWhere(worker),
+      eq(workshifts.id, id),
+    ];
+
+    const result = await this.pg.query.workshifts.findFirst({
+      where: (_, { and }) => and(...conditions),
+      with: {
+        restaurant: {
+          columns: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+    });
+
+    return result ?? null;
+  }
+
+  /**
    * Finds all workshifts
    * @param options - Options for finding workshifts
    * @param options.worker - Worker who is requesting the workshifts
@@ -104,5 +143,82 @@ export class WorkshiftsService {
     });
 
     return result;
+  }
+
+  /**
+   * Creates a new workshift
+   * @param payload - The payload for creating a workshift
+   * @param opts - Options for creating a workshift
+   * @param opts.worker - Worker who is creating the workshift
+   * @returns The created workshift
+   */
+  public async create(
+    payload: CreateWorkshiftDto,
+    opts: { worker: RequestWorker },
+  ): Promise<WorkshiftEntity> {
+    const { restaurantId } = payload;
+    const { worker } = opts;
+
+    const restaurant = await this.pg.query.restaurants.findFirst({
+      where: (restaurants, { and, eq }) =>
+        and(
+          eq(restaurants.id, restaurantId),
+          // Check that restaurant is enabled and not closed forever
+          eq(restaurants.isEnabled, true),
+          eq(restaurants.isClosedForever, false),
+        ),
+    });
+
+    if (!restaurant) {
+      throw new NotFoundException("errors.workshifts.restaurant-not-available");
+    }
+
+    if (worker.role === "SYSTEM_ADMIN" || worker.role === "CHIEF_ADMIN") {
+    } else if (worker.role === "OWNER") {
+      // Check if worker owns the restaurant
+      if (!worker.ownedRestaurants.some((r) => r.id === restaurantId)) {
+        throw new ForbiddenException("errors.workshifts.not-enough-rights");
+      }
+    } else if (worker.role === "ADMIN" || worker.role === "CASHIER") {
+      // Check if worker is assigned to the restaurant
+      if (
+        !worker.workersToRestaurants.some(
+          (r) => r.restaurantId === restaurantId,
+        )
+      ) {
+        throw new ForbiddenException("errors.workshifts.not-enough-rights");
+      }
+    }
+
+    const [prevWorkshift] = await this.pg.query.workshifts.findMany({
+      where: (_, { and, eq }) => and(eq(workshifts.restaurantId, restaurantId)),
+      columns: {
+        status: true,
+      },
+      orderBy: [desc(workshifts.createdAt)],
+      limit: 1,
+    });
+
+    // Prev is opened, so we can't create new one
+    if (prevWorkshift && prevWorkshift.status === "OPENED") {
+      throw new BadRequestException(
+        "errors.workshifts.close-previous-workshift",
+      );
+    }
+
+    const [createdWorkshift] = await this.pg
+      .insert(workshifts)
+      .values({
+        status: "OPENED",
+        restaurantId,
+        openedByWorkerId: worker.id,
+      })
+      .returning({
+        id: workshifts.id,
+      });
+
+    return (await this.findOne(createdWorkshift.id, {
+      worker,
+    })) as WorkshiftEntity;
   }
 }

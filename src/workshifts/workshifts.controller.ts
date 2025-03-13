@@ -6,9 +6,11 @@ import {
 import { Serializable } from "@core/decorators/serializable.decorator";
 import { Worker } from "@core/decorators/worker.decorator";
 import { RequestWorker } from "@core/interfaces/request";
-import { Get } from "@nestjs/common";
+import { Body, Get, Post } from "@nestjs/common";
 import { ApiOkResponse, ApiOperation } from "@nestjs/swagger";
 import { EnableAuditLog } from "src/@base/audit-logs/decorators/audit-logs.decorator";
+import { CreateWorkshiftDto } from "src/workshifts/dto/create-workshift.dto";
+import { WorkshiftEntity } from "src/workshifts/entity/workshift.entity";
 import { WorkshiftsPaginatedEntity } from "src/workshifts/entity/workshifts-paginated.entity";
 import { WorkshiftsService } from "src/workshifts/services/workshifts.service";
 
@@ -44,5 +46,22 @@ export class WorkshiftsController {
         total,
       },
     };
+  }
+
+  @EnableAuditLog()
+  @Post()
+  @Serializable(WorkshiftEntity)
+  @ApiOperation({ summary: "Create workshift" })
+  @ApiOkResponse({
+    description: "Workshift created successfully",
+    type: WorkshiftEntity,
+  })
+  async createWorkshift(
+    @Body() payload: CreateWorkshiftDto,
+    @Worker() worker: RequestWorker,
+  ): Promise<WorkshiftEntity> {
+    return await this.workshiftsService.create(payload, {
+      worker,
+    });
   }
 }
