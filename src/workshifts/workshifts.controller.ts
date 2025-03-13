@@ -14,6 +14,8 @@ import { WorkshiftEntity } from "src/workshifts/entity/workshift.entity";
 import { WorkshiftsPaginatedEntity } from "src/workshifts/entity/workshifts-paginated.entity";
 import { WorkshiftsService } from "src/workshifts/services/workshifts.service";
 
+import { WorkshiftNavigationEntity } from "./entity/workshift-navigation.entity";
+
 @Controller("workshifts")
 export class WorkshiftsController {
   constructor(private readonly workshiftsService: WorkshiftsService) {}
@@ -91,6 +93,22 @@ export class WorkshiftsController {
     @Worker() worker: RequestWorker,
   ) {
     return await this.workshiftsService.close(workshiftId, {
+      worker,
+    });
+  }
+
+  @Get(":workshiftId/navigation")
+  @Serializable(WorkshiftNavigationEntity)
+  @ApiOperation({ summary: "Get next and previous workshift IDs" })
+  @ApiOkResponse({
+    description: "Navigation IDs fetched successfully",
+    type: WorkshiftNavigationEntity,
+  })
+  async getWorkshiftNavigation(
+    @Param("workshiftId") workshiftId: string,
+    @Worker() worker: RequestWorker,
+  ): Promise<WorkshiftNavigationEntity> {
+    return await this.workshiftsService.getNavigation(workshiftId, {
       worker,
     });
   }
