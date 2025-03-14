@@ -12,12 +12,17 @@ import {
   timestamp,
   uuid,
 } from "drizzle-orm/pg-core";
+import { z } from "zod";
 
 export const workshiftPaymentTypeEnum = pgEnum("workshift_payment_type", [
   "INCOME",
   "EXPENSE",
   "CASHLESS",
 ]);
+
+export const ZodWorkshiftPaymentType = z.enum(
+  workshiftPaymentTypeEnum.enumValues,
+);
 
 export const workshiftPayments = pgTable("workshift_payments", {
   id: uuid("id").defaultRandom().primaryKey(),
