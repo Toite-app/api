@@ -1,4 +1,5 @@
 import {
+  IsArray,
   IsBoolean,
   IsISO8601,
   IsOptional,
@@ -7,7 +8,7 @@ import {
 } from "@i18n-class-validator";
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { ZodWorkshiftPaymentType } from "@postgress-db/schema/workshift-payments";
-import { Expose } from "class-transformer";
+import { Expose, Type } from "class-transformer";
 
 export class WorkshiftPaymentCategoryEntity {
   @IsUUID()
@@ -84,6 +85,15 @@ export class WorkshiftPaymentCategoryEntity {
     example: false,
   })
   isRemoved: boolean;
+
+  @IsArray()
+  @Expose()
+  @Type(() => WorkshiftPaymentCategoryEntity)
+  @ApiProperty({
+    description: "Children categories",
+    type: [WorkshiftPaymentCategoryEntity],
+  })
+  childrens: WorkshiftPaymentCategoryEntity[];
 
   @IsISO8601()
   @Expose()

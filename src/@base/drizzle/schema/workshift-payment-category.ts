@@ -41,10 +41,13 @@ export const workshiftPaymentCategoryRelations = relations(
   workshiftPaymentCategories,
   ({ one, many }) => ({
     parent: one(workshiftPaymentCategories, {
+      relationName: "parentToChild",
       fields: [workshiftPaymentCategories.parentId],
       references: [workshiftPaymentCategories.id],
     }),
-    childrens: many(workshiftPaymentCategories),
+    childrens: many(workshiftPaymentCategories, {
+      relationName: "parentToChild",
+    }),
     restaurant: one(restaurants, {
       fields: [workshiftPaymentCategories.restaurantId],
       references: [restaurants.id],
