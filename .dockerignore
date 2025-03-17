@@ -1,0 +1,37 @@
+# Version control
+.git
+.gitignore
+.gitattributes
+
+# Dependencies
+node_modules
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+# Environment
+.env
+.env.*
+
+# Development
+.vscode
+.idea
+*.md
+test
+coverage
+.prettierrc
+jest.config.js
+
+# Build
+dist
+build
+
+# Docker
+Dockerfile
+.dockerignore
+
+# Misc
+.DS_Store
+*.log
+*.swp
+*.bak

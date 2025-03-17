@@ -2,12 +2,8 @@ import { Processor, WorkerHost } from "@nestjs/bullmq";
 import { Inject, Logger } from "@nestjs/common";
 import { Schema } from "@postgress-db/drizzle.module";
 import { Job } from "bullmq";
-import { plainToClass } from "class-transformer";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
-import { SnapshotsProducer } from "src/@base/snapshots/snapshots.producer";
 import { PG_CONNECTION } from "src/constants";
-import { OrderDishSnapshotEntity } from "src/orders/@/entities/order-dish-snapshot.entity";
-import { OrderSnapshotEntity } from "src/orders/@/entities/order-snapshot.entity";
 import { OrderQueueJobName, ORDERS_QUEUE } from "src/orders/@queue";
 import {
   OrderCrudUpdateJobDto,
