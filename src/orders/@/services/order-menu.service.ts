@@ -3,6 +3,7 @@ import { PAGINATION_DEFAULT_LIMIT } from "@core/decorators/pagination.decorator"
 import { BadRequestException } from "@core/errors/exceptions/bad-request.exception";
 import { NotFoundException } from "@core/errors/exceptions/not-found.exception";
 import { Inject, Injectable } from "@nestjs/common";
+import { schema } from "@postgress-db/drizzle.module";
 import { dishes, dishesToRestaurants } from "@postgress-db/schema/dishes";
 import { asc } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
@@ -11,7 +12,6 @@ import {
   OrderMenuDishEntity,
   OrderMenuDishOrderDishEntity,
 } from "src/orders/@/entities/order-menu-dish.entity";
-import { schema } from "test/helpers/database";
 
 @Injectable()
 export class OrderMenuService {
