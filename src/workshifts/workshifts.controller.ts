@@ -5,6 +5,7 @@ import {
 } from "@core/decorators/pagination.decorator";
 import { Serializable } from "@core/decorators/serializable.decorator";
 import { Worker } from "@core/decorators/worker.decorator";
+import { NotFoundException } from "@core/errors/exceptions/not-found.exception";
 import { RequestWorker } from "@core/interfaces/request";
 import { Body, Get, Param, Post, Query } from "@nestjs/common";
 import { ApiOkResponse, ApiOperation, ApiQuery } from "@nestjs/swagger";
@@ -61,6 +62,29 @@ export class WorkshiftsController {
         total,
       },
     };
+  }
+
+  @EnableAuditLog()
+  @Get(":workshiftId")
+  @Serializable(WorkshiftEntity)
+  @ApiOperation({ summary: "Get workshift by ID" })
+  @ApiOkResponse({
+    description: "Workshift fetched successfully",
+    type: WorkshiftEntity,
+  })
+  async getWorkshift(
+    @Param("workshiftId") workshiftId: string,
+    @Worker() worker: RequestWorker,
+  ): Promise<WorkshiftEntity> {
+    const workshift = await this.workshiftsService.findOne(workshiftId, {
+      worker,
+    });
+
+    if (!workshift) {
+      throw new NotFoundException();
+    }
+
+    return workshift;
   }
 
   @EnableAuditLog()
