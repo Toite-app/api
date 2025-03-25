@@ -75,9 +75,9 @@ export class WorkshiftPaymentsService {
   async findMany(options: {
     worker: RequestWorker;
     workshiftId: string;
-    type?: WorkshiftPaymentType;
+    types?: WorkshiftPaymentType[];
   }): Promise<WorkshiftPaymentEntity[]> {
-    const { worker, workshiftId, type } = options;
+    const { worker, workshiftId, types } = options;
 
     const workshift = await this.pg.query.workshifts.findFirst({
       where: (workshift, { eq }) => eq(workshift.id, workshiftId),
@@ -97,10 +97,10 @@ export class WorkshiftPaymentsService {
     await this._checkRights(workshift, worker);
 
     const payments = await this.pg.query.workshiftPayments.findMany({
-      where: (payment, { and, eq }) =>
+      where: (payment, { and, eq, inArray }) =>
         and(
           eq(payment.workshiftId, workshiftId),
-          type ? eq(payment.type, type) : undefined,
+          types ? inArray(payment.type, types) : undefined,
         ),
       with: {
         category: {

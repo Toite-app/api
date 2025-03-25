@@ -2,7 +2,7 @@ import { Controller } from "@core/decorators/controller.decorator";
 import { Serializable } from "@core/decorators/serializable.decorator";
 import { Worker } from "@core/decorators/worker.decorator";
 import { RequestWorker } from "@core/interfaces/request";
-import { StringValuePipe } from "@core/pipes/string.pipe";
+import { StringArrayPipe } from "@core/pipes/string-array.pipe";
 import { Body, Delete, Get, Param, Post, Query } from "@nestjs/common";
 import { ApiOkResponse, ApiOperation, ApiQuery } from "@nestjs/swagger";
 import { WorkshiftPaymentType } from "@postgress-db/schema/workshift-payments";
@@ -28,25 +28,31 @@ export class WorkshiftPaymentsController {
     type: [WorkshiftPaymentEntity],
   })
   @ApiQuery({
-    name: "type",
+    name: "types",
+    isArray: true,
     enum: WorkshiftPaymentType,
+    example: [
+      WorkshiftPaymentType.INCOME,
+      WorkshiftPaymentType.EXPENSE,
+      WorkshiftPaymentType.CASHLESS,
+    ],
     required: false,
   })
   async getWorkshiftPayments(
     @Param("workshiftId") workshiftId: string,
     @Worker() worker: RequestWorker,
     @Query(
-      "type",
-      new StringValuePipe({
+      "types",
+      new StringArrayPipe({
         allowedValues: Object.values(WorkshiftPaymentType),
       }),
     )
-    type?: WorkshiftPaymentType,
+    types?: WorkshiftPaymentType[],
   ) {
     return this.workshiftPaymentsService.findMany({
       worker,
       workshiftId,
-      type,
+      types,
     });
   }
 
