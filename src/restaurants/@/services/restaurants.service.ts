@@ -268,7 +268,8 @@ export class RestaurantsService {
       .set({
         ...rest,
         // Only system admins and chief admins can update restaurant owner
-        ...(worker.role === "SYSTEM_ADMIN" || worker.role === "CHIEF_ADMIN"
+        ...(ownerId &&
+        (worker.role === "SYSTEM_ADMIN" || worker.role === "CHIEF_ADMIN")
           ? { ownerId }
           : {}),
       })
