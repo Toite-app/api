@@ -4,7 +4,7 @@ import { RequestWorker } from "@core/interfaces/request";
 import { Inject, Injectable } from "@nestjs/common";
 import { schema } from "@postgress-db/drizzle.module";
 import { workshiftPaymentCategories } from "@postgress-db/schema/workshift-payment-category";
-import { eq } from "drizzle-orm";
+import { eq, or } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { PG_CONNECTION } from "src/constants";
 import { CreateWorkshiftPaymentCategoryDto } from "src/restaurants/workshift-payment-categories/dto/create-workshift-payment-category.dto";
@@ -131,7 +131,12 @@ export class RestaurantWorkshiftPaymentCategoriesService {
         isRemoved: true,
         removedAt: new Date(),
       })
-      .where(eq(workshiftPaymentCategories.id, categoryId))
+      .where(
+        or(
+          eq(workshiftPaymentCategories.id, categoryId),
+          eq(workshiftPaymentCategories.parentId, categoryId),
+        ),
+      )
       .returning();
 
     return removedCategory;
