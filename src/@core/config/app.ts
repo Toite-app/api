@@ -1,6 +1,6 @@
 import { HttpExceptionFilter } from "@core/errors/http-exception-filter";
 import { INestApplication } from "@nestjs/common";
-import * as cookieParser from "cookie-parser";
+import cookieParser from "cookie-parser";
 import { I18nValidationPipe } from "nestjs-i18n";
 
 export const configApp = (app: INestApplication) => {

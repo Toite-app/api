@@ -17,13 +17,21 @@ export class Snapshot {
   /**
    * The model that was changed
    */
-  @Prop({ required: true, enum: SnapshotModel })
+  @Prop({
+    type: String,
+    required: true,
+    enum: SnapshotModel,
+  })
   model: SnapshotModel;
 
   /**
    * The action that was taken
    */
-  @Prop({ required: true, enum: CrudAction })
+  @Prop({
+    type: String,
+    required: true,
+    enum: CrudAction,
+  })
   action: CrudAction;
 
   /**
