@@ -108,6 +108,20 @@ export class WorkshiftPaymentsService {
             parentId: true,
           },
         },
+        worker: {
+          columns: {
+            id: true,
+            name: true,
+            role: true,
+          },
+        },
+        removedByWorker: {
+          columns: {
+            id: true,
+            name: true,
+            role: true,
+          },
+        },
       },
     });
 

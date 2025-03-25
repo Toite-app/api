@@ -16,6 +16,13 @@ import {
 } from "@postgress-db/schema/workshift-payments";
 import { Expose, Type } from "class-transformer";
 import { WorkshiftPaymentCategoryEntity } from "src/restaurants/workshift-payment-categories/entity/workshift-payment-category.entity";
+import { WorkerEntity } from "src/workers/entities/worker.entity";
+
+export class WorkshiftPaymentWorkerEntity extends PickType(WorkerEntity, [
+  "id",
+  "name",
+  "role",
+]) {}
 
 export class WorkshiftPaymentIncludedCategoryParentEntity extends PickType(
   WorkshiftPaymentCategoryEntity,
@@ -115,6 +122,15 @@ export class WorkshiftPaymentEntity implements IWorkshiftPayment {
   })
   workerId: string | null;
 
+  @Expose()
+  @IsOptional()
+  @Type(() => WorkshiftPaymentWorkerEntity)
+  @ApiPropertyOptional({
+    description: "Worker who created the payment",
+    type: WorkshiftPaymentWorkerEntity,
+  })
+  worker: WorkshiftPaymentWorkerEntity | null;
+
   @IsOptional()
   @IsUUID()
   @Expose()
@@ -123,6 +139,15 @@ export class WorkshiftPaymentEntity implements IWorkshiftPayment {
     example: "d290f1ee-6c54-4b01-90e6-d701748f0851",
   })
   removedByWorkerId: string | null;
+
+  @Expose()
+  @IsOptional()
+  @Type(() => WorkshiftPaymentWorkerEntity)
+  @ApiPropertyOptional({
+    description: "Worker who removed the payment",
+    type: WorkshiftPaymentWorkerEntity,
+  })
+  removedByWorker: WorkshiftPaymentWorkerEntity | null;
 
   @IsBoolean()
   @Expose()
