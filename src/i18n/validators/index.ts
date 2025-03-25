@@ -17,6 +17,7 @@ import {
   IsStrongPassword as _IsStrongPassword,
   IsUUID as _IsUUID,
   Max as _Max,
+  MaxLength as _MaxLength,
   Min as _Min,
   MinLength as _MinLength,
   IsNumberOptions,
@@ -85,6 +86,11 @@ export const IsISO8601 = (validationOptions?: ValidationOptions) =>
 export const MinLength = (min: number, validationOptions?: ValidationOptions) =>
   applyDecorators(
     _MinLength(min, mergeI18nValidation("minLength", validationOptions)),
+  );
+
+export const MaxLength = (max: number, validationOptions?: ValidationOptions) =>
+  applyDecorators(
+    _MaxLength(max, mergeI18nValidation("maxLength", validationOptions)),
   );
 
 export const IsNumber = (

@@ -135,5 +135,11 @@
     "not-enough-rights": "You don't have enough rights to do this",
     "close-previous-workshift": "You can't create new workshift because previous one is still opened",
     "workshift-already-closed": "Workshift already closed"
+  },
+  "workshift-payments": {
+    "not-enough-rights": "You don't have enough rights to do this",
+    "workshift-not-found": "Workshift not found",
+    "workshift-already-closed": "Workshift already closed",
+    "payment-category-not-found": "Payment category not found"
   }
 }

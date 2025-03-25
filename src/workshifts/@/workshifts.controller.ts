@@ -10,10 +10,10 @@ import { RequestWorker } from "@core/interfaces/request";
 import { Body, Get, Param, Post, Query } from "@nestjs/common";
 import { ApiOkResponse, ApiOperation, ApiQuery } from "@nestjs/swagger";
 import { EnableAuditLog } from "src/@base/audit-logs/decorators/audit-logs.decorator";
-import { CreateWorkshiftDto } from "src/workshifts/dto/create-workshift.dto";
-import { WorkshiftEntity } from "src/workshifts/entity/workshift.entity";
-import { WorkshiftsPaginatedEntity } from "src/workshifts/entity/workshifts-paginated.entity";
-import { WorkshiftsService } from "src/workshifts/services/workshifts.service";
+import { CreateWorkshiftDto } from "src/workshifts/@/dto/create-workshift.dto";
+import { WorkshiftEntity } from "src/workshifts/@/entity/workshift.entity";
+import { WorkshiftsPaginatedEntity } from "src/workshifts/@/entity/workshifts-paginated.entity";
+import { WorkshiftsService } from "src/workshifts/@/services/workshifts.service";
 
 import { WorkshiftNavigationEntity } from "./entity/workshift-navigation.entity";
 
