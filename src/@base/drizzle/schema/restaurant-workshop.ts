@@ -24,8 +24,17 @@ export const restaurantWorkshops = pgTable("restaurant_workshops", {
   isEnabled: boolean("is_enabled").notNull().default(true),
 
   // Timestamps //
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  createdAt: timestamp("created_at", {
+    withTimezone: true,
+  })
+    .notNull()
+    .defaultNow(),
+  updatedAt: timestamp("updated_at", {
+    withTimezone: true,
+  })
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
 });
 
 export const restaurantWorkshopRelations = relations(
@@ -49,7 +58,11 @@ export const workshopWorkers = pgTable("workshop_workers", {
   workshopId: uuid("workshop_id")
     .notNull()
     .references(() => restaurantWorkshops.id),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
+  createdAt: timestamp("created_at", {
+    withTimezone: true,
+  })
+    .notNull()
+    .defaultNow(),
 });
 
 export const workshopWorkerRelations = relations(

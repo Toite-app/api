@@ -54,8 +54,17 @@ export const restaurants = pgTable("restaurants", {
   ownerId: uuid("owner_id"),
 
   // Timestamps //
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  createdAt: timestamp("created_at", {
+    withTimezone: true,
+  })
+    .notNull()
+    .defaultNow(),
+  updatedAt: timestamp("updated_at", {
+    withTimezone: true,
+  })
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
 });
 
 export const restaurantHours = pgTable("restaurant_hours", {
@@ -76,8 +85,17 @@ export const restaurantHours = pgTable("restaurant_hours", {
   isEnabled: boolean("is_enabled").notNull().default(true),
 
   // Timestamps //
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  createdAt: timestamp("created_at", {
+    withTimezone: true,
+  })
+    .notNull()
+    .defaultNow(),
+  updatedAt: timestamp("updated_at", {
+    withTimezone: true,
+  })
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
 });
 
 export const restaurantRelations = relations(restaurants, ({ one, many }) => ({

@@ -33,7 +33,11 @@ export const files = pgTable("files", {
   uploadedByUserId: uuid("uploaded_by_user_id"),
 
   // Created at //
-  createdAt: timestamp("created_at").notNull().defaultNow(),
+  createdAt: timestamp("created_at", {
+    withTimezone: true,
+  })
+    .notNull()
+    .defaultNow(),
 });
 
 export type IFile = typeof files.$inferSelect;

@@ -67,11 +67,20 @@ export const orderDishes = pgTable(
     isAdditional: boolean("is_additional").notNull().default(false),
 
     // Timestamps //
-    createdAt: timestamp("created_at").notNull().defaultNow(),
-    updatedAt: timestamp("updated_at").notNull().defaultNow(),
-    cookingAt: timestamp("cooking_at"),
-    readyAt: timestamp("ready_at"),
-    removedAt: timestamp("removed_at"),
+    createdAt: timestamp("created_at", {
+      withTimezone: true,
+    })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", {
+      withTimezone: true,
+    })
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+    cookingAt: timestamp("cooking_at", { withTimezone: true }),
+    readyAt: timestamp("ready_at", { withTimezone: true }),
+    removedAt: timestamp("removed_at", { withTimezone: true }),
   },
   (table) => [index("order_dishes_order_id_idx").on(table.orderId)],
 );
@@ -110,8 +119,17 @@ export const orderDishesReturnments = pgTable("order_dishes_returnments", {
     .default(false),
 
   // Timestamps //
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  createdAt: timestamp("created_at", {
+    withTimezone: true,
+  })
+    .notNull()
+    .defaultNow(),
+  updatedAt: timestamp("updated_at", {
+    withTimezone: true,
+  })
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
 });
 
 export type IOrderDishReturnment = typeof orderDishesReturnments.$inferSelect;

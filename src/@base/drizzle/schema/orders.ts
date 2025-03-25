@@ -56,7 +56,11 @@ export type OrderTypeEnum = typeof ZodOrderTypeEnum._type;
 export const orderNumberBroneering = pgTable("order_number_broneering", {
   id: uuid("id").defaultRandom().primaryKey(),
   number: text("number").notNull(),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
+  createdAt: timestamp("created_at", {
+    withTimezone: true,
+  })
+    .notNull()
+    .defaultNow(),
 });
 
 export const orders = pgTable(
@@ -108,12 +112,21 @@ export const orders = pgTable(
     isArchived: boolean("is_archived").notNull().default(false),
 
     // Default timestamps
-    createdAt: timestamp("created_at").notNull().defaultNow(),
-    updatedAt: timestamp("updated_at").notNull().defaultNow(),
-    cookingAt: timestamp("cooking_at"),
-    completedAt: timestamp("completed_at"),
-    removedAt: timestamp("removed_at"),
-    delayedTo: timestamp("delayed_to"),
+    createdAt: timestamp("created_at", {
+      withTimezone: true,
+    })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", {
+      withTimezone: true,
+    })
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+    cookingAt: timestamp("cooking_at", { withTimezone: true }),
+    completedAt: timestamp("completed_at", { withTimezone: true }),
+    removedAt: timestamp("removed_at", { withTimezone: true }),
+    delayedTo: timestamp("delayed_to", { withTimezone: true }),
   },
   (table) => [
     index("orders_restaurant_id_idx").on(table.restaurantId),

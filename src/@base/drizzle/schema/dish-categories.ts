@@ -29,8 +29,17 @@ export const dishCategories = pgTable("dish_categories", {
   sortIndex: serial("sort_index").notNull(),
 
   // Default timestamps //
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  createdAt: timestamp("created_at", {
+    withTimezone: true,
+  })
+    .notNull()
+    .defaultNow(),
+  updatedAt: timestamp("updated_at", {
+    withTimezone: true,
+  })
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
 });
 
 export type IDishCategory = typeof dishCategories.$inferSelect;

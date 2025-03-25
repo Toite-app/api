@@ -8,9 +8,21 @@ export const guests = pgTable("guests", {
   phone: text("phone").unique().notNull(),
   email: text("email").unique(),
   bonusBalance: integer("bonus_balance").notNull().default(0),
-  lastVisitAt: timestamp("last_visit_at").notNull().defaultNow(),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  lastVisitAt: timestamp("last_visit_at", {
+    withTimezone: true,
+  })
+    .notNull()
+    .defaultNow(),
+  createdAt: timestamp("created_at", {
+    withTimezone: true,
+  })
+    .notNull()
+    .defaultNow(),
+  updatedAt: timestamp("updated_at", {
+    withTimezone: true,
+  })
+    .notNull()
+    .defaultNow(),
 });
 
 export type IGuest = typeof guests.$inferSelect;
