@@ -28,6 +28,10 @@ import { RestaurantsPaginatedDto } from "../dto/views/get-restaurants.view";
 import { RestaurantEntity } from "../entities/restaurant.entity";
 import { RestaurantsService } from "../services/restaurants.service";
 
+type RestaurantRouteParams = {
+  id: string;
+};
+
 @Controller("restaurants")
 @ApiForbiddenResponse({ description: "Forbidden" })
 @ApiUnauthorizedResponse({ description: "Unauthorized" })
@@ -111,7 +115,7 @@ export class RestaurantsController {
   }
 
   @RestaurantGuard({
-    restaurantId: (req) => req.params.id,
+    restaurantId: (req) => (req.params as RestaurantRouteParams).id,
     allow: ["OWNER", "ADMIN", "KITCHENER", "WAITER", "CASHIER"],
   })
   @Get(":id")
@@ -136,7 +140,7 @@ export class RestaurantsController {
   }
 
   @RestaurantGuard({
-    restaurantId: (req) => req.params.id,
+    restaurantId: (req) => (req.params as RestaurantRouteParams).id,
     allow: ["OWNER", "ADMIN"],
   })
   @EnableAuditLog()
@@ -166,7 +170,7 @@ export class RestaurantsController {
   }
 
   @RestaurantGuard({
-    restaurantId: (req) => req.params.id,
+    restaurantId: (req) => (req.params as RestaurantRouteParams).id,
     allow: ["OWNER"],
   })
   @EnableAuditLog()

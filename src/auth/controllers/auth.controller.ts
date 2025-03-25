@@ -88,11 +88,12 @@ export class AuthController {
       worker,
     });
 
-    res.cookie(AUTH_COOKIES.token, signedJWT, {
+    res.setCookie(AUTH_COOKIES.token, signedJWT, {
       maxAge: 60 * 60 * 24 * 365, // 1 year
       httpOnly: true,
       secure: env.NODE_ENV === "production",
       sameSite: "strict",
+      path: "/",
     });
 
     return {

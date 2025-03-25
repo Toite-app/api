@@ -25,6 +25,12 @@ export class CreateRestaurantWorkshopPayloadDto extends OmitType(
   ["restaurantId"] as const,
 ) {}
 
+// Add interface for route parameters
+interface RestaurantRouteParams {
+  id: string;
+  workshopId?: string;
+}
+
 @Controller("restaurants/:id/workshops", {
   tags: ["restaurants"],
 })
@@ -34,7 +40,7 @@ export class RestaurantWorkshopsController {
   ) {}
 
   @RestaurantGuard({
-    restaurantId: (req) => req.params.id,
+    restaurantId: (req) => (req.params as RestaurantRouteParams).id,
     allow: ["OWNER", "ADMIN", "KITCHENER", "WAITER", "CASHIER"],
   })
   @EnableAuditLog({ onlyErrors: true })
@@ -50,7 +56,7 @@ export class RestaurantWorkshopsController {
   }
 
   @RestaurantGuard({
-    restaurantId: (req) => req.params.id,
+    restaurantId: (req) => (req.params as RestaurantRouteParams).id,
     allow: ["OWNER", "ADMIN"],
   })
   @EnableAuditLog()
@@ -73,7 +79,7 @@ export class RestaurantWorkshopsController {
   }
 
   @RestaurantGuard({
-    restaurantId: (req) => req.params.id,
+    restaurantId: (req) => (req.params as RestaurantRouteParams).id,
     allow: ["OWNER", "ADMIN"],
   })
   @EnableAuditLog()
@@ -94,7 +100,7 @@ export class RestaurantWorkshopsController {
   }
 
   @RestaurantGuard({
-    restaurantId: (req) => req.params.id,
+    restaurantId: (req) => (req.params as RestaurantRouteParams).id,
     allow: ["OWNER", "ADMIN", "KITCHENER", "WAITER", "CASHIER"],
   })
   @EnableAuditLog({ onlyErrors: true })
@@ -110,7 +116,7 @@ export class RestaurantWorkshopsController {
   }
 
   @RestaurantGuard({
-    restaurantId: (req) => req.params.id,
+    restaurantId: (req) => (req.params as RestaurantRouteParams).id,
     allow: ["OWNER", "ADMIN"],
   })
   @EnableAuditLog()
@@ -131,7 +137,7 @@ export class RestaurantWorkshopsController {
   }
 
   @RestaurantGuard({
-    restaurantId: (req) => req.params.id,
+    restaurantId: (req) => (req.params as RestaurantRouteParams).id,
     allow: ["OWNER", "ADMIN"],
   })
   @EnableAuditLog()

@@ -98,11 +98,12 @@ export class SessionAuthGuard implements CanActivate {
           },
         );
 
-        res.cookie(AUTH_COOKIES.token, newSignedJWT, {
+        res.setCookie(AUTH_COOKIES.token, newSignedJWT, {
           maxAge: 60 * 60 * 24 * 365, // 1 year
           httpOnly: true,
           secure: env.NODE_ENV === "production",
           sameSite: "strict",
+          path: "/",
         });
       } finally {
         if (lock) {

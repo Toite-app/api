@@ -17,13 +17,20 @@ export interface ICursor {
 
 export const CURSOR_DEFAULT_LIMIT = 50;
 
+type QueryParams = {
+  cursorId?: string;
+  limit?: string;
+};
+
 export const CursorParams = createParamDecorator(
   (options: ICursorParams, ctx: ExecutionContextHost): ICursor => {
     const req = ctx.switchToHttp().getRequest() as Request;
 
-    const cursorId = req.query?.cursorId ?? null;
+    const cursorId = (req.query as QueryParams)?.cursorId ?? null;
     const limit =
-      req.query?.limit ?? options?.default?.limit ?? CURSOR_DEFAULT_LIMIT;
+      (req.query as QueryParams)?.limit ??
+      options?.default?.limit ??
+      CURSOR_DEFAULT_LIMIT;
 
     if (!!cursorId && typeof cursorId !== "string") {
       throw new BadRequestException("errors.common.invalid-cursor-id");

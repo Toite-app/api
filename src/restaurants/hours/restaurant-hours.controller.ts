@@ -23,6 +23,11 @@ export class CreateRestaurantHoursPayloadDto extends OmitType(
   ["restaurantId"] as const,
 ) {}
 
+type RestaurantHoursRouteParams = {
+  id: string;
+  hoursId?: string;
+};
+
 @Controller("restaurants/:id/hours", {
   tags: ["restaurants"],
 })
@@ -32,7 +37,7 @@ export class RestaurantHoursController {
   ) {}
 
   @RestaurantGuard({
-    restaurantId: (req) => req.params.id,
+    restaurantId: (req) => (req.params as RestaurantHoursRouteParams).id,
     allow: ["OWNER", "ADMIN", "KITCHENER", "WAITER", "CASHIER"],
   })
   @EnableAuditLog({ onlyErrors: true })
@@ -48,7 +53,7 @@ export class RestaurantHoursController {
   }
 
   @RestaurantGuard({
-    restaurantId: (req) => req.params.id,
+    restaurantId: (req) => (req.params as RestaurantHoursRouteParams).id,
     allow: ["OWNER", "ADMIN"],
   })
   @EnableAuditLog()
@@ -71,7 +76,7 @@ export class RestaurantHoursController {
   }
 
   @RestaurantGuard({
-    restaurantId: (req) => req.params.id,
+    restaurantId: (req) => (req.params as RestaurantHoursRouteParams).id,
     allow: ["OWNER", "ADMIN"],
   })
   @EnableAuditLog()
@@ -92,7 +97,7 @@ export class RestaurantHoursController {
   }
 
   @RestaurantGuard({
-    restaurantId: (req) => req.params.id,
+    restaurantId: (req) => (req.params as RestaurantHoursRouteParams).id,
     allow: ["OWNER", "ADMIN"],
   })
   @EnableAuditLog()

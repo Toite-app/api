@@ -28,7 +28,7 @@ export const envSchema = z.object({
   PORT: z.coerce.number().default(6701),
 
   CSRF_SECRET: z.string(),
-
+  COOKIES_SECRET: z.string(),
   // JWT //
   JWT: z.object({
     SECRET: z.string(),
@@ -67,6 +67,7 @@ const env = envSchema.parse({
   NODE_ENV: process.env.NODE_ENV,
   PORT: process.env.PORT,
   CSRF_SECRET: process.env.CSRF_SECRET,
+  COOKIES_SECRET: process.env.COOKIES_SECRET,
   JWT: {
     SECRET: process.env.JWT_SECRET,
     GRACE_PERIOD: process.env.JWT_GRACE_PERIOD,

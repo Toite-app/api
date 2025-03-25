@@ -2,6 +2,10 @@ import "dotenv/config";
 import { configApp } from "@core/config/app";
 import env from "@core/env";
 import { NestFactory } from "@nestjs/core";
+import {
+  FastifyAdapter,
+  NestFastifyApplication,
+} from "@nestjs/platform-fastify";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import { patchNestJsSwagger } from "nestjs-zod";
 
@@ -9,9 +13,12 @@ import { AppModule } from "./app.module";
 import { AUTH_COOKIES } from "./auth/auth.types";
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestFastifyApplication>(
+    AppModule,
+    new FastifyAdapter(),
+  );
 
-  configApp(app);
+  await configApp(app);
 
   // Only setup Swagger in development
   if (env.NODE_ENV !== "production") {
@@ -39,7 +46,7 @@ async function bootstrap() {
     });
   }
 
-  await app.listen(env.PORT);
+  await app.listen(env.PORT, "0.0.0.0");
 }
 
 // Only patch Swagger in development

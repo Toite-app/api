@@ -21,6 +21,11 @@ export interface IPagination {
   offset: number;
 }
 
+type QueryParams = {
+  page?: string;
+  size?: string;
+};
+
 export const PaginationParams = createParamDecorator(
   (options: PaginationParams, ctx: ExecutionContextHost): IPagination => {
     const defaultPage = options?.default?.page ?? PAGINATION_DEFAULT_PAGE;
@@ -28,8 +33,8 @@ export const PaginationParams = createParamDecorator(
 
     const req = ctx.switchToHttp().getRequest() as Request;
 
-    const page = Number(req.query?.page || defaultPage);
-    const size = Number(req.query?.size || defaultLimit);
+    const page = Number((req.query as QueryParams)?.page || defaultPage);
+    const size = Number((req.query as QueryParams)?.size || defaultLimit);
 
     if (isNaN(page) || page < 1 || isNaN(size) || size < 1) {
       throw new BadRequestException("errors.common.invalid-pagination-params", {

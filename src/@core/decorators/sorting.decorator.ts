@@ -19,12 +19,17 @@ export type SortingParamsOptions = {
   fields: string[];
 };
 
+type QueryParams = {
+  sortBy?: string;
+  sortOrder?: string;
+};
+
 export const SortingParams = createParamDecorator(
   (options: SortingParamsOptions, ctx: ExecutionContextHost): ISorting => {
     const { fields } = options;
     const req = ctx.switchToHttp().getRequest() as Request;
-    const sortBy = req.query?.sortBy;
-    const sortOrder = req.query?.sortOrder;
+    const sortBy = (req.query as QueryParams)?.sortBy;
+    const sortOrder = (req.query as QueryParams)?.sortOrder;
 
     if (!sortBy && !sortOrder) {
       return {
