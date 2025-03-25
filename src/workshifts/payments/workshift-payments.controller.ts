@@ -63,5 +63,13 @@ export class WorkshiftPaymentsController {
   @ApiOkResponse({
     description: "Workshift payment deleted successfully",
   })
-  async deleteWorkshiftPayment() {}
+  async deleteWorkshiftPayment(
+    @Param("workshiftId") workshiftId: string,
+    @Param("paymentId") paymentId: string,
+    @Worker() worker: RequestWorker,
+  ) {
+    return this.workshiftPaymentsService.remove(paymentId, {
+      worker,
+    });
+  }
 }

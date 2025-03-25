@@ -140,6 +140,8 @@
     "not-enough-rights": "You don't have enough rights to do this",
     "workshift-not-found": "Workshift not found",
     "workshift-already-closed": "Workshift already closed",
-    "payment-category-not-found": "Payment category not found"
+    "payment-category-not-found": "Payment category not found",
+    "payment-not-found": "Payment not found",
+    "payment-already-removed": "Payment already removed"
   }
 }
