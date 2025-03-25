@@ -1,6 +1,7 @@
 import { IFilters } from "@core/decorators/filter.decorator";
 import { BadRequestException } from "@core/errors/exceptions/bad-request.exception";
 import { NotFoundException } from "@core/errors/exceptions/not-found.exception";
+import { ServerErrorException } from "@core/errors/exceptions/server-error.exception";
 import { Inject, Injectable } from "@nestjs/common";
 import { DrizzleUtils } from "@postgress-db/drizzle-utils";
 import { Schema } from "@postgress-db/drizzle.module";
@@ -186,6 +187,17 @@ export class OrdersService {
     const number = await this.generateOrderNumber();
     const guest = await this.guestsService.findByPhoneNumber(guestPhone);
 
+    const restaurant = await this.pg.query.restaurants.findFirst({
+      where: (restaurants, { eq }) => eq(restaurants.id, String(restaurantId)),
+      columns: {
+        currency: true,
+      },
+    });
+
+    if (!restaurant) {
+      throw new ServerErrorException();
+    }
+
     const createdOrder = await this.repository.create(
       {
         number,
@@ -193,7 +205,7 @@ export class OrdersService {
         type,
         from: "internal",
         status: "pending",
-        currency: "RUB",
+        currency: restaurant?.currency,
         paymentMethodId,
         ...(delayedTo ? { delayedTo: new Date(delayedTo) } : {}),
         guestsAmount,
