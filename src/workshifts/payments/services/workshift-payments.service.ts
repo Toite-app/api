@@ -3,7 +3,10 @@ import { RequestWorker } from "@core/interfaces/request";
 import { Inject, Injectable } from "@nestjs/common";
 import { schema } from "@postgress-db/drizzle.module";
 import { workshiftPaymentCategories } from "@postgress-db/schema/workshift-payment-category";
-import { workshiftPayments } from "@postgress-db/schema/workshift-payments";
+import {
+  workshiftPayments,
+  WorkshiftPaymentType,
+} from "@postgress-db/schema/workshift-payments";
 import { eq } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { PG_CONNECTION } from "src/constants";
@@ -72,8 +75,9 @@ export class WorkshiftPaymentsService {
   async findMany(options: {
     worker: RequestWorker;
     workshiftId: string;
+    type?: WorkshiftPaymentType;
   }): Promise<WorkshiftPaymentEntity[]> {
-    const { worker, workshiftId } = options;
+    const { worker, workshiftId, type } = options;
 
     const workshift = await this.pg.query.workshifts.findFirst({
       where: (workshift, { eq }) => eq(workshift.id, workshiftId),
@@ -93,7 +97,11 @@ export class WorkshiftPaymentsService {
     await this._checkRights(workshift, worker);
 
     const payments = await this.pg.query.workshiftPayments.findMany({
-      where: (payment, { eq }) => eq(payment.workshiftId, workshiftId),
+      where: (payment, { and, eq }) =>
+        and(
+          eq(payment.workshiftId, workshiftId),
+          type ? eq(payment.type, type) : undefined,
+        ),
       with: {
         category: {
           with: {

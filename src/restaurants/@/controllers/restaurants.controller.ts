@@ -7,6 +7,7 @@ import { Serializable } from "@core/decorators/serializable.decorator";
 import { Worker } from "@core/decorators/worker.decorator";
 import { ForbiddenException } from "@core/errors/exceptions/forbidden.exception";
 import { RequestWorker } from "@core/interfaces/request";
+import { StringValuePipe } from "@core/pipes/string.pipe";
 import { Body, Delete, Get, Param, Post, Put, Query } from "@nestjs/common";
 import {
   ApiCreatedResponse,
@@ -59,8 +60,8 @@ export class RestaurantsController {
   async findAll(
     @PaginationParams() pagination: IPagination,
     @Worker() worker: RequestWorker,
-    @Query("menuId") menuId?: string,
-    @Query("ownerId") ownerId?: string,
+    @Query("menuId", new StringValuePipe()) menuId?: string,
+    @Query("ownerId", new StringValuePipe()) ownerId?: string,
   ) {
     const total = await this.restaurantsService.getTotalCount();
     const data = await this.restaurantsService.findMany({

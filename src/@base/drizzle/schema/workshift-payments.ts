@@ -24,6 +24,12 @@ export const ZodWorkshiftPaymentType = z.enum(
   workshiftPaymentTypeEnum.enumValues,
 );
 
+export enum WorkshiftPaymentType {
+  INCOME = "INCOME",
+  EXPENSE = "EXPENSE",
+  CASHLESS = "CASHLESS",
+}
+
 export const workshiftPayments = pgTable("workshift_payments", {
   id: uuid("id").defaultRandom().primaryKey(),
   categoryId: uuid("category_id").notNull(),

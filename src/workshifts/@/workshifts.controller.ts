@@ -7,6 +7,7 @@ import { Serializable } from "@core/decorators/serializable.decorator";
 import { Worker } from "@core/decorators/worker.decorator";
 import { NotFoundException } from "@core/errors/exceptions/not-found.exception";
 import { RequestWorker } from "@core/interfaces/request";
+import { StringValuePipe } from "@core/pipes/string.pipe";
 import { Body, Get, Param, Post, Query } from "@nestjs/common";
 import { ApiOkResponse, ApiOperation, ApiQuery } from "@nestjs/swagger";
 import { EnableAuditLog } from "src/@base/audit-logs/decorators/audit-logs.decorator";
@@ -37,13 +38,9 @@ export class WorkshiftsController {
   async getWorkshifts(
     @PaginationParams() pagination: IPagination,
     @Worker() worker: RequestWorker,
-    @Query("restaurantId") _restaurantId?: string,
+    @Query("restaurantId", new StringValuePipe())
+    restaurantId?: string,
   ): Promise<WorkshiftsPaginatedEntity> {
-    const restaurantId =
-      _restaurantId && _restaurantId !== "null" && _restaurantId !== "undefined"
-        ? _restaurantId
-        : undefined;
-
     const total = await this.workshiftsService.getTotalCount({
       worker,
       restaurantId,
