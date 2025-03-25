@@ -154,6 +154,13 @@ export class WorkshiftPaymentsService {
         restaurantId: true,
         closedAt: true,
       },
+      with: {
+        restaurant: {
+          columns: {
+            currency: true,
+          },
+        },
+      },
     });
 
     if (!workshift) {
@@ -193,7 +200,7 @@ export class WorkshiftPaymentsService {
       );
     }
 
-    const { categoryId, amount, currency, note } = payload;
+    const { categoryId, amount, note } = payload;
 
     const [payment] = await this.pg
       .insert(workshiftPayments)
@@ -201,7 +208,7 @@ export class WorkshiftPaymentsService {
         categoryId,
         type: paymentCategory.type,
         amount,
-        currency,
+        currency: workshift.restaurant.currency,
         note,
         workshiftId,
         workerId: worker.id,
