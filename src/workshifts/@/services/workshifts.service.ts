@@ -108,6 +108,7 @@ export class WorkshiftsService {
           columns: {
             id: true,
             name: true,
+            currency: true,
           },
         },
         openedByWorker: {
@@ -160,6 +161,7 @@ export class WorkshiftsService {
           columns: {
             id: true,
             name: true,
+            currency: true,
           },
         },
         openedByWorker: {

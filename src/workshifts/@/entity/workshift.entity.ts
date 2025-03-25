@@ -11,6 +11,7 @@ import { WorkerEntity } from "src/workers/entities/worker.entity";
 export class WorkshiftRestaurantEntity extends PickType(RestaurantEntity, [
   "id",
   "name",
+  "currency",
 ]) {}
 
 export class WorkshiftWorkerEntity extends PickType(WorkerEntity, [
