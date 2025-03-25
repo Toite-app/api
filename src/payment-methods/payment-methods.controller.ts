@@ -11,6 +11,10 @@ import { PaymentMethodEntity } from "src/payment-methods/entities/payment-method
 import { PaymentMethodsService } from "src/payment-methods/payment-methods.service";
 import { RestaurantGuard } from "src/restaurants/@/decorators/restaurant-guard.decorator";
 
+type RestaurantPaymentMethodsRouteParams = {
+  id: string;
+};
+
 @Controller("restaurants/:id/payment-methods", {
   tags: ["restaurants"],
 })
@@ -18,7 +22,8 @@ export class PaymentMethodsController {
   constructor(private readonly paymentMethodsService: PaymentMethodsService) {}
 
   @RestaurantGuard({
-    restaurantId: (req) => req.params.id,
+    restaurantId: (req) =>
+      (req.params as RestaurantPaymentMethodsRouteParams).id,
     allow: ["OWNER", "ADMIN", "KITCHENER", "WAITER", "CASHIER"],
   })
   @EnableAuditLog({ onlyErrors: true })
@@ -38,7 +43,8 @@ export class PaymentMethodsController {
   }
 
   @RestaurantGuard({
-    restaurantId: (req) => req.params.id,
+    restaurantId: (req) =>
+      (req.params as RestaurantPaymentMethodsRouteParams).id,
     allow: ["OWNER", "ADMIN"],
   })
   @EnableAuditLog()
@@ -67,7 +73,8 @@ export class PaymentMethodsController {
   }
 
   @RestaurantGuard({
-    restaurantId: (req) => req.params.id,
+    restaurantId: (req) =>
+      (req.params as RestaurantPaymentMethodsRouteParams).id,
     allow: ["OWNER", "ADMIN"],
   })
   @EnableAuditLog()

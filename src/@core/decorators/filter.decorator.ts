@@ -23,10 +23,14 @@ export interface IFilters {
   filters: IFilter[];
 }
 
+type QueryParams = {
+  filters?: string;
+};
+
 export const FilterParams = createParamDecorator(
   (options: any, ctx: ExecutionContextHost): IFilters => {
     const req = ctx.switchToHttp().getRequest() as Request;
-    const rawFilters = req.query?.filters;
+    const rawFilters = (req.query as QueryParams)?.filters;
 
     if (!rawFilters) {
       return { filters: [] };

@@ -1,3 +1,4 @@
+import { Request } from "@core/interfaces/request";
 import { createParamDecorator, ExecutionContext } from "@nestjs/common";
 
 /**
@@ -6,7 +7,8 @@ import { createParamDecorator, ExecutionContext } from "@nestjs/common";
  */
 export const Cookies = createParamDecorator(
   (data: string, ctx: ExecutionContext) => {
-    const request = ctx.switchToHttp().getRequest();
+    const request = ctx.switchToHttp().getRequest<Request>();
+
     return data ? request.cookies?.[data] : request.cookies;
   },
 );

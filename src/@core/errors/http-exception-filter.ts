@@ -7,6 +7,7 @@ import {
   ExceptionFilter,
   HttpException,
 } from "@nestjs/common";
+import { FastifyReply } from "fastify";
 import { I18nContext, I18nValidationException } from "nestjs-i18n";
 import { formatI18nErrors } from "nestjs-i18n/dist/utils";
 
@@ -40,7 +41,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const i18n = I18nContext.current();
     const response = exception.getResponse() as ErrorInstance;
 
-    if (!response || !response?.errorCode) return null;
+    if (!response ?? !response?.errorCode) return null;
 
     const tKey = response?.message ?? `errors.${response.errorCode}`;
     const message = i18n?.t(tKey) ?? response?.message ?? null;
@@ -61,8 +62,8 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
   catch(exception: HttpException, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
-    const request = ctx.getRequest() as Request;
-    const response = ctx.getResponse();
+    const request = ctx.getRequest<Request>();
+    const reply = ctx.getResponse<FastifyReply>();
     const statusCode = exception.getStatus();
 
     const timestamp = request.timestamp ?? new Date().getTime();
@@ -75,7 +76,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
     const message = error?.message ?? exception.message;
 
-    response.status(statusCode).json({
+    return reply.status(statusCode).send({
       statusCode,
       ...(request?.requestId ? { requestId: request.requestId } : {}),
       path: request.url,

@@ -1,7 +1,7 @@
 import { IRestaurant } from "@postgress-db/schema/restaurants";
 import { ISession } from "@postgress-db/schema/sessions";
 import { IWorker, IWorkersToRestaurants } from "@postgress-db/schema/workers";
-import { Request as Req } from "express";
+import { FastifyRequest } from "fastify";
 
 export type RequestWorker = Pick<
   IWorker,
@@ -27,7 +27,7 @@ export type RequestSession = Pick<
   worker: RequestWorker | null;
 };
 
-export interface Request extends Req {
+export interface Request extends FastifyRequest {
   requestId?: string;
   timestamp?: number;
   worker?: RequestWorker | null;

@@ -1,11 +1,14 @@
+import env from "@core/env";
 import { HttpExceptionFilter } from "@core/errors/http-exception-filter";
-import { INestApplication } from "@nestjs/common";
-import cookieParser from "cookie-parser";
+import fastifyCookie from "@fastify/cookie";
+import { NestFastifyApplication } from "@nestjs/platform-fastify";
 import { I18nValidationPipe } from "nestjs-i18n";
 
-export const configApp = (app: INestApplication) => {
+export const configApp = async (app: NestFastifyApplication) => {
   // Parse cookies
-  app.use(cookieParser());
+  await app.register(fastifyCookie, {
+    secret: env.COOKIES_SECRET,
+  });
 
   app.useGlobalPipes(
     new I18nValidationPipe({

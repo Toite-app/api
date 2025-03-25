@@ -21,6 +21,11 @@ export class CreateRestaurantDishModifierPayloadDto extends OmitType(
   ["restaurantId"] as const,
 ) {}
 
+type RestaurantDishModifiersRouteParams = {
+  id: string;
+  modifierId?: string;
+};
+
 @Controller("restaurants/:id/dish-modifiers", {
   tags: ["restaurants"],
 })
@@ -30,7 +35,8 @@ export class RestaurantDishModifiersController {
   ) {}
 
   @RestaurantGuard({
-    restaurantId: (req) => req.params.id,
+    restaurantId: (req) =>
+      (req.params as RestaurantDishModifiersRouteParams).id,
     allow: ["OWNER", "ADMIN", "KITCHENER", "WAITER", "CASHIER"],
   })
   @EnableAuditLog({ onlyErrors: true })
@@ -46,7 +52,8 @@ export class RestaurantDishModifiersController {
   }
 
   @RestaurantGuard({
-    restaurantId: (req) => req.params.id,
+    restaurantId: (req) =>
+      (req.params as RestaurantDishModifiersRouteParams).id,
     allow: ["OWNER", "ADMIN"],
   })
   @EnableAuditLog()
@@ -71,7 +78,8 @@ export class RestaurantDishModifiersController {
   }
 
   @RestaurantGuard({
-    restaurantId: (req) => req.params.id,
+    restaurantId: (req) =>
+      (req.params as RestaurantDishModifiersRouteParams).id,
     allow: ["OWNER", "ADMIN"],
   })
   @EnableAuditLog()
@@ -93,7 +101,8 @@ export class RestaurantDishModifiersController {
   }
 
   @RestaurantGuard({
-    restaurantId: (req) => req.params.id,
+    restaurantId: (req) =>
+      (req.params as RestaurantDishModifiersRouteParams).id,
     allow: ["OWNER", "ADMIN"],
   })
   @EnableAuditLog()
