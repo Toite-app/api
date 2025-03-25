@@ -10,10 +10,27 @@ export const sessions = pgTable("sessions", {
   httpAgent: text("http_agent"),
   ip: text("ip"),
   isActive: boolean("is_active").notNull().default(true),
-  onlineAt: timestamp("online_at").notNull().defaultNow(),
-  refreshedAt: timestamp("refreshed_at").notNull().defaultNow(),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  onlineAt: timestamp("online_at", {
+    withTimezone: true,
+  })
+    .notNull()
+    .defaultNow(),
+  refreshedAt: timestamp("refreshed_at", {
+    withTimezone: true,
+  })
+    .notNull()
+    .defaultNow(),
+  createdAt: timestamp("created_at", {
+    withTimezone: true,
+  })
+    .notNull()
+    .defaultNow(),
+  updatedAt: timestamp("updated_at", {
+    withTimezone: true,
+  })
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
 });
 
 export const sessionRelations = relations(sessions, ({ one }) => ({

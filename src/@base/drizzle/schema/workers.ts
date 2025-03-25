@@ -54,11 +54,20 @@ export const workers = pgTable("workers", {
   role: workerRoleEnum("role").notNull(),
   passwordHash: text("password_hash").notNull(),
   isBlocked: boolean("is_blocked").notNull().default(false),
-  hiredAt: timestamp("hired_at"),
-  firedAt: timestamp("fired_at"),
-  onlineAt: timestamp("online_at"),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  hiredAt: timestamp("hired_at", { withTimezone: true }),
+  firedAt: timestamp("fired_at", { withTimezone: true }),
+  onlineAt: timestamp("online_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", {
+    withTimezone: true,
+  })
+    .notNull()
+    .defaultNow(),
+  updatedAt: timestamp("updated_at", {
+    withTimezone: true,
+  })
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
 });
 
 export const workersToRestaurants = pgTable(

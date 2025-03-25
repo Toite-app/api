@@ -37,17 +37,30 @@ export const discounts = pgTable("discounts", {
   applyByDefault: boolean("apply_by_default").notNull().default(false),
 
   // Boolean flags //
-  isEnabled: boolean("isEnabled").notNull().default(true),
+  isEnabled: boolean("is_enabled").notNull().default(true),
 
   // Valid time //
   startHour: integer("start_hour"),
   endHour: integer("end_hour"),
-  activeFrom: timestamp("active_from").notNull(),
-  activeTo: timestamp("active_to").notNull(),
+  activeFrom: timestamp("active_from", {
+    withTimezone: true,
+  }).notNull(),
+  activeTo: timestamp("active_to", {
+    withTimezone: true,
+  }).notNull(),
 
   // Timestamps //
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  createdAt: timestamp("created_at", {
+    withTimezone: true,
+  })
+    .notNull()
+    .defaultNow(),
+  updatedAt: timestamp("updated_at", {
+    withTimezone: true,
+  })
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
 });
 
 export type IDiscount = typeof discounts.$inferSelect;

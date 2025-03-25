@@ -43,9 +43,18 @@ export const paymentMethods = pgTable("payment_methods", {
   isRemoved: boolean("is_removed").notNull().default(false),
 
   // Default timestamps //
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
-  removedAt: timestamp("removed_at"),
+  createdAt: timestamp("created_at", {
+    withTimezone: true,
+  })
+    .notNull()
+    .defaultNow(),
+  updatedAt: timestamp("updated_at", {
+    withTimezone: true,
+  })
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
+  removedAt: timestamp("removed_at", { withTimezone: true }),
 });
 
 export type IPaymentMethod = typeof paymentMethods.$inferSelect;

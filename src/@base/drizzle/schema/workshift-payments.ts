@@ -45,9 +45,18 @@ export const workshiftPayments = pgTable("workshift_payments", {
   isRemoved: boolean("is_removed").notNull().default(false),
 
   // Timestamps //
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
-  removedAt: timestamp("removed_at"),
+  createdAt: timestamp("created_at", {
+    withTimezone: true,
+  })
+    .notNull()
+    .defaultNow(),
+  updatedAt: timestamp("updated_at", {
+    withTimezone: true,
+  })
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
+  removedAt: timestamp("removed_at", { withTimezone: true }),
 });
 
 export type IWorkshiftPayment = typeof workshiftPayments.$inferSelect;

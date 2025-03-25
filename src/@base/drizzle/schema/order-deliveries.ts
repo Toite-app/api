@@ -40,11 +40,22 @@ export const orderDeliveries = pgTable("order_deliveries", {
   price: decimal("price", { precision: 10, scale: 2 }).notNull(),
 
   // Timestamps //
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
-  dispatchedAt: timestamp("dispatched_at"),
-  estimatedDeliveryAt: timestamp("estimated_delivery_at"),
-  deliveredAt: timestamp("delivered_at"),
+  createdAt: timestamp("created_at", {
+    withTimezone: true,
+  })
+    .notNull()
+    .defaultNow(),
+  updatedAt: timestamp("updated_at", {
+    withTimezone: true,
+  })
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
+  dispatchedAt: timestamp("dispatched_at", { withTimezone: true }),
+  estimatedDeliveryAt: timestamp("estimated_delivery_at", {
+    withTimezone: true,
+  }),
+  deliveredAt: timestamp("delivered_at", { withTimezone: true }),
 });
 
 export type IOrderDelivery = typeof orderDeliveries.$inferSelect;

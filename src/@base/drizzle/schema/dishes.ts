@@ -63,8 +63,17 @@ export const dishes = pgTable("dishes", {
   isPublishedAtSite: boolean("is_published_at_site").notNull().default(false),
 
   // Default timestamps //
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  createdAt: timestamp("created_at", {
+    withTimezone: true,
+  })
+    .notNull()
+    .defaultNow(),
+  updatedAt: timestamp("updated_at", {
+    withTimezone: true,
+  })
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
 });
 
 export type IDish = typeof dishes.$inferSelect;
@@ -77,8 +86,17 @@ export const dishesToRestaurants = pgTable(
     price: decimal("price", { precision: 10, scale: 2 }).notNull().default("0"),
     currency: currencyEnum("currency").notNull().default("EUR"),
     isInStopList: boolean("is_in_stop_list").notNull().default(false),
-    createdAt: timestamp("created_at").notNull().defaultNow(),
-    updatedAt: timestamp("updated_at").notNull().defaultNow(),
+    createdAt: timestamp("created_at", {
+      withTimezone: true,
+    })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", {
+      withTimezone: true,
+    })
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
   },
   (t) => [
     primaryKey({
@@ -108,7 +126,11 @@ export const dishesToWorkshops = pgTable(
   {
     dishId: uuid("dish_id").notNull(),
     workshopId: uuid("workshop_id").notNull(),
-    createdAt: timestamp("created_at").notNull().defaultNow(),
+    createdAt: timestamp("created_at", {
+      withTimezone: true,
+    })
+      .notNull()
+      .defaultNow(),
   },
   (t) => [
     primaryKey({

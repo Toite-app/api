@@ -39,10 +39,19 @@ export const workshifts = pgTable("workshifts", {
   closedByWorkerId: uuid("closed_by_worker_id"),
 
   // Timestamps //
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
-  openedAt: timestamp("opened_at"),
-  closedAt: timestamp("closed_at"),
+  createdAt: timestamp("created_at", {
+    withTimezone: true,
+  })
+    .notNull()
+    .defaultNow(),
+  updatedAt: timestamp("updated_at", {
+    withTimezone: true,
+  })
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
+  openedAt: timestamp("opened_at", { withTimezone: true }),
+  closedAt: timestamp("closed_at", { withTimezone: true }),
 });
 
 export type IWorkshift = typeof workshifts.$inferSelect;
