@@ -8,7 +8,7 @@ import { Worker } from "@core/decorators/worker.decorator";
 import { ForbiddenException } from "@core/errors/exceptions/forbidden.exception";
 import { RequestWorker } from "@core/interfaces/request";
 import { StringValuePipe } from "@core/pipes/string.pipe";
-import { Body, Delete, Get, Param, Post, Put, Query } from "@nestjs/common";
+import { Body, Delete, Get, Param, Patch, Post, Query } from "@nestjs/common";
 import {
   ApiCreatedResponse,
   ApiForbiddenResponse,
@@ -144,7 +144,7 @@ export class RestaurantsController {
     allow: ["OWNER", "ADMIN"],
   })
   @EnableAuditLog()
-  @Put(":id")
+  @Patch(":id")
   @Serializable(RestaurantEntity)
   @ApiOperation({
     summary: "Updates restaurant by id",

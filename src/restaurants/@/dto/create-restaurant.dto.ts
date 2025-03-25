@@ -10,6 +10,7 @@ export class CreateRestaurantDto extends PickType(RestaurantEntity, [
   "longitude",
   "timezone",
   "isEnabled",
+  "currency",
   "isClosedForever",
   "ownerId",
 ]) {}
