@@ -11,6 +11,7 @@ import { BadRequestException } from "@core/errors/exceptions/bad-request.excepti
 import { ForbiddenException } from "@core/errors/exceptions/forbidden.exception";
 import { NotFoundException } from "@core/errors/exceptions/not-found.exception";
 import { RequestWorker } from "@core/interfaces/request";
+import { StringValuePipe } from "@core/pipes/string.pipe";
 import { Body, Get, Param, Post, Put, Query } from "@nestjs/common";
 import {
   ApiBadRequestResponse,
@@ -71,10 +72,12 @@ export class WorkersController {
     sorting: ISorting,
     @PaginationParams() pagination: IPagination,
     @FilterParams() filters?: IFilters,
-    @Query("restaurantIds") restaurantIds?: string,
+    @Query("restaurantIds", new StringValuePipe())
+    restaurantIds?: string,
   ): Promise<WorkersPaginatedDto> {
-    const parsedRestaurantIds =
-      restaurantIds !== "undefined" ? restaurantIds?.split(",") : undefined;
+    const parsedRestaurantIds = !!restaurantIds
+      ? restaurantIds?.split(",")
+      : undefined;
 
     const total = await this.workersService.getTotalCount(
       filters,

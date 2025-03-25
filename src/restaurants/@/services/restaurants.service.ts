@@ -71,7 +71,7 @@ export class RestaurantsService {
     }
 
     // Filter restaurants that are assigned to a menu
-    if (menuId && menuId !== "undefined" && menuId.length > 0) {
+    if (menuId && menuId.length > 0) {
       conditions.push(
         exists(
           this.pg
@@ -89,7 +89,7 @@ export class RestaurantsService {
       );
     }
 
-    if (ownerId && ownerId !== "undefined" && ownerId.length > 0) {
+    if (ownerId && ownerId.length > 0) {
       conditions.push(eq(schema.restaurants.ownerId, ownerId));
     }
 

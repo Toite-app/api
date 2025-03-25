@@ -143,5 +143,8 @@
     "payment-category-not-found": "Payment category not found",
     "payment-not-found": "Payment not found",
     "payment-already-removed": "Payment already removed"
+  },
+  "string-value-pipe": {
+    "invalid-value": "Invalid value"
   }
 }

@@ -16,6 +16,7 @@ import { BadRequestException } from "@core/errors/exceptions/bad-request.excepti
 import { ForbiddenException } from "@core/errors/exceptions/forbidden.exception";
 import { NotFoundException } from "@core/errors/exceptions/not-found.exception";
 import { RequestWorker } from "@core/interfaces/request";
+import { StringValuePipe } from "@core/pipes/string.pipe";
 import { Body, Get, Param, Post, Put, Query } from "@nestjs/common";
 import {
   ApiBadRequestResponse,
@@ -72,7 +73,7 @@ export class DishesController {
     @PaginationParams() pagination: IPagination,
     @FilterParams() filters?: IFilters,
     @SearchParam() search?: string,
-    @Query("menuId")
+    @Query("menuId", new StringValuePipe())
     menuId?: string,
   ): Promise<DishesPaginatedDto> {
     if (typeof search === "string" && search.length > 0 && search !== "null") {
@@ -87,7 +88,7 @@ export class DishesController {
       });
     }
 
-    if (menuId && typeof menuId === "string" && menuId !== "undefined") {
+    if (menuId) {
       if (!filters) {
         filters = { filters: [] };
       }
