@@ -12,8 +12,8 @@ import { workshifts } from "@postgress-db/schema/workshifts";
 import { and, count, desc, eq, inArray, SQL } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { PG_CONNECTION } from "src/constants";
-import { CreateWorkshiftDto } from "src/workshifts/dto/create-workshift.dto";
-import { WorkshiftEntity } from "src/workshifts/entity/workshift.entity";
+import { CreateWorkshiftDto } from "src/workshifts/@/dto/create-workshift.dto";
+import { WorkshiftEntity } from "src/workshifts/@/entity/workshift.entity";
 
 import { WorkshiftNavigationEntity } from "../entity/workshift-navigation.entity";
 
