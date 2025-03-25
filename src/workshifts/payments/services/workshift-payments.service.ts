@@ -4,6 +4,7 @@ import { Inject, Injectable } from "@nestjs/common";
 import { schema } from "@postgress-db/drizzle.module";
 import { workshiftPaymentCategories } from "@postgress-db/schema/workshift-payment-category";
 import { workshiftPayments } from "@postgress-db/schema/workshift-payments";
+import { eq } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { PG_CONNECTION } from "src/constants";
 import { WorkshiftEntity } from "src/workshifts/@/entity/workshift.entity";
@@ -186,5 +187,56 @@ export class WorkshiftPaymentsService {
       .returning();
 
     return payment;
+  }
+
+  /**
+   * Removes a workshift payment
+   * @param paymentId - The id of the payment to remove
+   * @param worker - The worker to remove the payment
+   * @returns The removed workshift payment
+   */
+  async remove(paymentId: string, { worker }: { worker: RequestWorker }) {
+    const payment = await this.pg.query.workshiftPayments.findFirst({
+      where: (payment, { eq }) => eq(payment.id, paymentId),
+      columns: {
+        workshiftId: true,
+        removedAt: true,
+        workerId: true,
+      },
+      with: {
+        workshift: {
+          columns: {
+            restaurantId: true,
+            closedAt: true,
+          },
+        },
+      },
+    });
+
+    if (!payment) {
+      throw new BadRequestException(
+        "errors.workshift-payments.payment-not-found",
+      );
+    }
+
+    if (payment.removedAt) {
+      throw new BadRequestException(
+        "errors.workshift-payments.payment-already-removed",
+      );
+    }
+
+    // Check rights
+    await this._checkRights(payment.workshift, worker);
+
+    await this.pg
+      .update(workshiftPayments)
+      .set({
+        isRemoved: true,
+        removedAt: new Date(),
+        removedByWorkerId: worker.id,
+      })
+      .where(eq(workshiftPayments.id, paymentId));
+
+    return { id: paymentId };
   }
 }
