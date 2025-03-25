@@ -145,6 +145,7 @@
     "payment-already-removed": "Payment already removed"
   },
   "string-value-pipe": {
-    "invalid-value": "Invalid value"
+    "invalid-value": "Invalid value",
+    "empty-array": "Array can't be empty"
   }
 }
