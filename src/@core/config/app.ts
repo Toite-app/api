@@ -1,6 +1,7 @@
 import env from "@core/env";
 import { HttpExceptionFilter } from "@core/errors/http-exception-filter";
 import fastifyCookie from "@fastify/cookie";
+import multipart from "@fastify/multipart";
 import { NestFastifyApplication } from "@nestjs/platform-fastify";
 import { I18nValidationPipe } from "nestjs-i18n";
 
@@ -8,6 +9,12 @@ export const configApp = async (app: NestFastifyApplication) => {
   // Parse cookies
   await app.register(fastifyCookie, {
     secret: env.COOKIES_SECRET,
+  });
+
+  await app.register(multipart, {
+    limits: {
+      fileSize: 1024 * 1024 * 8, // 8MB
+    },
   });
 
   app.useGlobalPipes(
