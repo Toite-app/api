@@ -105,6 +105,13 @@ export class DishPricelistService {
               columns: {
                 restaurantId: true,
               },
+              with: {
+                restaurant: {
+                  columns: {
+                    currency: true,
+                  },
+                },
+              },
             },
           },
         },
@@ -118,6 +125,19 @@ export class DishPricelistService {
     ) {
       throw new BadRequestException(
         "errors.dish-pricelist.provided-restaurant-dont-assigned-to-menu",
+      );
+    }
+
+    if (
+      dish.menu.dishesMenusToRestaurants.some(
+        (r) => r.restaurant.currency !== dto.currency,
+      )
+    ) {
+      throw new BadRequestException(
+        "errors.dish-pricelist.provided-currency-dont-match-restaurant-currency",
+        {
+          property: "currency",
+        },
       );
     }
 
