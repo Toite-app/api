@@ -18,6 +18,7 @@ import * as manyToMany from "./schema/many-to-many";
 import * as orderDeliveries from "./schema/order-deliveries";
 import * as orderDishes from "./schema/order-dishes";
 import * as orderEnums from "./schema/order-enums";
+import * as orderHistory from "./schema/order-history";
 import * as orderPrechecks from "./schema/order-prechecks";
 import * as orders from "./schema/orders";
 import * as paymentMethods from "./schema/payment-methods";
@@ -46,6 +47,7 @@ export const schema = {
   ...orderEnums,
   ...orders,
   ...orderPrechecks,
+  ...orderHistory,
   ...paymentMethods,
   ...dishModifiers,
   ...discounts,

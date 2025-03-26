@@ -2,6 +2,7 @@ import { currencyEnum } from "@postgress-db/schema/general";
 import { guests } from "@postgress-db/schema/guests";
 import { orderDeliveries } from "@postgress-db/schema/order-deliveries";
 import { orderDishes } from "@postgress-db/schema/order-dishes";
+import { orderHistoryRecords } from "@postgress-db/schema/order-history";
 import { orderPrechecks } from "@postgress-db/schema/order-prechecks";
 import { paymentMethods } from "@postgress-db/schema/payment-methods";
 import { restaurants } from "@postgress-db/schema/restaurants";
@@ -124,4 +125,5 @@ export const orderRelations = relations(orders, ({ one, many }) => ({
   }),
   orderDishes: many(orderDishes),
   prechecks: many(orderPrechecks),
+  historyRecords: many(orderHistoryRecords),
 }));

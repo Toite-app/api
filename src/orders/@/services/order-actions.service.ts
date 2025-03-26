@@ -9,6 +9,7 @@ import {
   orderDishes,
   orderDishesReturnments,
 } from "@postgress-db/schema/order-dishes";
+import { orderHistoryRecords } from "@postgress-db/schema/order-history";
 import {
   orderPrecheckPositions,
   orderPrechecks,
@@ -317,7 +318,10 @@ export class OrderActionsService {
           currency,
           workerId: opts.worker.id,
         })
-        .returning({ id: orderPrechecks.id });
+        .returning({
+          id: orderPrechecks.id,
+          createdAt: orderPrechecks.createdAt,
+        });
 
       await tx.insert(orderPrecheckPositions).values(
         order.orderDishes.map((d) => ({
@@ -325,6 +329,13 @@ export class OrderActionsService {
           ...d,
         })),
       );
+
+      await tx.insert(orderHistoryRecords).values({
+        id: precheck.id,
+        orderId,
+        type: "precheck",
+        createdAt: precheck.createdAt,
+      });
 
       return precheck;
     });
