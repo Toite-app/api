@@ -4069,6 +4069,21 @@ chokidar@3.5.3, chokidar@^3.5.3:
   optionalDependencies:
     fsevents "~2.3.2"
 
+chokidar@^3.6.0:
+  version "3.6.0"
+  resolved "https://registry.yarnpkg.com/chokidar/-/chokidar-3.6.0.tgz#197c6cc669ef2a8dc5e7b4d97ee4e092c3eb0d5b"
+  integrity sha512-7VT13fmjotKpGipCW9JEQAusEPE+Ei8nl6/g4FBAmIm0GOOLMua9NDDo/DWp0ZAxCr3cPq5ZpBqmPAQgDda2Pw==
+  dependencies:
+    anymatch "~3.1.2"
+    braces "~3.0.2"
+    glob-parent "~5.1.2"
+    is-binary-path "~2.1.0"
+    is-glob "~4.0.1"
+    normalize-path "~3.0.0"
+    readdirp "~3.6.0"
+  optionalDependencies:
+    fsevents "~2.3.2"
+
 chownr@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/chownr/-/chownr-2.0.0.tgz#15bfbe53d2eab4cf70f18a8cd68ebe5b3cb1dece"
@@ -4297,7 +4312,7 @@ cookie-signature@^1.1.0:
   resolved "https://registry.yarnpkg.com/cookie-signature/-/cookie-signature-1.2.2.tgz#57c7fc3cc293acab9fec54d73e15690ebe4a1793"
   integrity sha512-D76uU73ulSXrD1UXF4KE2TMxVVwhsnCgfAyTg9k8P6KGZjlXKrOLe4dJQKI3Bxi5wjesZoFXJWElNWBjPZMbhg==
 
-cookie@0.5.0, cookie@^0.5.0:
+cookie@0.5.0:
   version "0.5.0"
   resolved "https://registry.yarnpkg.com/cookie/-/cookie-0.5.0.tgz#d1f5d71adec6558c58f389987c366aa47e994f8b"
   integrity sha512-YZ3GUyn/o8gfKJlnlX7g7xq4gyO6OSuhGPKaaGssGB2qgDUS0gPgtTvoyZLTt9Ab6dC4hfc9dV5arkvc/OCmrw==
@@ -7319,14 +7334,14 @@ nestjs-form-data@^1.9.92:
     mkdirp "^1.0.4"
     type-is "^1.6.18"
 
-nestjs-i18n@^10.5.0:
-  version "10.5.0"
-  resolved "https://registry.yarnpkg.com/nestjs-i18n/-/nestjs-i18n-10.5.0.tgz#e2975e2600045e31c92c5b0cfa8a2167dc554c6a"
-  integrity sha512-Pf95sOk9NiNdEakEEuoxzM8W5Nnt/jj1TavbHeId05aIdTnR6slrvGD4mEur+1fudplrTRa7g/XA0gh5GZ30aw==
+nestjs-i18n@^10.5.1:
+  version "10.5.1"
+  resolved "https://registry.yarnpkg.com/nestjs-i18n/-/nestjs-i18n-10.5.1.tgz#d8400c64edeb0541d3b081bb02bc8d5263c295c2"
+  integrity sha512-cJJFz+RUfav23QACpGCq1pdXNLYC3tBesrP14RGoE/YYcD4xosQPX2eyjvDNuo0Ti63Xtn6j57wDNEUKrZqmSw==
   dependencies:
     accept-language-parser "^1.5.0"
-    chokidar "^3.5.3"
-    cookie "^0.5.0"
+    chokidar "^3.6.0"
+    cookie "^0.7.0"
     iterare "^1.2.1"
     js-yaml "^4.1.0"
     string-format "^2.0.0"

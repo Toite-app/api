@@ -5,6 +5,7 @@ import { RequestWorker } from "@core/interfaces/request";
 import { Get, Param, Post } from "@nestjs/common";
 import { ApiOkResponse, ApiOperation } from "@nestjs/swagger";
 import { OrderAvailableActionsEntity } from "src/orders/@/entities/order-available-actions.entity";
+import { OrderPrecheckEntity } from "src/orders/@/entities/order-precheck.entity";
 import { OrderActionsService } from "src/orders/@/services/order-actions.service";
 import { OrdersService } from "src/orders/@/services/orders.service";
 
@@ -38,6 +39,22 @@ export class OrderActionsController {
     @Worker() worker: RequestWorker,
   ) {
     return this.orderActionsService.sendToKitchen(orderId, {
+      worker,
+    });
+  }
+
+  @Post("precheck")
+  @Serializable(OrderPrecheckEntity)
+  @ApiOperation({ summary: "Creates a precheck for the order" })
+  @ApiOkResponse({
+    description: "Precheck created and info for it returned",
+    type: OrderPrecheckEntity,
+  })
+  async createPrecheck(
+    @Param("id") orderId: string,
+    @Worker() worker: RequestWorker,
+  ) {
+    return this.orderActionsService.createPrecheck(orderId, {
       worker,
     });
   }

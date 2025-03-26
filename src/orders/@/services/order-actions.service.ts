@@ -1,6 +1,7 @@
 import { BadRequestException } from "@core/errors/exceptions/bad-request.exception";
 import { ForbiddenException } from "@core/errors/exceptions/forbidden.exception";
 import { NotFoundException } from "@core/errors/exceptions/not-found.exception";
+import { ServerErrorException } from "@core/errors/exceptions/server-error.exception";
 import { RequestWorker } from "@core/interfaces/request";
 import { Inject, Injectable } from "@nestjs/common";
 import { Schema } from "@postgress-db/drizzle.module";
@@ -8,11 +9,16 @@ import {
   orderDishes,
   orderDishesReturnments,
 } from "@postgress-db/schema/order-dishes";
+import {
+  orderPrecheckPositions,
+  orderPrechecks,
+} from "@postgress-db/schema/order-prechecks";
 import { inArray } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { PG_CONNECTION } from "src/constants";
 import { CreateOrderDishReturnmentDto } from "src/orders/@/dtos/create-order-dish-returnment.dto";
 import { OrderAvailableActionsEntity } from "src/orders/@/entities/order-available-actions.entity";
+import { OrderPrecheckEntity } from "src/orders/@/entities/order-precheck.entity";
 import { OrderDishesRepository } from "src/orders/@/repositories/order-dishes.repository";
 import { OrdersRepository } from "src/orders/@/repositories/orders.repository";
 import { OrdersQueueProducer } from "src/orders/@queue/orders-queue.producer";
@@ -250,5 +256,101 @@ export class OrderActionsService {
         isDoneAfterPrecheck: false,
       });
     });
+  }
+
+  public async createPrecheck(
+    orderId: string,
+    opts: { worker: RequestWorker },
+  ): Promise<OrderPrecheckEntity> {
+    const availableActions = await this.getAvailableActions(orderId);
+
+    if (!availableActions.canPrecheck) {
+      throw new BadRequestException(
+        "errors.order-actions.cant-create-precheck",
+      );
+    }
+
+    const order = await this.pg.query.orders.findFirst({
+      where: (orders, { eq }) => eq(orders.id, orderId),
+      columns: {
+        id: true,
+        type: true,
+        restaurantId: true,
+        currency: true,
+      },
+      with: {
+        orderDishes: {
+          where: (orderDishes, { eq, and, gt }) =>
+            and(eq(orderDishes.isRemoved, false), gt(orderDishes.quantity, 0)),
+          columns: {
+            name: true,
+            quantity: true,
+            price: true,
+            discountAmount: true,
+            surchargeAmount: true,
+            finalPrice: true,
+          },
+        },
+        restaurant: {
+          columns: {
+            legalEntity: true,
+            currency: true,
+          },
+        },
+      },
+    });
+
+    if (!order) {
+      throw new BadRequestException();
+    }
+
+    const precheck = await this.pg.transaction(async (tx) => {
+      const { type, restaurant, currency } = order;
+
+      const [precheck] = await tx
+        .insert(orderPrechecks)
+        .values({
+          orderId,
+          type,
+          legalEntity: restaurant?.legalEntity ?? "",
+          locale: "ru",
+          currency,
+          workerId: opts.worker.id,
+        })
+        .returning({ id: orderPrechecks.id });
+
+      await tx.insert(orderPrecheckPositions).values(
+        order.orderDishes.map((d) => ({
+          precheckId: precheck.id,
+          ...d,
+        })),
+      );
+
+      return precheck;
+    });
+
+    const result = await this.pg.query.orderPrechecks.findFirst({
+      where: (orderPrechecks, { eq }) => eq(orderPrechecks.id, precheck.id),
+      with: {
+        worker: {
+          columns: {
+            name: true,
+            role: true,
+          },
+        },
+        positions: true,
+        order: {
+          columns: {
+            number: true,
+          },
+        },
+      },
+    });
+
+    if (!result) {
+      throw new ServerErrorException();
+    }
+
+    return result;
   }
 }

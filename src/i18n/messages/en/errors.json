@@ -109,7 +109,8 @@
     "some-dish-modifiers-not-assigned-to-restaurant": "Some dish modifiers not assigned to restaurant"
   },
   "order-actions": {
-    "no-dishes-is-pending": "No dishes are pending"
+    "no-dishes-is-pending": "No dishes are pending",
+    "cant-create-precheck": "You can't create precheck for this order right now"
   },
   "payment-methods": {
     "secret-id-and-secret-key-are-required": "Secret id and secret key are required",
