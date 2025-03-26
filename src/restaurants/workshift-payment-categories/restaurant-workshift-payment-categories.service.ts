@@ -22,7 +22,7 @@ export class RestaurantWorkshiftPaymentCategoriesService {
       return true;
     } else if (worker.role === "OWNER") {
       return worker.ownedRestaurants.some((r) => r.id === restaurantId);
-    } else if (worker.role === "ADMIN") {
+    } else if (worker.role === "ADMIN" || worker.role === "CASHIER") {
       return worker.workersToRestaurants.some(
         (r) => r.restaurantId === restaurantId,
       );
