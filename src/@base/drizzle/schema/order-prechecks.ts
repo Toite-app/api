@@ -1,4 +1,4 @@
-import { localeEnum } from "@postgress-db/schema/general";
+import { currencyEnum, localeEnum } from "@postgress-db/schema/general";
 import { orders } from "@postgress-db/schema/orders";
 import { workers } from "@postgress-db/schema/workers";
 import { relations } from "drizzle-orm";
@@ -26,6 +26,7 @@ export const orderPrechecks = pgTable("order_prechecks", {
   type: orderTypeEnum("type").notNull(),
   legalEntity: text("legal_entity").notNull(),
   locale: localeEnum("locale").notNull(),
+  currency: currencyEnum("currency").notNull(),
 
   // Timestamps //
   createdAt: timestamp("created_at", {
