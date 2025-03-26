@@ -36,11 +36,6 @@ export class OrderPricesService {
       },
     });
 
-    if (!orderDishes.length) {
-      this.logger.warn(`No dishes found for order ${orderId}`);
-      return;
-    }
-
     const prices = orderDishes.reduce(
       (acc, dish) => {
         acc.subtotal += Number(dish.price) * Number(dish.quantity);
