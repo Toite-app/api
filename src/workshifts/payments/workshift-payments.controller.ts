@@ -5,7 +5,7 @@ import { RequestWorker } from "@core/interfaces/request";
 import { StringArrayPipe } from "@core/pipes/string-array.pipe";
 import { Body, Delete, Get, Param, Post, Query } from "@nestjs/common";
 import { ApiOkResponse, ApiOperation, ApiQuery } from "@nestjs/swagger";
-import { WorkshiftPaymentType } from "@postgress-db/schema/workshift-payments";
+import { WorkshiftPaymentType } from "@postgress-db/schema/workshift-enums";
 import { EnableAuditLog } from "src/@base/audit-logs/decorators/audit-logs.decorator";
 import { CreateWorkshiftPaymentDto } from "src/workshifts/payments/dto/create-workshift-payment.dto";
 import { WorkshiftPaymentEntity } from "src/workshifts/payments/entity/workshift-payment.entity";

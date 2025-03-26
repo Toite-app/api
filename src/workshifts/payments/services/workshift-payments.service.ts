@@ -2,11 +2,9 @@ import { BadRequestException } from "@core/errors/exceptions/bad-request.excepti
 import { RequestWorker } from "@core/interfaces/request";
 import { Inject, Injectable } from "@nestjs/common";
 import { schema } from "@postgress-db/drizzle.module";
+import { WorkshiftPaymentType } from "@postgress-db/schema/workshift-enums";
 import { workshiftPaymentCategories } from "@postgress-db/schema/workshift-payment-category";
-import {
-  workshiftPayments,
-  WorkshiftPaymentType,
-} from "@postgress-db/schema/workshift-payments";
+import { workshiftPayments } from "@postgress-db/schema/workshift-payments";
 import { eq } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { PG_CONNECTION } from "src/constants";

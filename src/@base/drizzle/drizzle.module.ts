@@ -17,12 +17,15 @@ import * as guests from "./schema/guests";
 import * as manyToMany from "./schema/many-to-many";
 import * as orderDeliveries from "./schema/order-deliveries";
 import * as orderDishes from "./schema/order-dishes";
+import * as orderEnums from "./schema/order-enums";
+import * as orderPrechecks from "./schema/order-prechecks";
 import * as orders from "./schema/orders";
 import * as paymentMethods from "./schema/payment-methods";
 import * as restaurantWorkshops from "./schema/restaurant-workshop";
 import * as restaurants from "./schema/restaurants";
 import * as sessions from "./schema/sessions";
 import * as workers from "./schema/workers";
+import * as workshiftEnums from "./schema/workshift-enums";
 import * as workshiftPaymentCategories from "./schema/workshift-payment-category";
 import * as workshiftPayments from "./schema/workshift-payments";
 import * as workshifts from "./schema/workshifts";
@@ -40,12 +43,15 @@ export const schema = {
   ...files,
   ...orderDishes,
   ...orderDeliveries,
+  ...orderEnums,
   ...orders,
+  ...orderPrechecks,
   ...paymentMethods,
   ...dishModifiers,
   ...discounts,
   ...dishesMenus,
   ...workshifts,
+  ...workshiftEnums,
   ...workshiftPayments,
   ...workshiftPaymentCategories,
 };

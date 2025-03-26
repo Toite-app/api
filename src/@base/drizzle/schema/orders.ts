@@ -2,6 +2,7 @@ import { currencyEnum } from "@postgress-db/schema/general";
 import { guests } from "@postgress-db/schema/guests";
 import { orderDeliveries } from "@postgress-db/schema/order-deliveries";
 import { orderDishes } from "@postgress-db/schema/order-dishes";
+import { orderPrechecks } from "@postgress-db/schema/order-prechecks";
 import { paymentMethods } from "@postgress-db/schema/payment-methods";
 import { restaurants } from "@postgress-db/schema/restaurants";
 import { relations } from "drizzle-orm";
@@ -10,48 +11,13 @@ import {
   decimal,
   index,
   integer,
-  pgEnum,
   pgTable,
   text,
   timestamp,
   uuid,
 } from "drizzle-orm/pg-core";
-import { z } from "zod";
 
-export const orderFromEnum = pgEnum("order_from_enum", [
-  "app",
-  "website",
-  "internal",
-]);
-
-export const ZodOrderFromEnum = z.enum(orderFromEnum.enumValues);
-
-export type OrderFromEnum = typeof ZodOrderFromEnum._type;
-
-export const orderStatusEnum = pgEnum("order_status_enum", [
-  "pending",
-  "cooking",
-  "ready",
-  "delivering",
-  "paid",
-  "completed",
-  "cancelled",
-]);
-
-export const ZodOrderStatusEnum = z.enum(orderStatusEnum.enumValues);
-
-export type OrderStatusEnum = typeof ZodOrderStatusEnum._type;
-
-export const orderTypeEnum = pgEnum("order_type_enum", [
-  "hall",
-  "banquet",
-  "takeaway",
-  "delivery",
-]);
-
-export const ZodOrderTypeEnum = z.enum(orderTypeEnum.enumValues);
-
-export type OrderTypeEnum = typeof ZodOrderTypeEnum._type;
+import { orderFromEnum, orderStatusEnum, orderTypeEnum } from "./order-enums";
 
 export const orderNumberBroneering = pgTable("order_number_broneering", {
   id: uuid("id").defaultRandom().primaryKey(),
@@ -157,4 +123,5 @@ export const orderRelations = relations(orders, ({ one, many }) => ({
     references: [guests.id],
   }),
   orderDishes: many(orderDishes),
+  prechecks: many(orderPrechecks),
 }));

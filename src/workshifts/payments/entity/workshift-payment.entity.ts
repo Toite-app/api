@@ -10,10 +10,8 @@ import {
 } from "@i18n-class-validator";
 import { ApiProperty, ApiPropertyOptional, PickType } from "@nestjs/swagger";
 import { ZodCurrency } from "@postgress-db/schema/general";
-import {
-  IWorkshiftPayment,
-  ZodWorkshiftPaymentType,
-} from "@postgress-db/schema/workshift-payments";
+import { ZodWorkshiftPaymentType } from "@postgress-db/schema/workshift-enums";
+import { IWorkshiftPayment } from "@postgress-db/schema/workshift-payments";
 import { Expose, Type } from "class-transformer";
 import { WorkshiftPaymentCategoryEntity } from "src/restaurants/workshift-payment-categories/entity/workshift-payment-category.entity";
 import { WorkerEntity } from "src/workers/entities/worker.entity";

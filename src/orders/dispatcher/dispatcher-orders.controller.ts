@@ -3,7 +3,7 @@ import { CursorParams, ICursor } from "@core/decorators/cursor.decorator";
 import { Serializable } from "@core/decorators/serializable.decorator";
 import { Get, Query } from "@nestjs/common";
 import { ApiOkResponse, ApiOperation } from "@nestjs/swagger";
-import { OrderTypeEnum } from "@postgress-db/schema/orders";
+import { OrderTypeEnum } from "@postgress-db/schema/order-enums";
 import { EnableAuditLog } from "src/@base/audit-logs/decorators/audit-logs.decorator";
 import { DispatcherOrdersService } from "src/orders/dispatcher/dispatcher-orders.service";
 import { DispatcherOrdersPaginatedEntity } from "src/orders/dispatcher/entities/dispatcher-orders-paginated.entity";

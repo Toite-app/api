@@ -18,7 +18,7 @@ import { ZodDayOfWeekEnum } from "@postgress-db/schema/general";
 import {
   ZodOrderFromEnum,
   ZodOrderTypeEnum,
-} from "@postgress-db/schema/orders";
+} from "@postgress-db/schema/order-enums";
 import { Expose, Type } from "class-transformer";
 
 export class DiscountRestaurantEntity {

@@ -1,5 +1,5 @@
 import { dayOfWeekEnum } from "@postgress-db/schema/general";
-import { orderFromEnum, orderTypeEnum } from "@postgress-db/schema/orders";
+import { orderFromEnum, orderTypeEnum } from "@postgress-db/schema/order-enums";
 import { restaurants } from "@postgress-db/schema/restaurants";
 import { relations } from "drizzle-orm";
 import {
