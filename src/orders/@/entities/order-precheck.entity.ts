@@ -85,14 +85,6 @@ export class OrderPrecheckEntity implements IOrderPrecheck {
   })
   createdAt: Date;
 
-  @IsDate()
-  @Expose()
-  @ApiProperty({
-    description: "Last update timestamp",
-    example: new Date(),
-  })
-  updatedAt: Date;
-
   @Expose()
   @ApiProperty({
     description: "Precheck positions",

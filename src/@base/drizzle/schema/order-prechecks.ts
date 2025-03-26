@@ -34,12 +34,6 @@ export const orderPrechecks = pgTable("order_prechecks", {
   })
     .notNull()
     .defaultNow(),
-  updatedAt: timestamp("updated_at", {
-    withTimezone: true,
-  })
-    .notNull()
-    .defaultNow()
-    .$onUpdate(() => new Date()),
 });
 
 export type IOrderPrecheck = typeof orderPrechecks.$inferSelect;
