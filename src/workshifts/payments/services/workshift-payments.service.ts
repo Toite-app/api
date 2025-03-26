@@ -131,6 +131,7 @@ export class WorkshiftPaymentsService {
           },
         },
       },
+      orderBy: (payment, { desc }) => [desc(payment.createdAt)],
     });
 
     return payments;
