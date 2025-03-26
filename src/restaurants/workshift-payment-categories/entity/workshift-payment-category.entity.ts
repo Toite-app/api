@@ -7,7 +7,7 @@ import {
   IsUUID,
 } from "@i18n-class-validator";
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
-import { ZodWorkshiftPaymentType } from "@postgress-db/schema/workshift-payments";
+import { ZodWorkshiftPaymentType } from "@postgress-db/schema/workshift-enums";
 import { Expose, Type } from "class-transformer";
 
 export class WorkshiftPaymentCategoryEntity {

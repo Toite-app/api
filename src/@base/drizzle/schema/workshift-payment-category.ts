@@ -1,8 +1,5 @@
 import { restaurants } from "@postgress-db/schema/restaurants";
-import {
-  workshiftPayments,
-  workshiftPaymentTypeEnum,
-} from "@postgress-db/schema/workshift-payments";
+import { workshiftPayments } from "@postgress-db/schema/workshift-payments";
 import { relations } from "drizzle-orm";
 import {
   boolean,
@@ -12,6 +9,8 @@ import {
   timestamp,
   uuid,
 } from "drizzle-orm/pg-core";
+
+import { workshiftPaymentTypeEnum } from "./workshift-enums";
 
 export const workshiftPaymentCategories = pgTable(
   "workshift_payment_categories",

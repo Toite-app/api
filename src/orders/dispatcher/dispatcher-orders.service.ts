@@ -2,7 +2,7 @@ import { ICursor } from "@core/decorators/cursor.decorator";
 import { Inject, Injectable } from "@nestjs/common";
 import { Schema } from "@postgress-db/drizzle.module";
 import { orderDishes } from "@postgress-db/schema/order-dishes";
-import { OrderTypeEnum } from "@postgress-db/schema/orders";
+import { OrderTypeEnum } from "@postgress-db/schema/order-enums";
 import { addDays } from "date-fns";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { PG_CONNECTION } from "src/constants";

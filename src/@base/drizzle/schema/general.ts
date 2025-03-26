@@ -20,3 +20,9 @@ export const ZodCurrency = z.enum(currencyEnum.enumValues);
 export type ZodCurrencyEnum = typeof ZodCurrency._type;
 
 export type ICurrency = (typeof currencyEnum.enumValues)[number];
+
+export const localeEnum = pgEnum("locale", ["en", "ru", "ee"]);
+
+export const ZodLocaleEnum = z.enum(localeEnum.enumValues);
+
+export type ZodLocaleEnum = typeof ZodLocaleEnum._type;

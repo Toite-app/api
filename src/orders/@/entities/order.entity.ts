@@ -14,11 +14,11 @@ import {
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { ZodCurrency } from "@postgress-db/schema/general";
 import {
-  IOrder,
   ZodOrderFromEnum,
   ZodOrderStatusEnum,
   ZodOrderTypeEnum,
-} from "@postgress-db/schema/orders";
+} from "@postgress-db/schema/order-enums";
+import { IOrder } from "@postgress-db/schema/orders";
 import { Expose, Type } from "class-transformer";
 import { OrderDishEntity } from "src/orders/@/entities/order-dish.entity";
 
