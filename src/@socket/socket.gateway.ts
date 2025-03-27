@@ -362,8 +362,6 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
         restaurants: worker.workersToRestaurants,
         connectedAt,
       } satisfies GatewayWorker);
-
-      socket.emit("connected", worker);
     } catch (error) {
       this.logger.error(error);
       socket.disconnect(true);
