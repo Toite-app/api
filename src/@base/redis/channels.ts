@@ -3,4 +3,5 @@ export enum RedisChannels {
   BULLMQ = 2,
   SOCKET = 3,
   REDLOCK = 4,
+  CACHE = 5,
 }
