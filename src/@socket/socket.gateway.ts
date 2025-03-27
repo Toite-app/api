@@ -400,51 +400,46 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ) {
     const clientId = socket.id;
 
-    const { id, type, data, action } = incomingData;
+    const { id, type, action } = incomingData;
 
     try {
       let subscriptions = this.localSubscriptionsMap.get(clientId) ?? [];
 
-      switch (type) {
-        case ClientSubscriptionType.MULTIPLE_ORDERS: {
-          if (action === "subscribe") {
-            subscriptions.push({
-              id,
-              clientId,
-              type,
-              data: {
-                orderIds: data.orderIds,
-              },
-            } satisfies GatewayClientSubscription);
-          } else if (action === "unsubscribe") {
-            subscriptions = subscriptions.filter(
-              (subscription) => subscription.id !== id,
-            );
-          }
+      // Subscribe
+      if (action === "subscribe") {
+        // Just subscribe without data
+        if (
+          type === ClientSubscriptionType.NEW_ORDERS ||
+          type === ClientSubscriptionType.NEW_ORDERS_AT_KITCHEN
+        ) {
+          subscriptions.push({
+            id,
+            clientId,
+            type,
+          } satisfies GatewayClientSubscription);
+        } else if (type === ClientSubscriptionType.ORDERS_UPDATE) {
+          const { data } = incomingData;
 
-          break;
+          subscriptions.push({
+            id,
+            clientId,
+            type,
+            data: {
+              orderIds: data.orderIds,
+            },
+          } satisfies GatewayClientSubscription);
         }
-        case ClientSubscriptionType.ORDER: {
-          if (action === "subscribe") {
-            subscriptions.push({
-              id,
-              clientId,
-              type,
-              data: {
-                orderId: data.orderId,
-              },
-            } satisfies GatewayClientSubscription);
-          } else if (action === "unsubscribe") {
-            subscriptions = subscriptions.filter(
-              (subscription) => subscription.id !== id,
-            );
-          }
-          break;
-        }
-
-        default: {
+        // Non of cases
+        else {
           throw new Error("Invalid subscription type");
         }
+        // Unsubscribe
+      } else if (action === "unsubscribe") {
+        subscriptions = subscriptions.filter(
+          (subscription) => subscription.id !== id,
+        );
+      } else {
+        throw new Error("Invalid action");
       }
 
       this.localSubscriptionsMap.set(clientId, subscriptions);

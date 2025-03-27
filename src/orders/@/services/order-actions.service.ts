@@ -155,6 +155,13 @@ export class OrderActionsService {
         },
       );
     });
+
+    // Notify users
+    await this.ordersProducer.update({
+      orderId,
+    });
+
+    await this.ordersProducer.newOrderAtKitchen(orderId);
   }
 
   public async makeOrderDishReturnment(
@@ -173,6 +180,7 @@ export class OrderActionsService {
       with: {
         order: {
           columns: {
+            id: true,
             restaurantId: true,
           },
         },
@@ -263,6 +271,10 @@ export class OrderActionsService {
         // TODO: Implement isDoneAfterPrecheck flag
         isDoneAfterPrecheck: false,
       });
+    });
+
+    await this.ordersProducer.update({
+      orderId: orderDish.order.id,
     });
   }
 
