@@ -20,6 +20,18 @@ export class OrderDiscountsService {
       },
     });
 
-    order;
+    if (!order) {
+      return [];
+    }
+
+    const discounts = await this.pg.query.discounts.findMany({
+      where: (discounts, { or, eq, exists, ilike, and, inArray }) =>
+        or(
+          and(
+            // Order from in array //
+            ilike(discounts.orderFroms, order.from),
+          ),
+        ),
+    });
   }
 }

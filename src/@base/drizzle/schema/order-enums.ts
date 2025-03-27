@@ -39,3 +39,5 @@ export type OrderStatusEnum = typeof ZodOrderStatusEnum._type;
 export const orderHistoryTypeEnum = pgEnum("order_history_type_enum", [
   "precheck",
 ]);
+
+export const ZodOrderHistoryTypeEnum = z.enum(orderHistoryTypeEnum.enumValues);
