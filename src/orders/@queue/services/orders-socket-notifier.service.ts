@@ -1,11 +1,9 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { SocketService } from "src/@socket/socket.service";
 import {
-  ClientSubscriptionType,
   GatewayClient,
   SocketEventType,
-  SocketNewOrderEvent,
-  SocketOrderUpdateEvent,
+  SocketRevalidateOrderEvent,
 } from "src/@socket/socket.types";
 import { OrdersService } from "src/orders/@/services/orders.service";
 
@@ -27,7 +25,7 @@ export class OrdersSocketNotifier {
    */
   public async handle(orderId: string) {
     const clients = await this.socketService.getClients();
-    const subscriptions = await this.socketService.getSubscriptions();
+    const currentPathnames = await this.socketService.getCurrentPathnames();
 
     const clientsMap = new Map<string, GatewayClient>(
       clients.map((client) => [client.clientId, client]),
@@ -39,22 +37,17 @@ export class OrdersSocketNotifier {
       data: any;
     }[] = [];
 
-    subscriptions.forEach((subscription) => {
-      if (
-        subscription.type === ClientSubscriptionType.ORDERS_UPDATE &&
-        subscription.data.orderIds.includes(orderId)
-      ) {
-        const recipient = clientsMap.get(subscription.clientId);
+    Object.entries(currentPathnames).forEach(([clientId, pathname]) => {
+      if (pathname.includes("/orders") && pathname.includes(orderId)) {
+        const recipient = clientsMap.get(clientId);
         if (!recipient) return;
 
         messages.push({
           recipient,
-          event: SocketEventType.SUBSCRIPTION_UPDATE,
+          event: SocketEventType.REVALIDATE_ORDER,
           data: {
-            id: subscription.id,
-            type: "ORDER",
             orderId,
-          } satisfies SocketOrderUpdateEvent,
+          } satisfies SocketRevalidateOrderEvent,
         });
       }
     });
@@ -63,45 +56,46 @@ export class OrdersSocketNotifier {
   }
 
   public async notifyAboutNewOrder(workerIds: string[]) {
-    const clients = await this.socketService.getClients();
-    const subscriptions = await this.socketService.getSubscriptions();
+    return;
+    // const clients = await this.socketService.getClients();
+    // const subscriptions = await this.socketService.getSubscriptions();
 
-    const clientsMap = new Map<string, GatewayClient>(
-      clients.map((client) => [client.clientId, client]),
-    );
+    // const clientsMap = new Map<string, GatewayClient>(
+    //   clients.map((client) => [client.clientId, client]),
+    // );
 
-    const workerIdsToNotifySet = new Set(workerIds);
-    const clientIdToWorkerIdMap = new Map<string, string>(
-      clients.map((client) => [client.clientId, client.workerId]),
-    );
+    // const workerIdsToNotifySet = new Set(workerIds);
+    // const clientIdToWorkerIdMap = new Map<string, string>(
+    //   clients.map((client) => [client.clientId, client.workerId]),
+    // );
 
-    const messages: {
-      recipient: GatewayClient;
-      event: string;
-      data: any;
-    }[] = [];
+    // const messages: {
+    //   recipient: GatewayClient;
+    //   event: string;
+    //   data: any;
+    // }[] = [];
 
-    subscriptions.forEach((subscription) => {
-      const workerId = clientIdToWorkerIdMap.get(subscription.clientId);
+    // subscriptions.forEach((subscription) => {
+    //   const workerId = clientIdToWorkerIdMap.get(subscription.clientId);
 
-      if (!workerId) return;
-      if (!workerIdsToNotifySet.has(workerId)) return;
+    //   if (!workerId) return;
+    //   if (!workerIdsToNotifySet.has(workerId)) return;
 
-      if (subscription.type === ClientSubscriptionType.NEW_ORDERS) {
-        const recipient = clientsMap.get(subscription.clientId);
-        if (!recipient) return;
+    //   if (subscription.type === ClientSubscriptionType.NEW_ORDERS) {
+    //     const recipient = clientsMap.get(subscription.clientId);
+    //     if (!recipient) return;
 
-        messages.push({
-          recipient,
-          event: SocketEventType.SUBSCRIPTION_UPDATE,
-          data: {
-            id: subscription.id,
-            type: "NEW_ORDER",
-          } satisfies SocketNewOrderEvent,
-        });
-      }
-    });
+    //     messages.push({
+    //       recipient,
+    //       event: SocketEventType.SUBSCRIPTION_UPDATE,
+    //       data: {
+    //         id: subscription.id,
+    //         type: "NEW_ORDER",
+    //       } satisfies SocketNewOrderEvent,
+    //     });
+    //   }
+    // });
 
-    await this.socketService.emit(messages);
+    // await this.socketService.emit(messages);
   }
 }

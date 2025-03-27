@@ -13,14 +13,11 @@ import Redis from "ioredis";
 import { Socket } from "socket.io";
 import { RedisChannels } from "src/@base/redis/channels";
 import {
-  ClientSubscriptionType,
   GatewayClient,
   GatewayClients,
-  GatewayClientSubscription,
   GatewayIncomingMessage,
   GatewayMessage,
   GatewayWorker,
-  IncomingSubscription,
 } from "src/@socket/socket.types";
 import { AuthService } from "src/auth/services/auth.service";
 
@@ -47,10 +44,9 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   // Local state of the gateway
   private localClients: GatewayClients = [];
+  private localClientsCurrentPathnameMap: Record<string, string> = {};
   private localClientsSocketMap: Map<string, Socket> = new Map();
   private localWorkersMap: Map<string, GatewayWorker> = new Map();
-  private localSubscriptionsMap: Map<string, GatewayClientSubscription[]> =
-    new Map();
 
   constructor(private readonly authService: AuthService) {
     this.gatewayId = SocketUtils.generateGatewayId();
@@ -145,11 +141,9 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
       );
 
       pipeline.setex(
-        `${this.gatewayId}:subscriptions`,
+        `${this.gatewayId}:current-pathnames`,
         this.REDIS_CLIENTS_TTL,
-        JSON.stringify(
-          Object.fromEntries(this.localSubscriptionsMap.entries()),
-        ),
+        JSON.stringify(this.localClientsCurrentPathnameMap),
       );
 
       await pipeline.exec();
@@ -273,25 +267,33 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
    * Get all subscriptions from all gateways
    * @returns All subscriptions
    */
-  public async getSubscriptions(): Promise<GatewayClientSubscription[]> {
+  public async getCurrentPathnames(): Promise<Record<string, string>> {
     const gatewayKeys = await this.publisherRedis.keys(
-      `${SocketUtils.commonGatewaysIdentifier}:*:subscriptions`,
+      `${SocketUtils.commonGatewaysIdentifier}:*:current-pathnames`,
     );
 
-    const subscriptionsRaw = await this.publisherRedis.mget(gatewayKeys);
+    const currentPathnamesRaw = await this.publisherRedis.mget(gatewayKeys);
 
-    const subscriptions = subscriptionsRaw
-      .flatMap((raw) =>
-        Object.values(
-          JSON.parse(String(raw)) as Record<
-            string,
-            GatewayClientSubscription[]
-          >,
-        ),
-      )
-      .flat();
+    const currentPathnames = currentPathnamesRaw.reduce(
+      (acc, currentPathnameRaw) => {
+        if (!currentPathnameRaw) {
+          return acc;
+        }
 
-    return subscriptions;
+        const currentPathname = JSON.parse(
+          String(currentPathnameRaw),
+        ) as Record<string, string>;
+
+        Object.entries(currentPathname).forEach(([clientId, pathname]) => {
+          acc[clientId] = pathname;
+        });
+
+        return acc;
+      },
+      {} as Record<string, string>,
+    );
+
+    return currentPathnames;
   }
 
   public async emit(
@@ -379,7 +381,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
       );
 
       this.localClientsSocketMap.delete(socket.id);
-      this.localSubscriptionsMap.delete(socket.id);
+      delete this.localClientsCurrentPathnameMap[socket.id];
     } catch (error) {
       this.logger.error(error);
       socket.disconnect(true);
@@ -387,74 +389,21 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   /**
-   * Handle a subscription
+   * Handle a current pathname
    * @param incomingData - The incoming data
    * @param socket - The socket connection
    */
-  @SubscribeMessage(GatewayIncomingMessage.SUBSCRIPTION)
-  async handleSubscription(
-    @MessageBody() incomingData: IncomingSubscription,
+  @SubscribeMessage(GatewayIncomingMessage.CURRENT_PATHNAME)
+  async handleCurrentPathname(
+    @MessageBody() incomingData: { pathname: string },
     @ConnectedSocket() socket: Socket,
   ) {
     const clientId = socket.id;
 
-    const { id, type, action } = incomingData;
-
     try {
-      let subscriptions = this.localSubscriptionsMap.get(clientId) ?? [];
-
-      // Subscribe
-      if (action === "subscribe") {
-        // Just subscribe without data
-        if (
-          type === ClientSubscriptionType.NEW_ORDERS ||
-          type === ClientSubscriptionType.NEW_ORDERS_AT_KITCHEN
-        ) {
-          subscriptions.push({
-            id,
-            clientId,
-            type,
-          } satisfies GatewayClientSubscription);
-        } else if (type === ClientSubscriptionType.ORDERS_UPDATE) {
-          const { data } = incomingData;
-
-          subscriptions.push({
-            id,
-            clientId,
-            type,
-            data: {
-              orderIds: data.orderIds,
-            },
-          } satisfies GatewayClientSubscription);
-        }
-        // Non of cases
-        else {
-          throw new Error("Invalid subscription type");
-        }
-        // Unsubscribe
-      } else if (action === "unsubscribe") {
-        subscriptions = subscriptions.filter(
-          (subscription) => subscription.id !== id,
-        );
-      } else {
-        throw new Error("Invalid action");
-      }
-
-      this.localSubscriptionsMap.set(clientId, subscriptions);
-
-      socket.emit("subscription", {
-        id,
-        action,
-        success: true,
-      });
+      this.localClientsCurrentPathnameMap[clientId] = incomingData.pathname;
     } catch (error) {
       this.logger.error(error);
-
-      socket.emit("subscription", {
-        id,
-        action,
-        success: false,
-      });
     }
   }
 }

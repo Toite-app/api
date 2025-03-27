@@ -14,8 +14,8 @@ export class SocketService {
     return await this.socketGateway.getWorkers();
   }
 
-  public async getSubscriptions() {
-    return await this.socketGateway.getSubscriptions();
+  public async getCurrentPathnames() {
+    return await this.socketGateway.getCurrentPathnames();
   }
 
   public async emit(
