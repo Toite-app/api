@@ -1,5 +1,6 @@
 import { Inject, Injectable } from "@nestjs/common";
 import { DrizzleTransaction, Schema } from "@postgress-db/drizzle.module";
+import { orderHistoryRecords } from "@postgress-db/schema/order-history";
 import { orders } from "@postgress-db/schema/orders";
 import { plainToClass } from "class-transformer";
 import { eq } from "drizzle-orm";
@@ -50,6 +51,13 @@ export class OrdersRepository {
         .insert(orders)
         .values(payload)
         .returning();
+
+      // Create history record
+      await tx.insert(orderHistoryRecords).values({
+        orderId: createdOrder.id,
+        type: "created",
+        workerId: opts?.workerId,
+      });
 
       return createdOrder;
     });
