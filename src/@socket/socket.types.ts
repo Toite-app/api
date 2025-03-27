@@ -1,35 +1,33 @@
 import { IWorker, IWorkersToRestaurants } from "@postgress-db/schema/workers";
-import { OrderEntity } from "src/orders/@/entities/order.entity";
 
 export enum GatewayIncomingMessage {
   SUBSCRIPTION = "subscription",
 }
 
 export enum ClientSubscriptionType {
-  ORDER = "ORDER",
-  MULTIPLE_ORDERS = "MULTIPLE_ORDERS",
-}
-
-export interface ClientOrderSubscription {
-  orderId: string;
-}
-
-export interface ClientMultipleOrdersSubscription {
-  orderIds: string[];
+  NEW_ORDERS = "NEW_ORDERS",
+  NEW_ORDERS_AT_KITCHEN = "NEW_ORDERS_AT_KITCHEN",
+  ORDERS_UPDATE = "ORDERS_UPDATE",
 }
 
 export type GatewayClientSubscription =
   | {
       id: string;
       clientId: string;
-      type: ClientSubscriptionType.ORDER;
-      data: ClientOrderSubscription;
+      type: ClientSubscriptionType.NEW_ORDERS;
     }
   | {
       id: string;
       clientId: string;
-      type: ClientSubscriptionType.MULTIPLE_ORDERS;
-      data: ClientMultipleOrdersSubscription;
+      type: ClientSubscriptionType.NEW_ORDERS_AT_KITCHEN;
+    }
+  | {
+      id: string;
+      clientId: string;
+      type: ClientSubscriptionType.ORDERS_UPDATE;
+      data: {
+        orderIds: string[];
+      };
     };
 
 export enum IncomingSubscriptionAction {
@@ -42,13 +40,18 @@ export type IncomingSubscription = {
 } & (
   | {
       id: string;
-      type: ClientSubscriptionType.ORDER;
-      data: ClientOrderSubscription;
+      type: ClientSubscriptionType.NEW_ORDERS;
     }
   | {
       id: string;
-      type: ClientSubscriptionType.MULTIPLE_ORDERS;
-      data: ClientMultipleOrdersSubscription;
+      type: ClientSubscriptionType.NEW_ORDERS_AT_KITCHEN;
+    }
+  | {
+      id: string;
+      type: ClientSubscriptionType.ORDERS_UPDATE;
+      data: {
+        orderIds: string[];
+      };
     }
 );
 
@@ -89,7 +92,7 @@ export enum SocketEventType {
 export type SocketOrderUpdateEvent = {
   id: string;
   type: "ORDER";
-  order: OrderEntity;
+  orderId: string;
 };
 
 export interface SocketEvent {

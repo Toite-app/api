@@ -224,12 +224,8 @@ export class OrdersService {
 
     const order = await this.findById(createdOrder.id);
 
-    await this.ordersQueueProducer.crudUpdate({
-      action: "CREATE",
-      orderId: createdOrder.id,
-      order,
-      calledByWorkerId: opts?.workerId,
-    });
+    // Notify users
+    await this.ordersQueueProducer.newOrder(createdOrder.id);
 
     return order;
   }
@@ -298,11 +294,9 @@ export class OrdersService {
 
     const updatedOrderEntity = await this.findById(updatedOrder.id);
 
-    await this.ordersQueueProducer.crudUpdate({
-      action: "UPDATE",
+    // Notify users
+    await this.ordersQueueProducer.update({
       orderId: id,
-      order: updatedOrderEntity,
-      calledByWorkerId: opts?.workerId,
     });
 
     return updatedOrderEntity;

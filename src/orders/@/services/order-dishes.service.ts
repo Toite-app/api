@@ -164,11 +164,8 @@ export class OrderDishesService {
       },
     );
 
-    await this.ordersProducer.dishCrudUpdate({
-      action: "CREATE",
-      orderDishId: orderDish.id,
+    await this.ordersProducer.dishUpdate({
       orderDish,
-      calledByWorkerId: opts?.workerId,
     });
 
     return orderDish;
@@ -209,11 +206,8 @@ export class OrderDishesService {
       },
     );
 
-    await this.ordersProducer.dishCrudUpdate({
-      action: "UPDATE",
-      orderDishId: orderDish.id,
+    await this.ordersProducer.dishUpdate({
       orderDish: updatedOrderDish,
-      calledByWorkerId: opts?.workerId,
     });
 
     return updatedOrderDish;
@@ -237,11 +231,8 @@ export class OrderDishesService {
       },
     );
 
-    await this.ordersProducer.dishCrudUpdate({
-      action: "DELETE",
-      orderDishId: orderDish.id,
+    await this.ordersProducer.dishUpdate({
       orderDish: removedOrderDish,
-      calledByWorkerId: opts?.workerId,
     });
 
     return removedOrderDish;

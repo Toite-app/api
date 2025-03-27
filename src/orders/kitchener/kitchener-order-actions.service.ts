@@ -83,11 +83,8 @@ export class KitchenerOrderActionsService {
       },
     );
 
-    await this.ordersProducer.dishCrudUpdate({
-      action: "UPDATE",
-      orderDishId: orderDish.id,
+    await this.ordersProducer.dishUpdate({
       orderDish: updatedOrderDish,
-      calledByWorkerId: opts?.worker?.id,
     });
 
     return updatedOrderDish;

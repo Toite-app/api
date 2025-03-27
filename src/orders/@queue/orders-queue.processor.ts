@@ -31,13 +31,15 @@ export class OrdersQueueProcessor extends WorkerHost {
 
     try {
       switch (name) {
-        case OrderQueueJobName.CRUD_UPDATE: {
-          await this.crudUpdate(data as OrderCrudUpdateJobDto);
+        case OrderQueueJobName.UPDATE: {
+          await this.update(data as OrderCrudUpdateJobDto);
           break;
         }
 
-        case OrderQueueJobName.DISH_CRUD_UPDATE: {
-          await this.dishCrudUpdate(data as OrderDishCrudUpdateJobDto);
+        case OrderQueueJobName.DISH_UPDATE: {
+          await this.update({
+            orderId: (data as OrderDishCrudUpdateJobDto).orderDish.orderId,
+          });
           break;
         }
 
@@ -52,13 +54,8 @@ export class OrdersQueueProcessor extends WorkerHost {
     }
   }
 
-  private async crudUpdate(data: OrderCrudUpdateJobDto) {
+  private async update(data: OrderCrudUpdateJobDto) {
     // notify users
-    await this.ordersSocketNotifier.handle(data.order);
-  }
-
-  private async dishCrudUpdate(data: OrderDishCrudUpdateJobDto) {
-    // notify users
-    await this.ordersSocketNotifier.handleById(data.orderDish.orderId);
+    await this.ordersSocketNotifier.handle(data.orderId);
   }
 }

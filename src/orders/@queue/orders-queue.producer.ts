@@ -28,14 +28,28 @@ export class OrdersQueueProducer {
   /**
    * When order is: created, updated, removed
    */
-  public async crudUpdate(payload: OrderCrudUpdateJobDto) {
-    return this.addJob(OrderQueueJobName.CRUD_UPDATE, payload);
+  public async update(payload: OrderCrudUpdateJobDto) {
+    return this.addJob(OrderQueueJobName.UPDATE, payload);
   }
 
   /**
    * When order dish is: created, updated, removed
    */
-  public async dishCrudUpdate(payload: OrderDishCrudUpdateJobDto) {
-    return this.addJob(OrderQueueJobName.DISH_CRUD_UPDATE, payload);
+  public async dishUpdate(payload: OrderDishCrudUpdateJobDto) {
+    return this.addJob(OrderQueueJobName.DISH_UPDATE, payload);
+  }
+
+  /**
+   * When order is: created
+   */
+  public async newOrder(orderId: string) {
+    return this.addJob(OrderQueueJobName.NEW_ORDER, { orderId });
+  }
+
+  /**
+   * When order is: created at kitchen
+   */
+  public async newOrderAtKitchen(orderId: string) {
+    return this.addJob(OrderQueueJobName.NEW_ORDER_AT_KITCHEN, { orderId });
   }
 }
