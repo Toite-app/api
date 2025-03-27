@@ -20,7 +20,7 @@ export class OrderHistoryController {
   @EnableAuditLog({ onlyErrors: true })
   @Serializable(OrderHistoryPaginatedEntity)
   @Get()
-  @CacheRequest({ ttl: 60 })
+  @CacheRequest({ ttl: 5 })
   @ApiOperation({
     summary: "Finds all history records for an order",
     description: "Returns a paginated list of order history records",
