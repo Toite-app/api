@@ -7,6 +7,7 @@ import { Serializable } from "@core/decorators/serializable.decorator";
 import { Get, Param } from "@nestjs/common";
 import { ApiOkResponse, ApiOperation } from "@nestjs/swagger";
 import { EnableAuditLog } from "src/@base/audit-logs/decorators/audit-logs.decorator";
+import { CacheRequest } from "src/@base/cache/cache.decorator";
 import { OrderHistoryPaginatedEntity } from "src/orders/@/entities/order-history-paginated.entity";
 import { OrderHistoryService } from "src/orders/@/services/order-history.service";
 
@@ -19,6 +20,7 @@ export class OrderHistoryController {
   @EnableAuditLog({ onlyErrors: true })
   @Serializable(OrderHistoryPaginatedEntity)
   @Get()
+  @CacheRequest({ ttl: 60 })
   @ApiOperation({
     summary: "Finds all history records for an order",
     description: "Returns a paginated list of order history records",

@@ -18,6 +18,8 @@ import {
 import { ZodValidationPipe } from "nestjs-zod";
 import { AuditLogsInterceptor } from "src/@base/audit-logs/audit-logs.interceptor";
 import { AuditLogsModule } from "src/@base/audit-logs/audit-logs.module";
+import { CacheInterceptor } from "src/@base/cache/cache.interceptor";
+import { CacheModule } from "src/@base/cache/cache.module";
 import { EncryptionModule } from "src/@base/encryption/encryption.module";
 import { RedisChannels } from "src/@base/redis/channels";
 import { RedlockModule } from "src/@base/redlock/redlock.module";
@@ -90,6 +92,7 @@ import { WorkersModule } from "./workers/workers.module";
     FilesModule,
     NestjsFormDataModule,
     OrdersModule,
+    CacheModule,
     I18nModule.forRoot({
       fallbackLanguage: "en",
       loaderOptions: {
@@ -123,6 +126,10 @@ import { WorkersModule } from "./workers/workers.module";
     {
       provide: APP_GUARD,
       useClass: RestaurantGuard,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: CacheInterceptor,
     },
   ],
 })
