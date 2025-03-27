@@ -1,6 +1,7 @@
 import { dishesMenus } from "@postgress-db/schema/dishes-menus";
 import { orderDeliveries } from "@postgress-db/schema/order-deliveries";
 import { orderDishesReturnments } from "@postgress-db/schema/order-dishes";
+import { orderHistoryRecords } from "@postgress-db/schema/order-history";
 import { orderPrechecks } from "@postgress-db/schema/order-prechecks";
 import { restaurants } from "@postgress-db/schema/restaurants";
 import { workshiftPayments } from "@postgress-db/schema/workshift-payments";
@@ -122,6 +123,7 @@ export const workerRelations = relations(workers, ({ many }) => ({
   }),
   orderDishesReturnments: many(orderDishesReturnments),
   orderPrechecks: many(orderPrechecks),
+  orderHistoryRecords: many(orderHistoryRecords),
 }));
 
 export type IWorker = typeof workers.$inferSelect;

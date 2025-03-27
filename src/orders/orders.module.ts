@@ -4,12 +4,14 @@ import { SnapshotsModule } from "src/@base/snapshots/snapshots.module";
 import { GuestsModule } from "src/guests/guests.module";
 import { OrderActionsController } from "src/orders/@/order-actions.controller";
 import { OrderDishesController } from "src/orders/@/order-dishes.controller";
+import { OrderHistoryController } from "src/orders/@/order-history.controller";
 import { OrderMenuController } from "src/orders/@/order-menu.controller";
 import { OrdersController } from "src/orders/@/orders.controller";
 import { OrderDishesRepository } from "src/orders/@/repositories/order-dishes.repository";
 import { OrdersRepository } from "src/orders/@/repositories/orders.repository";
 import { OrderActionsService } from "src/orders/@/services/order-actions.service";
 import { OrderDishesService } from "src/orders/@/services/order-dishes.service";
+import { OrderHistoryService } from "src/orders/@/services/order-history.service";
 import { OrderMenuService } from "src/orders/@/services/order-menu.service";
 import { OrderPricesService } from "src/orders/@/services/order-prices.service";
 import { OrdersService } from "src/orders/@/services/orders.service";
@@ -33,6 +35,7 @@ import { KitchenerOrdersService } from "src/orders/kitchener/kitchener-orders.se
     OrderPricesService,
     OrderActionsService,
     KitchenerOrderActionsService,
+    OrderHistoryService,
   ],
   controllers: [
     OrdersController,
@@ -41,6 +44,7 @@ import { KitchenerOrdersService } from "src/orders/kitchener/kitchener-orders.se
     DispatcherOrdersController,
     KitchenerOrdersController,
     OrderActionsController,
+    OrderHistoryController,
   ],
   exports: [
     OrdersService,

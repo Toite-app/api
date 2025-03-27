@@ -335,6 +335,7 @@ export class OrderActionsService {
         orderId,
         type: "precheck",
         createdAt: precheck.createdAt,
+        workerId: opts.worker.id,
       });
 
       return precheck;
