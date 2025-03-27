@@ -36,6 +36,24 @@ export class KitchenerOrdersController {
     return data;
   }
 
+  @EnableAuditLog({ onlyErrors: true })
+  @Get(":orderId")
+  @Serializable(KitchenerOrderEntity)
+  @ApiOperation({
+    summary: "Gets order for kitchener",
+  })
+  @ApiOkResponse({
+    description: "Order has been successfully fetched",
+  })
+  async findOne(
+    @Param("orderId") orderId: string,
+    @Worker() worker: RequestWorker,
+  ) {
+    return this.kitchenerOrdersService.findOne(orderId, {
+      worker,
+    });
+  }
+
   @EnableAuditLog()
   @Post(":orderId/dishes/:orderDishId/ready")
   @ApiOperation({

@@ -9,7 +9,6 @@ import {
   OrderCrudUpdateJobDto,
   OrderDishCrudUpdateJobDto,
 } from "src/orders/@queue/dto/crud-update.job";
-import { RecalculatePricesJobDto } from "src/orders/@queue/dto/recalculate-prices-job.dto";
 import { OrdersSocketNotifier } from "src/orders/@queue/services/orders-socket-notifier.service";
 
 @Processor(ORDERS_QUEUE, {})
@@ -32,12 +31,6 @@ export class OrdersQueueProcessor extends WorkerHost {
 
     try {
       switch (name) {
-        // Recalculate prices of the order
-        case OrderQueueJobName.RECALCULATE_PRICES: {
-          await this.recalculatePrices(data as RecalculatePricesJobDto);
-          break;
-        }
-
         case OrderQueueJobName.CRUD_UPDATE: {
           await this.crudUpdate(data as OrderCrudUpdateJobDto);
           break;
@@ -57,15 +50,6 @@ export class OrdersQueueProcessor extends WorkerHost {
 
       throw error;
     }
-  }
-
-  /**
-   * Recalculates the prices of the order
-   * @param data
-   */
-  private async recalculatePrices(data: RecalculatePricesJobDto) {
-    const { orderId } = data;
-    orderId;
   }
 
   private async crudUpdate(data: OrderCrudUpdateJobDto) {

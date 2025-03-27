@@ -6,7 +6,6 @@ import {
   OrderCrudUpdateJobDto,
   OrderDishCrudUpdateJobDto,
 } from "src/orders/@queue/dto/crud-update.job";
-import { RecalculatePricesJobDto } from "src/orders/@queue/dto/recalculate-prices-job.dto";
 
 @Injectable()
 export class OrdersQueueProducer {
@@ -38,16 +37,5 @@ export class OrdersQueueProducer {
    */
   public async dishCrudUpdate(payload: OrderDishCrudUpdateJobDto) {
     return this.addJob(OrderQueueJobName.DISH_CRUD_UPDATE, payload);
-  }
-
-  /**
-   * This producer creates a job that recalculates prices of the order based on the order dishes
-   * @param orderId ID of the order that needs to be recalculated
-   * @returns Job
-   */
-  public async recalculatePrices(orderId: string) {
-    return this.addJob(OrderQueueJobName.RECALCULATE_PRICES, {
-      orderId,
-    } satisfies RecalculatePricesJobDto);
   }
 }
