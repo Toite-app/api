@@ -259,6 +259,9 @@ export class SessionsService {
       return false;
     }
 
+    // @ts-expect-error dummy error
+    delete session.worker.passwordHash;
+
     return session;
   }
 }
