@@ -95,6 +95,11 @@ export type SocketOrderUpdateEvent = {
   orderId: string;
 };
 
+export type SocketNewOrderEvent = {
+  id: string;
+  type: "NEW_ORDER";
+};
+
 export interface SocketEvent {
   type: `${SocketEventType}`;
   data: SocketOrderUpdateEvent;
