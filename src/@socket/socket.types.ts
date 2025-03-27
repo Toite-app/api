@@ -1,61 +1,11 @@
 import { IWorker, IWorkersToRestaurants } from "@postgress-db/schema/workers";
 
 export enum GatewayIncomingMessage {
-  SUBSCRIPTION = "subscription",
+  CURRENT_PATHNAME = "CURRENT_PATHNAME",
 }
-
-export enum ClientSubscriptionType {
-  NEW_ORDERS = "NEW_ORDERS",
-  NEW_ORDERS_AT_KITCHEN = "NEW_ORDERS_AT_KITCHEN",
-  ORDERS_UPDATE = "ORDERS_UPDATE",
-}
-
-export type GatewayClientSubscription =
-  | {
-      id: string;
-      clientId: string;
-      type: ClientSubscriptionType.NEW_ORDERS;
-    }
-  | {
-      id: string;
-      clientId: string;
-      type: ClientSubscriptionType.NEW_ORDERS_AT_KITCHEN;
-    }
-  | {
-      id: string;
-      clientId: string;
-      type: ClientSubscriptionType.ORDERS_UPDATE;
-      data: {
-        orderIds: string[];
-      };
-    };
-
-export enum IncomingSubscriptionAction {
-  SUBSCRIBE = "subscribe",
-  UNSUBSCRIBE = "unsubscribe",
-}
-
-export type IncomingSubscription = {
-  action: `${IncomingSubscriptionAction}`;
-} & (
-  | {
-      id: string;
-      type: ClientSubscriptionType.NEW_ORDERS;
-    }
-  | {
-      id: string;
-      type: ClientSubscriptionType.NEW_ORDERS_AT_KITCHEN;
-    }
-  | {
-      id: string;
-      type: ClientSubscriptionType.ORDERS_UPDATE;
-      data: {
-        orderIds: string[];
-      };
-    }
-);
 
 export interface GatewayClient {
+  currentPathname?: string;
   clientId: string;
   gatewayId: string;
   workerId: string;
@@ -86,21 +36,13 @@ export type SocketEmitTo =
     };
 
 export enum SocketEventType {
-  SUBSCRIPTION_UPDATE = "subscription:update",
+  REVALIDATE_ORDER = "revalidate-order",
 }
 
-export type SocketOrderUpdateEvent = {
-  id: string;
-  type: "ORDER";
+export type SocketRevalidateOrderEvent = {
   orderId: string;
-};
-
-export type SocketNewOrderEvent = {
-  id: string;
-  type: "NEW_ORDER";
 };
 
 export interface SocketEvent {
   type: `${SocketEventType}`;
-  data: SocketOrderUpdateEvent;
 }
