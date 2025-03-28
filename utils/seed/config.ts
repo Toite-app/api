@@ -7,6 +7,7 @@ export type SeedConfig = {
   orders: {
     justCreated: number;
     justCreatedWithDishes: number;
+    sentToKitchen: number;
   };
 };
 
@@ -22,6 +23,7 @@ export const seedConfigVariants: Record<SeedVariant, SeedConfig> = {
     orders: {
       justCreated: 100,
       justCreatedWithDishes: 100,
+      sentToKitchen: 100,
     },
   },
   huge: {
@@ -33,6 +35,7 @@ export const seedConfigVariants: Record<SeedVariant, SeedConfig> = {
     orders: {
       justCreated: 10_000,
       justCreatedWithDishes: 10_000,
+      sentToKitchen: 10_000,
     },
   },
 };
