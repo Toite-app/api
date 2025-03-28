@@ -128,4 +128,6 @@ export class OrdersQueueProcessor extends WorkerHost {
 
     await this.ordersSocketNotifier.notifyAboutNewOrder(workerIds);
   }
+
+  private async newOrderAtKitchen(data: NewOrderAtKitchenJobDto) {}
 }
