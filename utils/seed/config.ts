@@ -11,7 +11,7 @@ export type SeedConfig = {
   };
 };
 
-export type SeedVariant = "mini" | "huge";
+export type SeedVariant = "mini" | "huge" | "insane";
 
 export const seedConfigVariants: Record<SeedVariant, SeedConfig> = {
   mini: {
@@ -33,9 +33,21 @@ export const seedConfigVariants: Record<SeedVariant, SeedConfig> = {
     dishMenusPerOwner: 2,
     dishesPerMenu: 100,
     orders: {
-      justCreated: 10_000,
-      justCreatedWithDishes: 10_000,
-      sentToKitchen: 10_000,
+      justCreated: 100_000,
+      justCreatedWithDishes: 100_000,
+      sentToKitchen: 100_000,
+    },
+  },
+  insane: {
+    restaurants: 100,
+    restaurantOwners: 4,
+    workers: 4000,
+    dishMenusPerOwner: 2,
+    dishesPerMenu: 100,
+    orders: {
+      justCreated: 1_000_000,
+      justCreatedWithDishes: 1_000_000,
+      sentToKitchen: 1_000_000,
     },
   },
 };
