@@ -23,6 +23,6 @@
       "@postgress-db/*": ["src/@base/drizzle/*"],
     },
   },
-  "include": ["src/**/*", "test/**/*"],
+  "include": ["src/**/*", "test/**/*", "utils/**/*", "drizzle.config.ts"],
   "exclude": ["node_modules", "dist"],
 }
