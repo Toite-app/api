@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { faker } from "@faker-js/faker";
 import dotenv from "dotenv";
+import chunker from "utils/seed/chunker";
 import { seedConfigVariants } from "utils/seed/config";
 import db, { schema } from "utils/seed/db";
 import mockDishes, { mockDishMenus } from "utils/seed/mocks/dishes";
@@ -17,6 +18,8 @@ import mockWorkers from "utils/seed/mocks/workers";
 dotenv.config({
   path: "utils/seed/.env",
 });
+
+const CHUNK_SIZE = 4000;
 
 async function populateRestaurantsInfo(restaurantIds: string[]) {
   const workingHours = [
@@ -38,52 +41,74 @@ async function populateRestaurantsInfo(restaurantIds: string[]) {
   );
 
   // Insert working hours for each restaurant
-  await db.insert(schema.restaurantHours).values(
-    restaurantIds.flatMap((restaurantId) =>
-      workingHours.map((hours) => ({
-        ...hours,
-        restaurantId,
-      })),
-    ),
+  const restaurantHours = restaurantIds.flatMap((restaurantId) =>
+    workingHours.map((hours) => ({
+      ...hours,
+      restaurantId,
+    })),
   );
 
+  const restaurantHoursChunks = chunker(restaurantHours, CHUNK_SIZE);
+
+  for (const chunk of restaurantHoursChunks) {
+    await db.insert(schema.restaurantHours).values(chunk);
+  }
+
   // Insert workshops for each restaurant
-  await db.insert(schema.restaurantWorkshops).values(
-    restaurantIds.flatMap((restaurantId) =>
-      mockRestaurantWorkshops({
-        restaurantId,
-        count: 5,
-      }),
-    ),
+  const restaurantWorkshops = restaurantIds.flatMap((restaurantId) =>
+    mockRestaurantWorkshops({
+      restaurantId,
+      count: 5,
+    }),
   );
+
+  const restaurantWorkshopsChunks = chunker(restaurantWorkshops, CHUNK_SIZE);
+
+  for (const chunk of restaurantWorkshopsChunks) {
+    await db.insert(schema.restaurantWorkshops).values(chunk);
+  }
 
   const paymentMethods = ["Cash", "Card", "Online transfer"];
 
   // Payment methods for each restaurant
-  await db.insert(schema.paymentMethods).values(
-    restaurantIds.flatMap((restaurantId) =>
-      paymentMethods.map(
-        (name) =>
-          ({
-            restaurantId,
-            icon: "CARD",
-            name,
-            type: "CUSTOM",
-            isActive: true,
-          }) satisfies typeof schema.paymentMethods.$inferInsert,
-      ),
+  const restaurantPaymentMethods = restaurantIds.flatMap((restaurantId) =>
+    paymentMethods.map(
+      (name) =>
+        ({
+          restaurantId,
+          icon: "CARD",
+          name,
+          type: "CUSTOM",
+          isActive: true,
+        }) satisfies typeof schema.paymentMethods.$inferInsert,
     ),
   );
 
-  // Dish Modifiers
-  await db.insert(schema.dishModifiers).values(
-    restaurantIds.flatMap((restaurantId) =>
-      mockRestaurantDishModifiers({
-        restaurantId,
-        count: 10,
-      }),
-    ),
+  const restaurantPaymentMethodsChunks = chunker(
+    restaurantPaymentMethods,
+    CHUNK_SIZE,
   );
+
+  for (const chunk of restaurantPaymentMethodsChunks) {
+    await db.insert(schema.paymentMethods).values(chunk);
+  }
+
+  // Dish Modifiers
+  const restaurantDishModifiers = restaurantIds.flatMap((restaurantId) =>
+    mockRestaurantDishModifiers({
+      restaurantId,
+      count: 10,
+    }),
+  );
+
+  const restaurantDishModifiersChunks = chunker(
+    restaurantDishModifiers,
+    CHUNK_SIZE,
+  );
+
+  for (const chunk of restaurantDishModifiersChunks) {
+    await db.insert(schema.dishModifiers).values(chunk);
+  }
 }
 
 async function assignRestaurantsToDishMenus() {
@@ -125,12 +150,19 @@ async function assignRestaurantsToDishMenus() {
       continue;
     }
 
-    await db.insert(schema.dishesMenusToRestaurants).values(
-      restaurantIds.map((restaurantId) => ({
-        dishesMenuId: dishMenu.id,
-        restaurantId,
-      })),
+    const dishesMenusToRestaurants = restaurantIds.map((restaurantId) => ({
+      dishesMenuId: dishMenu.id,
+      restaurantId,
+    }));
+
+    const dishesMenusToRestaurantsChunks = chunker(
+      dishesMenusToRestaurants,
+      CHUNK_SIZE,
     );
+
+    for (const chunk of dishesMenusToRestaurantsChunks) {
+      await db.insert(schema.dishesMenusToRestaurants).values(chunk);
+    }
   }
 }
 
@@ -161,22 +193,25 @@ async function populateDishesPricelist() {
     },
   });
 
-  // Populate dishes to restaurants
-  await db.insert(schema.dishesToRestaurants).values(
-    dishes.flatMap((dish) => {
-      const price = faker.number.float({ min: 3, max: 22 });
+  const dishesToRestaurants = dishes.flatMap((dish) => {
+    const price = faker.number.float({ min: 3, max: 22 });
 
-      return (dish.menu?.dishesMenusToRestaurants || []).map((menu) => {
-        return {
-          dishId: String(dish.id),
-          restaurantId: String(menu.restaurantId),
-          isInStopList: false,
-          currency: menu.restaurant.currency,
-          price: price.toString(),
-        } as typeof schema.dishesToRestaurants.$inferInsert;
-      });
-    }),
-  );
+    return (dish.menu?.dishesMenusToRestaurants || []).map((menu) => {
+      return {
+        dishId: String(dish.id),
+        restaurantId: String(menu.restaurantId),
+        isInStopList: false,
+        currency: menu.restaurant.currency,
+        price: price.toString(),
+      } as typeof schema.dishesToRestaurants.$inferInsert;
+    });
+  });
+
+  const dishesToRestaurantsChunks = chunker(dishesToRestaurants, CHUNK_SIZE);
+
+  for (const chunk of dishesToRestaurantsChunks) {
+    await db.insert(schema.dishesToRestaurants).values(chunk);
+  }
 }
 
 async function populateDishesWorkshopsRelations() {
@@ -208,33 +243,64 @@ async function populateDishesWorkshopsRelations() {
   );
 
   // Populate dishes to workshops
-  await db.insert(schema.dishesToWorkshops).values(
-    dishesToRestaurants.flatMap((dishToRestaurant) => {
-      const allWorkshopIds =
-        restaurantIdToWorkshopIdsMap?.[dishToRestaurant.restaurantId] || [];
 
-      const workshopIds = faker.helpers.arrayElements(allWorkshopIds || [], {
-        min: 1,
-        max: allWorkshopIds.length,
-      });
+  const dishesToWorkshops = dishesToRestaurants.flatMap((dishToRestaurant) => {
+    const allWorkshopIds =
+      restaurantIdToWorkshopIdsMap?.[dishToRestaurant.restaurantId] || [];
 
-      if (workshopIds.length === 0) {
-        return [];
-      }
+    const workshopIds = faker.helpers.arrayElements(allWorkshopIds || [], {
+      min: 1,
+      max: allWorkshopIds.length,
+    });
 
-      return (workshopIds || []).map(
-        (workshopId) =>
-          ({
-            dishId: dishToRestaurant.dishId,
-            workshopId,
-          }) satisfies typeof schema.dishesToWorkshops.$inferInsert,
-      );
-    }),
-  );
+    if (workshopIds.length === 0) {
+      return [];
+    }
+
+    return (workshopIds || []).map(
+      (workshopId) =>
+        ({
+          dishId: dishToRestaurant.dishId,
+          workshopId,
+        }) satisfies typeof schema.dishesToWorkshops.$inferInsert,
+    );
+  });
+
+  const dishesToWorkshopsChunks = chunker(dishesToWorkshops, CHUNK_SIZE);
+
+  for (const chunk of dishesToWorkshopsChunks) {
+    await db.insert(schema.dishesToWorkshops).values(chunk);
+  }
+}
+
+async function processBatchedMockData<T>({
+  totalCount,
+  batchSize = CHUNK_SIZE,
+  createMockBatch,
+  insertBatch,
+}: {
+  totalCount: number;
+  batchSize?: number;
+  createMockBatch: (count: number) => Promise<T[]>;
+  insertBatch: (items: T[]) => Promise<void>;
+}) {
+  const batchCount = Math.ceil(totalCount / batchSize);
+
+  for (let i = 0; i < batchCount; i++) {
+    // For the last batch, only create the remaining items
+    const currentBatchSize = Math.min(batchSize, totalCount - i * batchSize);
+    if (currentBatchSize <= 0) break;
+
+    // Create a batch of mock data
+    const mockBatch = await createMockBatch(currentBatchSize);
+
+    // Insert the batch
+    await insertBatch(mockBatch);
+  }
 }
 
 async function main() {
-  const config = seedConfigVariants["mini"];
+  const config = seedConfigVariants["insane"];
 
   const restaurantOwners = await mockWorkers({
     count: config.restaurantOwners,
@@ -261,18 +327,27 @@ async function main() {
   });
 
   // Insert workers first
-  await db
-    .insert(schema.workers)
-    .values([systemAdmin, ...workers, ...restaurantOwners]);
+  const workersChunks = chunker(
+    [systemAdmin, ...workers, ...restaurantOwners],
+    CHUNK_SIZE,
+  );
+
+  for (const chunk of workersChunks) {
+    await db.insert(schema.workers).values(chunk);
+  }
 
   // Then time for restaurants
-  await db.insert(schema.restaurants).values(restaurants);
+  const restaurantsChunks = chunker(restaurants, CHUNK_SIZE);
+
+  for (const chunk of restaurantsChunks) {
+    await db.insert(schema.restaurants).values(chunk);
+  }
 
   // Create restaurant things
   await populateRestaurantsInfo(restaurants.map((r) => r.id));
 
   // Assign workers to restaurants
-  await db.insert(schema.workersToRestaurants).values(
+  const workersToRestaurantsChunks = chunker(
     workers.map((worker) => {
       const restaurant = faker.helpers.arrayElement(restaurants);
 
@@ -281,7 +356,12 @@ async function main() {
         restaurantId: restaurant.id,
       };
     }),
+    CHUNK_SIZE,
   );
+
+  for (const chunk of workersToRestaurantsChunks) {
+    await db.insert(schema.workersToRestaurants).values(chunk);
+  }
 
   const dishMenus = mockDishMenus({
     ownerIds: restaurantOwners.map((owner) => owner.id),
@@ -289,7 +369,11 @@ async function main() {
   });
 
   // Create dish menus
-  await db.insert(schema.dishesMenus).values(dishMenus);
+  const dishMenusChunks = chunker(dishMenus, CHUNK_SIZE);
+
+  for (const chunk of dishMenusChunks) {
+    await db.insert(schema.dishesMenus).values(chunk);
+  }
 
   // Assign restaurants to dish menus
   await assignRestaurantsToDishMenus();
@@ -302,95 +386,157 @@ async function main() {
   );
 
   // Create dishes
-  await db.insert(schema.dishes).values(dishes);
+  const dishesChunks = chunker(dishes, CHUNK_SIZE);
+
+  for (const chunk of dishesChunks) {
+    await db.insert(schema.dishes).values(chunk);
+  }
 
   await populateDishesPricelist();
   await populateDishesWorkshopsRelations();
 
-  // Just created orders
-  const justCreatedOrders = await mockJustCreatedOrders({
-    count: config.orders.justCreated,
-  });
-
-  await db.insert(schema.orders).values(justCreatedOrders);
-  await db.insert(schema.orderHistoryRecords).values(
-    justCreatedOrders.map(
-      (order) =>
-        ({
-          orderId: order.id,
-          type: "created",
-        }) as typeof schema.orderHistoryRecords.$inferInsert,
-    ),
-  );
-
-  // Just created orders with dishes
-  const justCreatedOrdersWithDishes = await mockJustCreatedOrdersWithDishes({
-    count: config.orders.justCreatedWithDishes,
-  });
-
-  await db
-    .insert(schema.orders)
-    .values(
-      justCreatedOrdersWithDishes.map(({ orderDishes, ...order }) => order),
-    );
-
-  await Promise.all([
-    // History
-    db.insert(schema.orderHistoryRecords).values(
-      justCreatedOrdersWithDishes.flatMap(
+  // Process just created orders in batches
+  await processBatchedMockData({
+    totalCount: config.orders.justCreated,
+    createMockBatch: async (count) => await mockJustCreatedOrders({ count }),
+    insertBatch: async (orders) => {
+      const chunks = chunker(orders, CHUNK_SIZE);
+      const historyRecords = orders.map(
         (order) =>
           ({
             orderId: order.id,
             type: "created",
           }) as typeof schema.orderHistoryRecords.$inferInsert,
-      ),
-    ),
-    // Order dishes
-    db.insert(schema.orderDishes).values(
-      justCreatedOrdersWithDishes.flatMap(({ orderDishes, ...order }) =>
-        orderDishes.map((dish) => ({
-          ...dish,
-        })),
-      ),
-    ),
-  ]);
+      );
 
-  // Sent to kitchen orders
-  const sentToKitchenOrders = await mockSentToKitchenOrders({
-    count: config.orders.sentToKitchen,
+      const historyChunks = chunker(historyRecords, CHUNK_SIZE);
+
+      await Promise.all([
+        ...chunks.map(async (chunk) => {
+          return db.insert(schema.orders).values(chunk);
+        }),
+        ...historyChunks.map(async (chunk) => {
+          return db.insert(schema.orderHistoryRecords).values(chunk);
+        }),
+      ]);
+    },
   });
 
-  await db
-    .insert(schema.orders)
-    .values(sentToKitchenOrders.map(({ orderDishes, ...order }) => order));
-
-  await Promise.all([
-    db.insert(schema.orderDishes).values(
-      sentToKitchenOrders.flatMap(({ orderDishes, ...order }) =>
-        orderDishes.map((dish) => ({
-          ...dish,
-        })),
-      ),
-    ),
-    db.insert(schema.orderHistoryRecords).values(
-      sentToKitchenOrders.flatMap(
+  // Process just created orders with dishes in batches
+  await processBatchedMockData({
+    totalCount: config.orders.justCreatedWithDishes,
+    createMockBatch: async (count) =>
+      await mockJustCreatedOrdersWithDishes({ count }),
+    insertBatch: async (orders) => {
+      const chunks = chunker(orders, CHUNK_SIZE);
+      const historyRecords = orders.map(
         (order) =>
           ({
             orderId: order.id,
             type: "created",
           }) as typeof schema.orderHistoryRecords.$inferInsert,
-      ),
-    ),
-    db.insert(schema.orderHistoryRecords).values(
-      sentToKitchenOrders.flatMap(
+      );
+
+      const historyChunks = chunker(historyRecords, CHUNK_SIZE);
+
+      const orderDishes = orders.flatMap(({ orderDishes, ...order }) =>
+        orderDishes.map((dish) => ({ ...dish })),
+      );
+
+      const dishesChunks = chunker(orderDishes, CHUNK_SIZE);
+
+      await Promise.all([
+        ...chunks.map(async (chunk) => {
+          return db.insert(schema.orders).values(chunk);
+        }),
+        ...historyChunks.map(async (chunk) => {
+          return db.insert(schema.orderHistoryRecords).values(chunk);
+        }),
+        ...dishesChunks.map(async (chunk) => {
+          return db.insert(schema.orderDishes).values(chunk);
+        }),
+      ]);
+
+      // for (const chunk of chunks) {
+      //   await db.insert(schema.orders).values(chunk);
+      // }
+
+      // for (const chunk of historyChunks) {
+      //   await db.insert(schema.orderHistoryRecords).values(chunk);
+      // }
+    },
+  });
+
+  // Process sent to kitchen orders in batches
+  await processBatchedMockData({
+    totalCount: config.orders.sentToKitchen,
+    createMockBatch: async (count) => await mockSentToKitchenOrders({ count }),
+    insertBatch: async (orders) => {
+      const chunks = chunker(orders, CHUNK_SIZE);
+
+      // for (const chunk of chunks) {
+      //   await db.insert(schema.orders).values(chunk);
+      // }
+
+      // Created history records
+      const createdHistoryRecords = orders.map(
+        (order) =>
+          ({
+            orderId: order.id,
+            type: "created",
+          }) as typeof schema.orderHistoryRecords.$inferInsert,
+      );
+
+      const createdHistoryChunks = chunker(createdHistoryRecords, CHUNK_SIZE);
+
+      // for (const chunk of createdHistoryChunks) {
+      //   await db.insert(schema.orderHistoryRecords).values(chunk);
+      // }
+
+      // Sent to kitchen history records
+      const sentToKitchenHistoryRecords = orders.map(
         (order) =>
           ({
             orderId: order.id,
             type: "sent_to_kitchen",
           }) as typeof schema.orderHistoryRecords.$inferInsert,
-      ),
-    ),
-  ]);
+      );
+
+      const sentToKitchenHistoryChunks = chunker(
+        sentToKitchenHistoryRecords,
+        CHUNK_SIZE,
+      );
+
+      // for (const chunk of sentToKitchenHistoryChunks) {
+      //   await db.insert(schema.orderHistoryRecords).values(chunk);
+      // }
+
+      // Order dishes
+      const orderDishes = orders.flatMap(({ orderDishes, ...order }) =>
+        orderDishes.map((dish) => ({ ...dish })),
+      );
+
+      const dishesChunks = chunker(orderDishes, CHUNK_SIZE);
+
+      await Promise.all([
+        ...chunks.map(async (chunk) => {
+          return db.insert(schema.orders).values(chunk);
+        }),
+        ...dishesChunks.map(async (chunk) => {
+          return db.insert(schema.orderDishes).values(chunk);
+        }),
+        ...createdHistoryChunks.map(async (chunk) => {
+          return db.insert(schema.orderHistoryRecords).values(chunk);
+        }),
+        ...sentToKitchenHistoryChunks.map(async (chunk) => {
+          return db.insert(schema.orderHistoryRecords).values(chunk);
+        }),
+      ]);
+      // for (const chunk of dishesChunks) {
+      //   await db.insert(schema.orderDishes).values(chunk);
+      // }
+    },
+  });
 }
 
 main();

@@ -1,0 +1,6 @@
+[
+  "/dispatcher/orders",
+  "/dispatcher/orders/attention-required",
+  "/dispatcher/orders/delayed",
+  "/kitchener/orders"
+]

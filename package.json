@@ -30,7 +30,8 @@
     "db:test:start": "bash ./utils/seed/start-db.sh",
     "db:test:push": "drizzle-kit push --config ./utils/seed/drizzle.config.ts",
     "db:test:seed": "node -r esbuild-register ./utils/seed/index.ts",
-    "prepare:test": "yarn db:test:start && yarn db:test:push && yarn db:test:seed"
+    "prepare:test": "yarn db:test:start && yarn db:test:push && yarn db:test:seed",
+    "bench": "k6 run ./utils/bench/index.js"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.726.1",

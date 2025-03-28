@@ -69,6 +69,8 @@ const pool = new Pool({
   connectionString,
 });
 
-const db = drizzle(pool, { schema });
+const db = drizzle(pool, {
+  schema,
+});
 
 export default db;
