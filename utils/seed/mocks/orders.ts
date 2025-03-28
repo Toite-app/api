@@ -4,6 +4,8 @@ import { v4 as uuidv4 } from "uuid";
 
 export type Order = typeof schema.orders.$inferSelect;
 
+let orderNumber = 0;
+
 export default async function mockJustCreatedOrders(opts: { count: number }) {
   const { count } = opts;
 
@@ -22,28 +24,10 @@ export default async function mockJustCreatedOrders(opts: { count: number }) {
     },
   });
 
-  const lastOrderNumberBroneering =
-    await db.query.orderNumberBroneering.findFirst({
-      columns: {
-        number: true,
-      },
-      orderBy: (orderNumberBroneering, { desc }) => [
-        desc(orderNumberBroneering.number),
-      ],
-    });
-
-  const lastOrderNumber = lastOrderNumberBroneering?.number || "0";
-
-  await db.insert(schema.orderNumberBroneering).values(
-    Array.from({ length: count }, (_, i) => ({
-      number: String(Number(lastOrderNumber) + i + 1),
-    })),
-  );
-
-  return Array.from({ length: count }, (_, i) => {
+  return Array.from({ length: count }, () => {
     const restaurant = faker.helpers.arrayElement(restaurants);
 
-    const orderNumber = String(Number(lastOrderNumber) + i + 1);
+    orderNumber++;
 
     const from = faker.helpers.arrayElement([
       "app",
@@ -64,7 +48,7 @@ export default async function mockJustCreatedOrders(opts: { count: number }) {
 
     return {
       id: uuidv4(),
-      number: orderNumber,
+      number: orderNumber.toString(),
       restaurantId: restaurant.id,
       currency: restaurant.currency,
       from,
@@ -160,6 +144,33 @@ export async function mockJustCreatedOrdersWithDishes(opts: { count: number }) {
       total: orderDishesPrices.finalPrice.toString(),
       subtotal: orderDishesPrices.price.toString(),
       orderDishes,
+    } satisfies typeof schema.orders.$inferInsert & {
+      orderDishes: (typeof schema.orderDishes.$inferInsert)[];
+    };
+  });
+}
+
+export async function mockSentToKitchenOrders(opts: { count: number }) {
+  const { count } = opts;
+
+  const justCreatedOrdersWithDishes = await mockJustCreatedOrdersWithDishes({
+    count,
+  });
+
+  return justCreatedOrdersWithDishes.map((order) => {
+    const cookingAt = faker.date.recent({
+      refDate: order.createdAt,
+    });
+
+    return {
+      ...order,
+      status: "cooking",
+      orderDishes: order.orderDishes.map((dish) => ({
+        ...dish,
+        status: "cooking",
+        cookingAt,
+      })),
+      cookingAt,
     } satisfies typeof schema.orders.$inferInsert & {
       orderDishes: (typeof schema.orderDishes.$inferInsert)[];
     };

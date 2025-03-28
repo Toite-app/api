@@ -6,6 +6,7 @@ import db, { schema } from "utils/seed/db";
 import mockDishes, { mockDishMenus } from "utils/seed/mocks/dishes";
 import mockJustCreatedOrders, {
   mockJustCreatedOrdersWithDishes,
+  mockSentToKitchenOrders,
 } from "utils/seed/mocks/orders";
 import mockRestaurants, {
   mockRestaurantDishModifiers,
@@ -178,6 +179,60 @@ async function populateDishesPricelist() {
   );
 }
 
+async function populateDishesWorkshopsRelations() {
+  const dishesToRestaurants = await db.query.dishesToRestaurants.findMany({
+    columns: {
+      dishId: true,
+      restaurantId: true,
+    },
+  });
+
+  const restaurantWorkshops = await db.query.restaurantWorkshops.findMany({
+    columns: {
+      id: true,
+      restaurantId: true,
+    },
+  });
+
+  const restaurantIdToWorkshopIdsMap = restaurantWorkshops.reduce(
+    (acc, workshop) => {
+      if (!acc?.[workshop.restaurantId]) {
+        acc[workshop.restaurantId] = [];
+      }
+
+      acc[workshop.restaurantId].push(workshop.id);
+
+      return acc;
+    },
+    {} as Record<string, string[]>,
+  );
+
+  // Populate dishes to workshops
+  await db.insert(schema.dishesToWorkshops).values(
+    dishesToRestaurants.flatMap((dishToRestaurant) => {
+      const allWorkshopIds =
+        restaurantIdToWorkshopIdsMap?.[dishToRestaurant.restaurantId] || [];
+
+      const workshopIds = faker.helpers.arrayElements(allWorkshopIds || [], {
+        min: 1,
+        max: allWorkshopIds.length,
+      });
+
+      if (workshopIds.length === 0) {
+        return [];
+      }
+
+      return (workshopIds || []).map(
+        (workshopId) =>
+          ({
+            dishId: dishToRestaurant.dishId,
+            workshopId,
+          }) satisfies typeof schema.dishesToWorkshops.$inferInsert,
+      );
+    }),
+  );
+}
+
 async function main() {
   const config = seedConfigVariants["mini"];
 
@@ -250,6 +305,7 @@ async function main() {
   await db.insert(schema.dishes).values(dishes);
 
   await populateDishesPricelist();
+  await populateDishesWorkshopsRelations();
 
   // Just created orders
   const justCreatedOrders = await mockJustCreatedOrders({
@@ -278,25 +334,63 @@ async function main() {
       justCreatedOrdersWithDishes.map(({ orderDishes, ...order }) => order),
     );
 
-  // History
-  await db.insert(schema.orderHistoryRecords).values(
-    justCreatedOrdersWithDishes.flatMap(
-      (order) =>
-        ({
-          orderId: order.id,
-          type: "created",
-        }) as typeof schema.orderHistoryRecords.$inferInsert,
+  await Promise.all([
+    // History
+    db.insert(schema.orderHistoryRecords).values(
+      justCreatedOrdersWithDishes.flatMap(
+        (order) =>
+          ({
+            orderId: order.id,
+            type: "created",
+          }) as typeof schema.orderHistoryRecords.$inferInsert,
+      ),
     ),
-  );
+    // Order dishes
+    db.insert(schema.orderDishes).values(
+      justCreatedOrdersWithDishes.flatMap(({ orderDishes, ...order }) =>
+        orderDishes.map((dish) => ({
+          ...dish,
+        })),
+      ),
+    ),
+  ]);
 
-  // Order dishes
-  await db.insert(schema.orderDishes).values(
-    justCreatedOrdersWithDishes.flatMap(({ orderDishes, ...order }) =>
-      orderDishes.map((dish) => ({
-        ...dish,
-      })),
+  // Sent to kitchen orders
+  const sentToKitchenOrders = await mockSentToKitchenOrders({
+    count: config.orders.sentToKitchen,
+  });
+
+  await db
+    .insert(schema.orders)
+    .values(sentToKitchenOrders.map(({ orderDishes, ...order }) => order));
+
+  await Promise.all([
+    db.insert(schema.orderDishes).values(
+      sentToKitchenOrders.flatMap(({ orderDishes, ...order }) =>
+        orderDishes.map((dish) => ({
+          ...dish,
+        })),
+      ),
     ),
-  );
+    db.insert(schema.orderHistoryRecords).values(
+      sentToKitchenOrders.flatMap(
+        (order) =>
+          ({
+            orderId: order.id,
+            type: "created",
+          }) as typeof schema.orderHistoryRecords.$inferInsert,
+      ),
+    ),
+    db.insert(schema.orderHistoryRecords).values(
+      sentToKitchenOrders.flatMap(
+        (order) =>
+          ({
+            orderId: order.id,
+            type: "sent_to_kitchen",
+          }) as typeof schema.orderHistoryRecords.$inferInsert,
+      ),
+    ),
+  ]);
 }
 
 main();
