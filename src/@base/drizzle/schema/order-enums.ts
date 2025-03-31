@@ -40,6 +40,7 @@ export const orderHistoryTypeEnum = pgEnum("order_history_type_enum", [
   "created",
   "precheck",
   "sent_to_kitchen",
+  "dishes_ready",
 ]);
 
 export const ZodOrderHistoryTypeEnum = z.enum(orderHistoryTypeEnum.enumValues);

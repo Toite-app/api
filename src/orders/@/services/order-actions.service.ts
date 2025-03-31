@@ -135,13 +135,6 @@ export class OrderActionsService {
           ),
         );
 
-      // Create history record
-      await tx.insert(orderHistoryRecords).values({
-        orderId,
-        type: "sent_to_kitchen",
-        workerId: opts?.worker?.id,
-      });
-
       // Set cooking status for order
       await this.repository.update(
         orderId,

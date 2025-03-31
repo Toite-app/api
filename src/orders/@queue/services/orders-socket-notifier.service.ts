@@ -1,56 +1,141 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { Inject, Injectable, Logger } from "@nestjs/common";
+import { schema } from "@postgress-db/drizzle.module";
+import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { SocketService } from "src/@socket/socket.service";
 import {
   GatewayClient,
   SocketEventType,
-  SocketNewOrderEvent,
   SocketRevalidateOrderEvent,
 } from "src/@socket/socket.types";
-import { OrderEntity } from "src/orders/@/entities/order.entity";
-import { OrdersService } from "src/orders/@/services/orders.service";
+import { PG_CONNECTION } from "src/constants";
 
 @Injectable()
 export class OrdersSocketNotifier {
   private readonly logger = new Logger(OrdersSocketNotifier.name);
 
   constructor(
+    @Inject(PG_CONNECTION)
+    private readonly pg: NodePgDatabase<typeof schema>,
     private readonly socketService: SocketService,
-    private readonly ordersService: OrdersService,
   ) {}
 
+  private async _getOrderRelatedClients(orderId: string) {
+    // We should return only clients that are related somehow to the order
+    // For example: SYSTEM_ADMIN, CHIEF_ADMIN will be always notifies
+    // And for example OWNER will be notified only if he owns restaurant
+
+    const order = await this.pg.query.orders.findFirst({
+      where: (orders, { and, eq }) =>
+        and(
+          eq(orders.id, orderId),
+          eq(orders.isRemoved, false),
+          eq(orders.isArchived, false),
+        ),
+      columns: {},
+      with: {
+        restaurant: {
+          columns: {},
+          with: {
+            owner: {
+              columns: {
+                id: true,
+              },
+            },
+            workersToRestaurants: {
+              columns: {
+                workerId: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    const alwaysWorkers = await this.pg.query.workers.findMany({
+      where: (workers, { eq, and, inArray }) =>
+        and(
+          eq(workers.isBlocked, false),
+          inArray(workers.role, ["SYSTEM_ADMIN", "CHIEF_ADMIN", "DISPATCHER"]),
+        ),
+      columns: {
+        id: true,
+      },
+    });
+
+    // Ids of workers that related to the order
+    const orderWorkerIdsSet = new Set();
+
+    if (order) {
+      if (order.restaurant?.owner?.id) {
+        orderWorkerIdsSet.add(order.restaurant.owner.id);
+      }
+
+      if (order.restaurant?.workersToRestaurants) {
+        order.restaurant.workersToRestaurants.forEach((workerToRestaurant) => {
+          orderWorkerIdsSet.add(workerToRestaurant.workerId);
+        });
+      }
+    }
+
+    if (alwaysWorkers) {
+      alwaysWorkers.forEach((worker) => {
+        orderWorkerIdsSet.add(worker.id);
+      });
+    }
+
+    const clients = await this.socketService.getClients();
+
+    return clients.filter((client) => {
+      return orderWorkerIdsSet.has(client.workerId);
+    });
+  }
+
   /**
-   * TODO:
-   *
    * ! WE SHOULD NOTIFY USERS ONLY IF ORDER HAVE CHANGED DATA
    * ! (needs to be implemented before calling that method)
-   * @param order
+   * @param orderId
    */
-  public async handle(orderId: string, fullEntity?: OrderEntity | null) {
-    const clients = await this.socketService.getClients();
-    const currentPathnames = await this.socketService.getCurrentPathnames();
+  public async handleUpdate(orderId: string) {
+    const recipients = await this._getOrderRelatedClients(orderId);
+    const pathnames = await this.socketService.getCurrentPathnames();
 
-    const clientsMap = new Map<string, GatewayClient>(
-      clients.map((client) => [client.clientId, client]),
+    const clientIdToPathnameMap = new Map<string, string>(
+      Object.entries(pathnames).map(([clientId, pathname]) => [
+        clientId,
+        pathname,
+      ]),
     );
 
     const messages: {
       recipient: GatewayClient;
-      event: string;
+      event: SocketEventType;
       data: any;
     }[] = [];
 
-    Object.entries(currentPathnames).forEach(([clientId, pathname]) => {
-      if (pathname.includes("/orders") && pathname.includes(orderId)) {
-        const recipient = clientsMap.get(clientId);
-        if (!recipient) return;
+    recipients.forEach((recipient) => {
+      const pathname = clientIdToPathnameMap.get(recipient.clientId);
 
+      if (!pathname) return;
+
+      if (pathname.includes("/orders") && pathname.includes(orderId)) {
         messages.push({
           recipient,
-          event: SocketEventType.REVALIDATE_ORDER,
+          event: SocketEventType.REVALIDATE_ORDER_PAGE,
           data: {
             orderId,
-            ...(fullEntity ? { order: fullEntity } : {}),
           } satisfies SocketRevalidateOrderEvent,
+        });
+      } else if (pathname.endsWith("/orders/dispatcher")) {
+        messages.push({
+          recipient,
+          event: SocketEventType.REVALIDATE_DISPATCHER_ORDERS_PAGE,
+          data: null,
+        });
+      } else if (pathname.endsWith("/orders/kitchen")) {
+        messages.push({
+          recipient,
+          event: SocketEventType.REVALIDATE_KITCHENER_ORDERS_PAGE,
+          data: null,
         });
       }
     });
@@ -58,41 +143,36 @@ export class OrdersSocketNotifier {
     await this.socketService.emit(messages);
   }
 
-  public async notifyAboutNewOrder(workerIds: string[], orderId: string) {
-    const workerIdsSet = new Set(workerIds);
-    const clients = await this.socketService.getClients();
-    const currentPathnames = await this.socketService.getCurrentPathnames();
+  public async handleCreation(orderId: string) {
+    const recipients = await this._getOrderRelatedClients(orderId);
+    const pathnames = await this.socketService.getCurrentPathnames();
 
-    const clientsMap = new Map<string, GatewayClient>(
-      clients.map((client) => [client.clientId, client]),
+    const clientIdToPathnameMap = new Map<string, string>(
+      Object.entries(pathnames).map(([clientId, pathname]) => [
+        clientId,
+        pathname,
+      ]),
     );
 
     const messages: {
       recipient: GatewayClient;
-      event: string;
+      event: SocketEventType;
       data: any;
     }[] = [];
 
-    Object.entries(currentPathnames).forEach(([clientId, pathname]) => {
-      const recipient = clientsMap.get(clientId);
+    recipients.forEach((recipient) => {
+      const pathname = clientIdToPathnameMap.get(recipient.clientId);
 
-      if (!recipient) return;
-      if (!workerIdsSet.has(recipient.workerId)) return;
+      if (!pathname) return;
 
-      // if (pathname.endsWith("/orders/dispatcher")) {
-      //   messages.push({
-      //     recipient,
-      //     event: SocketEventType.NEW_ORDER,
-      //     data: {
-      //       orderId,
-      //     } satisfies SocketNewOrderEvent,
-      //   });
-      // }
+      if (pathname.endsWith("/orders/dispatcher")) {
+        messages.push({
+          recipient,
+          event: SocketEventType.REVALIDATE_DISPATCHER_ORDERS_PAGE,
+          data: null,
+        });
+      }
     });
-
-    console.log(JSON.stringify(messages, null, 2));
-    console.log(JSON.stringify(currentPathnames, null, 2));
-    console.log(JSON.stringify(workerIdsSet, null, 2));
 
     await this.socketService.emit(messages);
   }

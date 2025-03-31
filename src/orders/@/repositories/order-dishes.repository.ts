@@ -7,7 +7,7 @@ import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { SnapshotsProducer } from "src/@base/snapshots/snapshots.producer";
 import { PG_CONNECTION } from "src/constants";
 import { OrderDishSnapshotEntity } from "src/orders/@/entities/order-dish-snapshot.entity";
-import { OrderPricesService } from "src/orders/@/services/order-prices.service";
+import { OrderUpdatersService } from "src/orders/@/services/order-updaters.service";
 
 @Injectable()
 export class OrderDishesRepository {
@@ -16,7 +16,7 @@ export class OrderDishesRepository {
     @Inject(PG_CONNECTION)
     private readonly pg: NodePgDatabase<Schema>,
     // Services
-    private readonly orderPricesService: OrderPricesService,
+    private readonly orderUpdatersService: OrderUpdatersService,
     private readonly snapshotsProducer: SnapshotsProducer,
   ) {}
 
@@ -54,7 +54,7 @@ export class OrderDishesRepository {
         .returning();
 
       // Calculate order totals price
-      await this.orderPricesService.calculateOrderTotals(orderDish.orderId, {
+      await this.orderUpdatersService.calculateOrderTotals(orderDish.orderId, {
         tx,
       });
 
@@ -98,8 +98,18 @@ export class OrderDishesRepository {
         .where(eq(orderDishes.id, orderDishId))
         .returning();
 
+      // When order dish is ready check for others and set order status
+      if (payload?.status && payload.status === "ready") {
+        await this.orderUpdatersService.checkDishesReadyStatus(
+          orderDish.orderId,
+          {
+            tx,
+          },
+        );
+      }
+
       // Calculate order totals price
-      await this.orderPricesService.calculateOrderTotals(orderDish.orderId, {
+      await this.orderUpdatersService.calculateOrderTotals(orderDish.orderId, {
         tx,
       });
 

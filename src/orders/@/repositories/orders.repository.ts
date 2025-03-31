@@ -197,6 +197,31 @@ export class OrdersRepository {
       return updatedOrder;
     });
 
+    if (payload.status) {
+      switch (payload.status) {
+        case "cooking": {
+          await tx.insert(orderHistoryRecords).values({
+            orderId,
+            type: "sent_to_kitchen",
+            ...(opts?.workerId && { workerId: opts.workerId }),
+          });
+          break;
+        }
+        case "ready": {
+          await tx.insert(orderHistoryRecords).values({
+            orderId,
+            type: "dishes_ready",
+            ...(opts?.workerId && { workerId: opts.workerId }),
+          });
+
+          break;
+        }
+        default: {
+          break;
+        }
+      }
+    }
+
     // Create snapshot
     await this.snapshotsProducer.create({
       model: "ORDERS",

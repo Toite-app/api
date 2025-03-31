@@ -1,8 +1,6 @@
 import { Processor, WorkerHost } from "@nestjs/bullmq";
 import { Inject, Logger } from "@nestjs/common";
 import { Schema } from "@postgress-db/drizzle.module";
-import { restaurants } from "@postgress-db/schema/restaurants";
-import { workersToRestaurants } from "@postgress-db/schema/workers";
 import { Job } from "bullmq";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { PG_CONNECTION } from "src/constants";
@@ -12,6 +10,7 @@ import {
   OrderCrudUpdateJobDto,
   OrderDishCrudUpdateJobDto,
 } from "src/orders/@queue/dto/crud-update.job";
+import { NewOrderAtKitchenJobDto } from "src/orders/@queue/dto/new-order-at-kitchen.dto";
 import { NewOrderJobDto } from "src/orders/@queue/dto/new-order.job";
 import { OrdersSocketNotifier } from "src/orders/@queue/services/orders-socket-notifier.service";
 
@@ -53,6 +52,11 @@ export class OrdersQueueProcessor extends WorkerHost {
           break;
         }
 
+        case OrderQueueJobName.NEW_ORDER_AT_KITCHEN: {
+          await this.newOrderAtKitchen(data as NewOrderAtKitchenJobDto);
+          break;
+        }
+
         default: {
           throw new Error(`Unknown job name`);
         }
@@ -65,82 +69,14 @@ export class OrdersQueueProcessor extends WorkerHost {
   }
 
   private async update(data: OrderCrudUpdateJobDto) {
-    // const order = await this.ordersRepository.findById(data.orderId);
-
-    // notify users
-    await this.ordersSocketNotifier.handle(data.orderId);
+    await this.ordersSocketNotifier.handleUpdate(data.orderId);
   }
 
   private async newOrder(data: NewOrderJobDto) {
-    const order = await this.pg.query.orders.findFirst({
-      where: (orders, { eq }) => eq(orders.id, data.orderId),
-      columns: {
-        restaurantId: true,
-      },
-    });
-
-    if (!order) {
-      throw new Error("Order not found");
-    }
-
-    const relatedOrderWorkers = await this.pg.query.workers.findMany({
-      where: (workers, { eq, or, and, inArray, notInArray, exists }) =>
-        and(
-          eq(workers.isBlocked, false),
-          or(
-            // System and chief admins can receive notification
-            // TODO: DISPATCHER HERE IS TEMPORARY
-            inArray(workers.role, [
-              "SYSTEM_ADMIN",
-              "CHIEF_ADMIN",
-              "DISPATCHER",
-            ]),
-            // Owners that assigned to the restaurant
-            and(
-              eq(workers.role, "OWNER"),
-              exists(
-                this.pg
-                  .select({
-                    id: restaurants.id,
-                  })
-                  .from(restaurants)
-                  .where(eq(restaurants.id, String(order.restaurantId))),
-              ),
-            ),
-            // Workers that assigned to the restaurant
-            and(
-              notInArray(workers.role, [
-                "SYSTEM_ADMIN",
-                "CHIEF_ADMIN",
-                "OWNER",
-                "DISPATCHER",
-              ]),
-              exists(
-                this.pg
-                  .select({ id: workersToRestaurants.restaurantId })
-                  .from(workersToRestaurants)
-                  .where(
-                    eq(
-                      workersToRestaurants.restaurantId,
-                      String(order.restaurantId),
-                    ),
-                  ),
-              ),
-            ),
-          ),
-        ),
-      columns: {
-        id: true,
-      },
-    });
-
-    const workerIds = relatedOrderWorkers.map((worker) => worker.id);
-
-    await this.ordersSocketNotifier.notifyAboutNewOrder(
-      workerIds,
-      data.orderId,
-    );
+    await this.ordersSocketNotifier.handleCreation(data.orderId);
   }
 
-  private async newOrderAtKitchen(data: NewOrderAtKitchenJobDto) {}
+  private async newOrderAtKitchen(data: NewOrderAtKitchenJobDto) {
+    await this.ordersSocketNotifier.handleUpdate(data.orderId);
+  }
 }

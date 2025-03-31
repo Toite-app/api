@@ -13,7 +13,7 @@ import { OrderActionsService } from "src/orders/@/services/order-actions.service
 import { OrderDishesService } from "src/orders/@/services/order-dishes.service";
 import { OrderHistoryService } from "src/orders/@/services/order-history.service";
 import { OrderMenuService } from "src/orders/@/services/order-menu.service";
-import { OrderPricesService } from "src/orders/@/services/order-prices.service";
+import { OrderUpdatersService } from "src/orders/@/services/order-updaters.service";
 import { OrdersService } from "src/orders/@/services/orders.service";
 import { OrdersQueueModule } from "src/orders/@queue/orders-queue.module";
 import { DispatcherOrdersController } from "src/orders/dispatcher/dispatcher-orders.controller";
@@ -32,7 +32,7 @@ import { KitchenerOrdersService } from "src/orders/kitchener/kitchener-orders.se
     KitchenerOrdersService,
     OrderDishesService,
     OrderMenuService,
-    OrderPricesService,
+    OrderUpdatersService,
     OrderActionsService,
     KitchenerOrderActionsService,
     OrderHistoryService,
