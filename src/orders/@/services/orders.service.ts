@@ -12,7 +12,6 @@ import { PG_CONNECTION } from "src/constants";
 import { GuestsService } from "src/guests/guests.service";
 import { CreateOrderDto } from "src/orders/@/dtos/create-order.dto";
 import { UpdateOrderDto } from "src/orders/@/dtos/update-order.dto";
-import { OrderDishModifierEntity } from "src/orders/@/entities/order-dish-modifier.entity";
 import { OrderEntity } from "src/orders/@/entities/order.entity";
 import { OrdersRepository } from "src/orders/@/repositories/orders.repository";
 import { OrdersQueueProducer } from "src/orders/@queue/orders-queue.producer";
@@ -316,84 +315,13 @@ export class OrdersService {
     return await query.then((res) => res[0].value);
   }
 
-  public attachRestaurantsName<
-    T extends { restaurant?: { name?: string | null } | null },
-  >(orders: Array<T>): Array<T & { restaurantName: string | null }> {
-    return orders.map((order) => ({
-      ...order,
-      restaurantName: order.restaurant?.name ?? null,
-    }));
-  }
-
-  public attachModifiers<
-    T extends {
-      orderDishes: Array<{
-        dishModifiersToOrderDishes?: {
-          dishModifierId: string;
-          dishModifier?: { name?: string | null } | null;
-        }[];
-      }>;
-    },
-  >(
-    orders: Array<T>,
-  ): Array<
-    T & {
-      orderDishes: Array<
-        T["orderDishes"][number] & {
-          modifiers: OrderDishModifierEntity[];
-        }
-      >;
-    }
-  > {
-    return orders.map((order) => ({
-      ...order,
-      orderDishes: (order.orderDishes ?? []).map((dish) => ({
-        ...dish,
-        modifiers: (dish.dishModifiersToOrderDishes
-          ?.map((modifier) => ({
-            id: modifier.dishModifierId,
-            name: modifier.dishModifier?.name ?? null,
-          }))
-          .filter(Boolean) ?? []) as OrderDishModifierEntity[],
-      })),
-    }));
-  }
-
   public async findById(id: string): Promise<OrderEntity> {
-    const order = await this.pg.query.orders.findFirst({
-      where: (orders, { eq }) => eq(orders.id, id),
-      with: {
-        restaurant: {
-          columns: {
-            name: true,
-          },
-        },
-        orderDishes: {
-          with: {
-            dishModifiersToOrderDishes: {
-              with: {
-                dishModifier: {
-                  columns: {
-                    name: true,
-                  },
-                },
-              },
-              columns: {
-                dishModifierId: true,
-              },
-            },
-          },
-        },
-      },
-    });
+    const order = await this.repository.findById(id);
 
     if (!order) {
       throw new NotFoundException("errors.orders.with-this-id-doesnt-exist");
     }
 
-    const withRestaurantsName = this.attachRestaurantsName([order])[0];
-    const withModifiers = this.attachModifiers([withRestaurantsName])[0];
-
-    return withModifiers;
+    return order;
   }
 }

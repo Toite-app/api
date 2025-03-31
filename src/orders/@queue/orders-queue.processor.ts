@@ -6,6 +6,7 @@ import { workersToRestaurants } from "@postgress-db/schema/workers";
 import { Job } from "bullmq";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { PG_CONNECTION } from "src/constants";
+import { OrdersRepository } from "src/orders/@/repositories/orders.repository";
 import { OrderQueueJobName, ORDERS_QUEUE } from "src/orders/@queue";
 import {
   OrderCrudUpdateJobDto,
@@ -22,6 +23,7 @@ export class OrdersQueueProcessor extends WorkerHost {
     @Inject(PG_CONNECTION)
     private readonly pg: NodePgDatabase<Schema>,
     private readonly ordersSocketNotifier: OrdersSocketNotifier,
+    private readonly ordersRepository: OrdersRepository,
   ) {
     super();
   }
@@ -63,6 +65,8 @@ export class OrdersQueueProcessor extends WorkerHost {
   }
 
   private async update(data: OrderCrudUpdateJobDto) {
+    // const order = await this.ordersRepository.findById(data.orderId);
+
     // notify users
     await this.ordersSocketNotifier.handle(data.orderId);
   }
@@ -84,8 +88,13 @@ export class OrdersQueueProcessor extends WorkerHost {
         and(
           eq(workers.isBlocked, false),
           or(
-            // System and chief admins can receive subscribe notification
-            inArray(workers.role, ["SYSTEM_ADMIN", "CHIEF_ADMIN"]),
+            // System and chief admins can receive notification
+            // TODO: DISPATCHER HERE IS TEMPORARY
+            inArray(workers.role, [
+              "SYSTEM_ADMIN",
+              "CHIEF_ADMIN",
+              "DISPATCHER",
+            ]),
             // Owners that assigned to the restaurant
             and(
               eq(workers.role, "OWNER"),
@@ -104,6 +113,7 @@ export class OrdersQueueProcessor extends WorkerHost {
                 "SYSTEM_ADMIN",
                 "CHIEF_ADMIN",
                 "OWNER",
+                "DISPATCHER",
               ]),
               exists(
                 this.pg
@@ -126,7 +136,10 @@ export class OrdersQueueProcessor extends WorkerHost {
 
     const workerIds = relatedOrderWorkers.map((worker) => worker.id);
 
-    await this.ordersSocketNotifier.notifyAboutNewOrder(workerIds);
+    await this.ordersSocketNotifier.notifyAboutNewOrder(
+      workerIds,
+      data.orderId,
+    );
   }
 
   private async newOrderAtKitchen(data: NewOrderAtKitchenJobDto) {}
