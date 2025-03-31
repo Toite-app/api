@@ -1,4 +1,5 @@
 import { IWorker, IWorkersToRestaurants } from "@postgress-db/schema/workers";
+import { OrderEntity } from "src/orders/@/entities/order.entity";
 
 export enum GatewayIncomingMessage {
   CURRENT_PATHNAME = "CURRENT_PATHNAME",
@@ -40,6 +41,11 @@ export enum SocketEventType {
 }
 
 export type SocketRevalidateOrderEvent = {
+  orderId: string;
+  order?: OrderEntity;
+};
+
+export type SocketNewOrderEvent = {
   orderId: string;
 };
 

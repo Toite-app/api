@@ -10,6 +10,7 @@ import { workshifts } from "@postgress-db/schema/workshifts";
 import { relations } from "drizzle-orm";
 import {
   boolean,
+  index,
   numeric,
   pgTable,
   text,
@@ -20,52 +21,56 @@ import {
 import { currencyEnum, dayOfWeekEnum } from "./general";
 import { workers, workersToRestaurants } from "./workers";
 
-export const restaurants = pgTable("restaurants", {
-  // Primary key
-  id: uuid("id").defaultRandom().primaryKey(),
+export const restaurants = pgTable(
+  "restaurants",
+  {
+    // Primary key
+    id: uuid("id").defaultRandom().primaryKey(),
 
-  // Name of the restaurant //
-  name: text("name").notNull(),
+    // Name of the restaurant //
+    name: text("name").notNull(),
 
-  // Legal entity of the restaurant (can be a company or a person) //
-  legalEntity: text("legal_entity").notNull(),
+    // Legal entity of the restaurant (can be a company or a person) //
+    legalEntity: text("legal_entity").notNull(),
 
-  // Address of the restaurant //
-  address: text("address").notNull(),
-  latitude: numeric("latitude").notNull(),
-  longitude: numeric("longitude").notNull(),
+    // Address of the restaurant //
+    address: text("address").notNull(),
+    latitude: numeric("latitude").notNull(),
+    longitude: numeric("longitude").notNull(),
 
-  // Timezone of the restaurant //
-  timezone: text("timezone").notNull().default("Europe/Tallinn"),
+    // Timezone of the restaurant //
+    timezone: text("timezone").notNull().default("Europe/Tallinn"),
 
-  // Currency of the restaurant //
-  currency: currencyEnum("currency").notNull().default("EUR"),
+    // Currency of the restaurant //
+    currency: currencyEnum("currency").notNull().default("EUR"),
 
-  // Country code of the restaurant (used for mobile phone default and etc.) //
-  countryCode: text("country_code").notNull().default("EE"),
+    // Country code of the restaurant (used for mobile phone default and etc.) //
+    countryCode: text("country_code").notNull().default("EE"),
 
-  // Is the restaurant enabled? //
-  isEnabled: boolean("is_enabled").notNull().default(false),
+    // Is the restaurant enabled? //
+    isEnabled: boolean("is_enabled").notNull().default(false),
 
-  // Is closed forever? //
-  isClosedForever: boolean("is_closed_forever").notNull().default(false),
+    // Is closed forever? //
+    isClosedForever: boolean("is_closed_forever").notNull().default(false),
 
-  // Owner of the restaurant //
-  ownerId: uuid("owner_id"),
+    // Owner of the restaurant //
+    ownerId: uuid("owner_id"),
 
-  // Timestamps //
-  createdAt: timestamp("created_at", {
-    withTimezone: true,
-  })
-    .notNull()
-    .defaultNow(),
-  updatedAt: timestamp("updated_at", {
-    withTimezone: true,
-  })
-    .notNull()
-    .defaultNow()
-    .$onUpdate(() => new Date()),
-});
+    // Timestamps //
+    createdAt: timestamp("created_at", {
+      withTimezone: true,
+    })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", {
+      withTimezone: true,
+    })
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+  },
+  (t) => [index("idx_restaurants_owner_id").on(t.ownerId)],
+);
 
 export const restaurantHours = pgTable("restaurant_hours", {
   // Primary key //

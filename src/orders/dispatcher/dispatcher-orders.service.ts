@@ -6,6 +6,7 @@ import { OrderTypeEnum } from "@postgress-db/schema/order-enums";
 import { addDays } from "date-fns";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { PG_CONNECTION } from "src/constants";
+import { OrdersRepository } from "src/orders/@/repositories/orders.repository";
 import { DispatcherOrderEntity } from "src/orders/dispatcher/entities/dispatcher-order.entity";
 
 @Injectable()
@@ -13,16 +14,8 @@ export class DispatcherOrdersService {
   constructor(
     @Inject(PG_CONNECTION)
     private readonly pg: NodePgDatabase<Schema>,
+    private readonly ordersRepository: OrdersRepository,
   ) {}
-
-  private attachRestaurantsName<
-    T extends { restaurant?: { name?: string | null } | null },
-  >(orders: Array<T>): Array<T & { restaurantName: string | null }> {
-    return orders.map((order) => ({
-      ...order,
-      restaurantName: order.restaurant?.name ?? null,
-    }));
-  }
 
   async findMany(options?: {
     cursor?: ICursor;
@@ -74,7 +67,7 @@ export class DispatcherOrdersService {
       limit: cursor?.limit ?? 100,
     });
 
-    return this.attachRestaurantsName(fetchedOrders);
+    return this.ordersRepository.attachRestaurantsName(fetchedOrders);
   }
 
   async findManyAttentionRequired(options?: {
@@ -144,7 +137,7 @@ export class DispatcherOrdersService {
       limit: 100,
     });
 
-    return this.attachRestaurantsName(fetchedOrders);
+    return this.ordersRepository.attachRestaurantsName(fetchedOrders);
   }
 
   async findManyDelayed(options?: {
@@ -189,6 +182,6 @@ export class DispatcherOrdersService {
       limit: 100,
     });
 
-    return this.attachRestaurantsName(fetchedOrders);
+    return this.ordersRepository.attachRestaurantsName(fetchedOrders);
   }
 }

@@ -3,8 +3,10 @@ import { SocketService } from "src/@socket/socket.service";
 import {
   GatewayClient,
   SocketEventType,
+  SocketNewOrderEvent,
   SocketRevalidateOrderEvent,
 } from "src/@socket/socket.types";
+import { OrderEntity } from "src/orders/@/entities/order.entity";
 import { OrdersService } from "src/orders/@/services/orders.service";
 
 @Injectable()
@@ -23,7 +25,7 @@ export class OrdersSocketNotifier {
    * ! (needs to be implemented before calling that method)
    * @param order
    */
-  public async handle(orderId: string) {
+  public async handle(orderId: string, fullEntity?: OrderEntity | null) {
     const clients = await this.socketService.getClients();
     const currentPathnames = await this.socketService.getCurrentPathnames();
 
@@ -47,6 +49,7 @@ export class OrdersSocketNotifier {
           event: SocketEventType.REVALIDATE_ORDER,
           data: {
             orderId,
+            ...(fullEntity ? { order: fullEntity } : {}),
           } satisfies SocketRevalidateOrderEvent,
         });
       }
@@ -55,47 +58,42 @@ export class OrdersSocketNotifier {
     await this.socketService.emit(messages);
   }
 
-  public async notifyAboutNewOrder(workerIds: string[]) {
-    return;
-    // const clients = await this.socketService.getClients();
-    // const subscriptions = await this.socketService.getSubscriptions();
+  public async notifyAboutNewOrder(workerIds: string[], orderId: string) {
+    const workerIdsSet = new Set(workerIds);
+    const clients = await this.socketService.getClients();
+    const currentPathnames = await this.socketService.getCurrentPathnames();
 
-    // const clientsMap = new Map<string, GatewayClient>(
-    //   clients.map((client) => [client.clientId, client]),
-    // );
+    const clientsMap = new Map<string, GatewayClient>(
+      clients.map((client) => [client.clientId, client]),
+    );
 
-    // const workerIdsToNotifySet = new Set(workerIds);
-    // const clientIdToWorkerIdMap = new Map<string, string>(
-    //   clients.map((client) => [client.clientId, client.workerId]),
-    // );
+    const messages: {
+      recipient: GatewayClient;
+      event: string;
+      data: any;
+    }[] = [];
 
-    // const messages: {
-    //   recipient: GatewayClient;
-    //   event: string;
-    //   data: any;
-    // }[] = [];
+    Object.entries(currentPathnames).forEach(([clientId, pathname]) => {
+      const recipient = clientsMap.get(clientId);
 
-    // subscriptions.forEach((subscription) => {
-    //   const workerId = clientIdToWorkerIdMap.get(subscription.clientId);
+      if (!recipient) return;
+      if (!workerIdsSet.has(recipient.workerId)) return;
 
-    //   if (!workerId) return;
-    //   if (!workerIdsToNotifySet.has(workerId)) return;
+      // if (pathname.endsWith("/orders/dispatcher")) {
+      //   messages.push({
+      //     recipient,
+      //     event: SocketEventType.NEW_ORDER,
+      //     data: {
+      //       orderId,
+      //     } satisfies SocketNewOrderEvent,
+      //   });
+      // }
+    });
 
-    //   if (subscription.type === ClientSubscriptionType.NEW_ORDERS) {
-    //     const recipient = clientsMap.get(subscription.clientId);
-    //     if (!recipient) return;
+    console.log(JSON.stringify(messages, null, 2));
+    console.log(JSON.stringify(currentPathnames, null, 2));
+    console.log(JSON.stringify(workerIdsSet, null, 2));
 
-    //     messages.push({
-    //       recipient,
-    //       event: SocketEventType.SUBSCRIPTION_UPDATE,
-    //       data: {
-    //         id: subscription.id,
-    //         type: "NEW_ORDER",
-    //       } satisfies SocketNewOrderEvent,
-    //     });
-    //   }
-    // });
-
-    // await this.socketService.emit(messages);
+    await this.socketService.emit(messages);
   }
 }

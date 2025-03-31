@@ -89,6 +89,7 @@ export interface PgTransactionConfig {
         return drizzle(pool, {
           schema,
           casing: "snake_case",
+          // logger: true,
         }) as NodePgDatabase<Schema>;
       },
     },

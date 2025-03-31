@@ -7,7 +7,9 @@ import { eq } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { SnapshotsProducer } from "src/@base/snapshots/snapshots.producer";
 import { PG_CONNECTION } from "src/constants";
+import { OrderDishModifierEntity } from "src/orders/@/entities/order-dish-modifier.entity";
 import { OrderSnapshotEntity } from "src/orders/@/entities/order-snapshot.entity";
+import { OrderEntity } from "src/orders/@/entities/order.entity";
 
 @Injectable()
 export class OrdersRepository {
@@ -18,6 +20,102 @@ export class OrdersRepository {
     // Services
     private readonly snapshotsProducer: SnapshotsProducer,
   ) {}
+
+  /**
+   * Attaches modifiers to order dishes
+   * @param orders - Orders
+   * @returns Orders with modifiers
+   */
+  public attachModifiers<
+    T extends {
+      orderDishes: Array<{
+        dishModifiersToOrderDishes?: {
+          dishModifierId: string;
+          dishModifier?: { name?: string | null } | null;
+        }[];
+      }>;
+    },
+  >(
+    orders: Array<T>,
+  ): Array<
+    T & {
+      orderDishes: Array<
+        T["orderDishes"][number] & {
+          modifiers: OrderDishModifierEntity[];
+        }
+      >;
+    }
+  > {
+    return orders.map((order) => ({
+      ...order,
+      orderDishes: (order.orderDishes ?? []).map((dish) => ({
+        ...dish,
+        modifiers: (dish.dishModifiersToOrderDishes
+          ?.map((modifier) => ({
+            id: modifier.dishModifierId,
+            name: modifier.dishModifier?.name ?? null,
+          }))
+          .filter(Boolean) ?? []) as OrderDishModifierEntity[],
+      })),
+    }));
+  }
+
+  /**
+   * Attaches restaurants name to orders
+   * @param orders - Orders
+   * @returns Orders with restaurants name
+   */
+  public attachRestaurantsName<
+    T extends { restaurant?: { name?: string | null } | null },
+  >(orders: Array<T>): Array<T & { restaurantName: string | null }> {
+    return orders.map((order) => ({
+      ...order,
+      restaurantName: order.restaurant?.name ?? null,
+    }));
+  }
+
+  /**
+   * Finds order by ID
+   * @param orderId - Order ID
+   * @returns Order
+   */
+  public async findById(orderId: string): Promise<OrderEntity | null> {
+    const order = await this.pg.query.orders.findFirst({
+      where: (orders, { eq }) => eq(orders.id, orderId),
+      with: {
+        restaurant: {
+          columns: {
+            name: true,
+          },
+        },
+        orderDishes: {
+          with: {
+            dishModifiersToOrderDishes: {
+              with: {
+                dishModifier: {
+                  columns: {
+                    name: true,
+                  },
+                },
+              },
+              columns: {
+                dishModifierId: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!order) return null;
+
+    const withRestaurantsName = this.attachRestaurantsName([order])[0];
+    const withModifiers = this.attachModifiers([withRestaurantsName])[0];
+
+    return plainToClass(OrderEntity, withModifiers, {
+      excludeExtraneousValues: true,
+    });
+  }
 
   /**
    * Proceeds data for snapshot. Excludes extraneous values
