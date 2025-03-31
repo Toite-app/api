@@ -113,12 +113,18 @@ export class AuthController {
   @ApiUnauthorizedResponse({
     description: "You unauthorized",
   })
-  async signOut(@Cookies(AUTH_COOKIES.token) token: string) {
-    token;
+  async signOut(
+    @Cookies(AUTH_COOKIES.token) token: string,
+    @Res({
+      passthrough: true,
+    })
+    res: Response,
+  ) {
+    if (!token) return {};
     // await this.authService.destroySession(token);
 
-    return {
-      setSessionToken: null,
-    };
+    res.clearCookie(AUTH_COOKIES.token);
+
+    return {};
   }
 }

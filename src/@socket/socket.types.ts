@@ -1,5 +1,4 @@
 import { IWorker, IWorkersToRestaurants } from "@postgress-db/schema/workers";
-import { OrderEntity } from "src/orders/@/entities/order.entity";
 
 export enum GatewayIncomingMessage {
   CURRENT_PATHNAME = "CURRENT_PATHNAME",
@@ -37,12 +36,16 @@ export type SocketEmitTo =
     };
 
 export enum SocketEventType {
-  REVALIDATE_ORDER = "revalidate-order",
+  /** For /orders/:orderId page */
+  REVALIDATE_ORDER_PAGE = "R-3JK",
+  /** For /orders/dispatcher */
+  REVALIDATE_DISPATCHER_ORDERS_PAGE = "R-ZGI",
+  /** For /orders/kitchen */
+  REVALIDATE_KITCHENER_ORDERS_PAGE = "R-a2I",
 }
 
 export type SocketRevalidateOrderEvent = {
   orderId: string;
-  order?: OrderEntity;
 };
 
 export type SocketNewOrderEvent = {

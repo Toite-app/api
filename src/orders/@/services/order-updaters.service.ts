@@ -5,8 +5,8 @@ import { PG_CONNECTION } from "src/constants";
 import { OrdersRepository } from "src/orders/@/repositories/orders.repository";
 
 @Injectable()
-export class OrderPricesService {
-  private readonly logger = new Logger(OrderPricesService.name);
+export class OrderUpdatersService {
+  private readonly logger = new Logger(OrderUpdatersService.name);
 
   constructor(
     @Inject(PG_CONNECTION)
@@ -14,9 +14,47 @@ export class OrderPricesService {
     private readonly repository: OrdersRepository,
   ) {}
 
-  public async calculateOrderTotals(
+  public async checkDishesReadyStatus(
     orderId: string,
     opts?: { tx?: DrizzleTransaction },
+  ) {
+    const tx = opts?.tx ?? this.pg;
+
+    const order = await tx.query.orders.findFirst({
+      where: (orders, { and, eq }) =>
+        and(eq(orders.id, orderId), eq(orders.status, "cooking")),
+      columns: {},
+      with: {
+        orderDishes: {
+          where: (orderDishes, { eq, and, gt }) =>
+            and(eq(orderDishes.isRemoved, false), gt(orderDishes.quantity, 0)),
+          columns: {
+            status: true,
+          },
+        },
+      },
+    });
+
+    if (!order) return;
+
+    if (order.orderDishes.every((d) => d.status === "ready")) {
+      await this.repository.update(
+        orderId,
+        {
+          status: "ready",
+        },
+        {
+          tx: opts?.tx,
+        },
+      );
+    }
+  }
+
+  public async calculateOrderTotals(
+    orderId: string,
+    opts?: {
+      tx?: DrizzleTransaction;
+    },
   ) {
     const tx = opts?.tx ?? this.pg;
 
