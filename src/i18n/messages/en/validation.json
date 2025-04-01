@@ -19,6 +19,10 @@
     "isStrongPassword": "Must be a strong password",
     "isLatitude": "Must be a valid latitude",
     "isInt": "Must be an integer",
-    "isDecimal": "Must be a decimal number"
+    "isDecimal": "Must be a decimal number",
+    "matches": "Invalid format"
+  },
+  "time": {
+    "invalid_format": "Time must be in HH:MM format (e.g. 14:30)"
   }
 }

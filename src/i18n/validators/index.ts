@@ -16,6 +16,7 @@ import {
   IsString as _IsString,
   IsStrongPassword as _IsStrongPassword,
   IsUUID as _IsUUID,
+  Matches as _Matches,
   Max as _Max,
   MaxLength as _MaxLength,
   Min as _Min,
@@ -166,3 +167,11 @@ export const Min = (min: number, validationOptions?: ValidationOptions) =>
 
 export const Max = (max: number, validationOptions?: ValidationOptions) =>
   applyDecorators(_Max(max, mergeI18nValidation("max", validationOptions)));
+
+export const Matches = (
+  pattern: RegExp,
+  validationOptions?: ValidationOptions,
+) =>
+  applyDecorators(
+    _Matches(pattern, mergeI18nValidation("matches", validationOptions)),
+  );

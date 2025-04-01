@@ -139,7 +139,7 @@ export class KitchenerOrdersService {
       // Only dishes with quantity > 0
       gt(orderDishes.quantity, 0),
       // Only dishes with cooking or ready status
-      or(eq(orderDishes.status, "cooking"), eq(orderDishes.status, "ready")),
+      inArray(orderDishes.status, ["cooking", "ready"]),
     ) as SQL;
   }
 

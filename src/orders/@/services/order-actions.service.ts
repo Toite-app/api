@@ -75,7 +75,7 @@ export class OrderActionsService {
     if (
       order.status !== "pending" &&
       order.status !== "cooking" &&
-      orderDishes.every((d) => d.status === "completed")
+      orderDishes.every((d) => d.status === "ready")
     ) {
       result.canCalculate = true;
     }

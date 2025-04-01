@@ -8,7 +8,7 @@ import {
   IPagination,
   PaginationParams,
 } from "@core/decorators/pagination.decorator";
-import SearchParam from "@core/decorators/search.decorator";
+import SearchQuery from "@core/decorators/search.decorator";
 import { Serializable } from "@core/decorators/serializable.decorator";
 import { ISorting, SortingParams } from "@core/decorators/sorting.decorator";
 import { Worker } from "@core/decorators/worker.decorator";
@@ -72,7 +72,7 @@ export class DishesController {
     sorting: ISorting,
     @PaginationParams() pagination: IPagination,
     @FilterParams() filters?: IFilters,
-    @SearchParam() search?: string,
+    @SearchQuery() search?: string,
     @Query("menuId", new StringValuePipe())
     menuId?: string,
   ): Promise<DishesPaginatedDto> {

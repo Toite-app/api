@@ -16,8 +16,8 @@ export class CreateDiscountDto extends PickType(DiscountEntity, [
   "applyByPromocode",
   "applyByDefault",
   "isEnabled",
-  "startHour",
-  "endHour",
+  "startTime",
+  "endTime",
   "activeFrom",
   "activeTo",
 ]) {

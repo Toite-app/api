@@ -28,8 +28,10 @@ export class ValidationPipe implements PipeTransform {
    * * {@link core/errors/exceptions/bad-request.exception!BadRequestException}
    * if input data is not valid
    */
-  public async transform(value: unknown, { metatype }: ArgumentMetadata) {
+  public async transform(value: unknown, { metatype, type }: ArgumentMetadata) {
     try {
+      if (type === "query") return value;
+
       if (typeof value === "string" && metatype === Date) {
         return new Date(value);
       }

@@ -84,6 +84,12 @@ export class DispatcherOrdersService {
         and(
           // Filter by restaurantId
           !!restaurantId ? eq(orders.restaurantId, restaurantId) : undefined,
+          // Filter by type
+          !!type ? eq(orders.type, type) : undefined,
+          // Exclude archived orders
+          eq(orders.isArchived, false),
+          // Exclude cancelled and completed orders
+          notInArray(orders.status, ["cancelled", "completed"]),
           // Check if the order is delayed and the delay time is in the past
           or(
             // If restaurant is not set attention is still required even if the order is delayed
@@ -111,12 +117,6 @@ export class DispatcherOrdersService {
                 ),
             ),
           ),
-          // Exclude archived orders
-          eq(orders.isArchived, false),
-          // Exclude cancelled and completed orders
-          notInArray(orders.status, ["cancelled", "completed"]),
-          // Filter by type
-          !!type ? eq(orders.type, type) : undefined,
         ),
       with: {
         // Restaurant for restaurantName

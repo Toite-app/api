@@ -8,6 +8,7 @@ import {
   pgTable,
   primaryKey,
   text,
+  time,
   timestamp,
   uuid,
 } from "drizzle-orm/pg-core";
@@ -40,8 +41,8 @@ export const discounts = pgTable("discounts", {
   isEnabled: boolean("is_enabled").notNull().default(true),
 
   // Valid time //
-  startHour: integer("start_hour"),
-  endHour: integer("end_hour"),
+  startTime: time("start_time", { withTimezone: false }),
+  endTime: time("end_time", { withTimezone: false }),
   activeFrom: timestamp("active_from", {
     withTimezone: true,
   }).notNull(),

@@ -8,6 +8,7 @@ import {
   IsOptional,
   IsString,
   IsUUID,
+  Matches,
   Max,
   Min,
   MinLength,
@@ -20,6 +21,7 @@ import {
   ZodOrderTypeEnum,
 } from "@postgress-db/schema/order-enums";
 import { Expose, Type } from "class-transformer";
+import { i18nValidationMessage } from "nestjs-i18n";
 
 export class DiscountRestaurantEntity {
   @IsUUID()
@@ -148,22 +150,28 @@ export class DiscountEntity implements IDiscount {
   isEnabled: boolean;
 
   @IsOptional()
-  @IsNumber()
+  @Matches(/^([0-1][0-9]|2[0-3]):[0-5][0-9]$/, {
+    message: i18nValidationMessage("validation.time.invalid_format"),
+  })
+  @IsString()
   @Expose()
   @ApiPropertyOptional({
-    description: "Start hour of the discount (0-23)",
-    example: 14,
+    description: "Start time in HH:MM format",
+    example: "14:00",
   })
-  startHour: number | null;
+  startTime: string | null;
 
   @IsOptional()
-  @IsNumber()
+  @Matches(/^([0-1][0-9]|2[0-3]):[0-5][0-9]$/, {
+    message: i18nValidationMessage("validation.time.invalid_format"),
+  })
+  @IsString()
   @Expose()
   @ApiPropertyOptional({
-    description: "End hour of the discount (0-23)",
-    example: 18,
+    description: "End time in HH:MM format",
+    example: "18:00",
   })
-  endHour: number | null;
+  endTime: string | null;
 
   @IsISO8601()
   @Expose()

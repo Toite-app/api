@@ -10,6 +10,7 @@ import { OrdersController } from "src/orders/@/orders.controller";
 import { OrderDishesRepository } from "src/orders/@/repositories/order-dishes.repository";
 import { OrdersRepository } from "src/orders/@/repositories/orders.repository";
 import { OrderActionsService } from "src/orders/@/services/order-actions.service";
+import { OrderDiscountsService } from "src/orders/@/services/order-discounts.service";
 import { OrderDishesService } from "src/orders/@/services/order-dishes.service";
 import { OrderHistoryService } from "src/orders/@/services/order-history.service";
 import { OrderMenuService } from "src/orders/@/services/order-menu.service";
@@ -21,9 +22,16 @@ import { DispatcherOrdersService } from "src/orders/dispatcher/dispatcher-orders
 import { KitchenerOrderActionsService } from "src/orders/kitchener/kitchener-order-actions.service";
 import { KitchenerOrdersController } from "src/orders/kitchener/kitchener-orders.controller";
 import { KitchenerOrdersService } from "src/orders/kitchener/kitchener-orders.service";
+import { TimezonesModule } from "src/timezones/timezones.module";
 
 @Module({
-  imports: [DrizzleModule, GuestsModule, OrdersQueueModule, SnapshotsModule],
+  imports: [
+    DrizzleModule,
+    GuestsModule,
+    OrdersQueueModule,
+    SnapshotsModule,
+    TimezonesModule,
+  ],
   providers: [
     OrdersRepository,
     OrderDishesRepository,
@@ -36,6 +44,7 @@ import { KitchenerOrdersService } from "src/orders/kitchener/kitchener-orders.se
     OrderActionsService,
     KitchenerOrderActionsService,
     OrderHistoryService,
+    OrderDiscountsService,
   ],
   controllers: [
     OrdersController,

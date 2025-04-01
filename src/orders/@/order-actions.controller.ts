@@ -7,6 +7,7 @@ import { ApiOkResponse, ApiOperation } from "@nestjs/swagger";
 import { OrderAvailableActionsEntity } from "src/orders/@/entities/order-available-actions.entity";
 import { OrderPrecheckEntity } from "src/orders/@/entities/order-precheck.entity";
 import { OrderActionsService } from "src/orders/@/services/order-actions.service";
+import { OrderDiscountsService } from "src/orders/@/services/order-discounts.service";
 import { OrdersService } from "src/orders/@/services/orders.service";
 
 @Controller("orders/:id/actions", {
@@ -14,7 +15,7 @@ import { OrdersService } from "src/orders/@/services/orders.service";
 })
 export class OrderActionsController {
   constructor(
-    private readonly ordersService: OrdersService,
+    private readonly orderDiscountsService: OrderDiscountsService,
     private readonly orderActionsService: OrderActionsService,
   ) {}
 
@@ -57,5 +58,17 @@ export class OrderActionsController {
     return this.orderActionsService.createPrecheck(orderId, {
       worker,
     });
+  }
+
+  @Post("apply-discounts")
+  @ApiOperation({ summary: "Applies discounts to the order" })
+  @ApiOkResponse({
+    description: "Order discounts applied",
+  })
+  async applyDiscounts(
+    @Param("id") orderId: string,
+    @Worker() worker: RequestWorker,
+  ) {
+    return this.orderDiscountsService.getDiscounts(orderId);
   }
 }

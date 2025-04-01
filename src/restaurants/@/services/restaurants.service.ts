@@ -6,7 +6,7 @@ import { Inject, Injectable } from "@nestjs/common";
 import { schema } from "@postgress-db/drizzle.module";
 import { dishesMenusToRestaurants } from "@postgress-db/schema/dishes-menus";
 import { restaurants } from "@postgress-db/schema/restaurants";
-import { and, count, eq, exists, inArray, SQL } from "drizzle-orm";
+import { and, count, eq, exists, ilike, inArray, SQL } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { PG_CONNECTION } from "src/constants";
 import { TimezonesService } from "src/timezones/timezones.service";
@@ -22,16 +22,68 @@ export class RestaurantsService {
     private readonly timezonesService: TimezonesService,
   ) {}
 
+  private _buildConditions(options: {
+    menuId?: string | null;
+    ownerId?: string | null;
+    search?: string | null;
+  }) {
+    const { menuId, ownerId, search } = options;
+
+    const conditions: SQL<unknown>[] = [];
+
+    if (menuId && menuId.length > 0) {
+      conditions.push(
+        exists(
+          this.pg
+            .select({ id: dishesMenusToRestaurants.restaurantId })
+            .from(dishesMenusToRestaurants)
+            .where(
+              and(
+                eq(dishesMenusToRestaurants.dishesMenuId, menuId),
+                eq(dishesMenusToRestaurants.restaurantId, restaurants.id),
+              ),
+            ),
+        ),
+      );
+    }
+
+    if (ownerId && ownerId.length > 0) {
+      conditions.push(eq(schema.restaurants.ownerId, ownerId));
+    }
+
+    if (search && search.length > 0) {
+      conditions.push(ilike(schema.restaurants.name, `%${search}%`));
+    }
+
+    return conditions;
+  }
+
   /**
    * Gets total count of restaurants
    * @returns
    */
-  // TODO: add menuId and ownerId filters
-  public async getTotalCount(): Promise<number> {
-    return await this.pg
-      .select({ value: count() })
-      .from(schema.restaurants)
-      .then((res) => res[0].value);
+  public async getTotalCount(options: {
+    menuId?: string | null;
+    ownerId?: string | null;
+    search?: string | null;
+  }): Promise<number> {
+    const { menuId, ownerId, search } = options;
+
+    const conditions = this._buildConditions({ menuId, ownerId, search });
+
+    const dbQuery = this.pg
+      .select({
+        value: count(),
+      })
+      .from(schema.restaurants);
+
+    if (conditions.length > 0) {
+      dbQuery.where(and(...conditions));
+    }
+
+    const result = await dbQuery;
+
+    return result[0].value;
   }
 
   /**
@@ -42,11 +94,11 @@ export class RestaurantsService {
   public async findMany(options: {
     pagination: IPagination;
     worker?: RequestWorker;
-    // TODO: replace with filters
-    menuId?: string;
-    ownerId?: string;
+    menuId?: string | null;
+    ownerId?: string | null;
+    search?: string | null;
   }): Promise<RestaurantEntity[]> {
-    const { pagination, worker, menuId, ownerId } = options;
+    const { pagination, worker, menuId, ownerId, search } = options;
 
     const conditions: SQL<unknown>[] = [];
 
@@ -70,28 +122,7 @@ export class RestaurantsService {
       }
     }
 
-    // Filter restaurants that are assigned to a menu
-    if (menuId && menuId.length > 0) {
-      conditions.push(
-        exists(
-          this.pg
-            .select({
-              id: dishesMenusToRestaurants.restaurantId,
-            })
-            .from(dishesMenusToRestaurants)
-            .where(
-              and(
-                eq(dishesMenusToRestaurants.dishesMenuId, menuId),
-                eq(dishesMenusToRestaurants.restaurantId, restaurants.id),
-              ),
-            ),
-        ),
-      );
-    }
-
-    if (ownerId && ownerId.length > 0) {
-      conditions.push(eq(schema.restaurants.ownerId, ownerId));
-    }
+    conditions.push(...this._buildConditions({ menuId, ownerId, search }));
 
     return await this.pg.query.restaurants.findMany({
       ...(conditions.length > 0
@@ -267,6 +298,7 @@ export class RestaurantsService {
       .update(schema.restaurants)
       .set({
         ...rest,
+        ...(timezone ? { timezone } : {}),
         // Only system admins and chief admins can update restaurant owner
         ...(ownerId &&
         (worker.role === "SYSTEM_ADMIN" || worker.role === "CHIEF_ADMIN")
