@@ -41,6 +41,8 @@ export function Controller(
     BaseController({
       path,
     }),
+
+    // UsePipes(new Validator()),
     UsePipes(Validator),
     UseGuards(ThrottlerGuard),
     ApiTags(...(!tags ? [path] : tags)),

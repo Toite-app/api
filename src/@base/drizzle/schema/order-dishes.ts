@@ -82,7 +82,11 @@ export const orderDishes = pgTable(
     readyAt: timestamp("ready_at", { withTimezone: true }),
     removedAt: timestamp("removed_at", { withTimezone: true }),
   },
-  (table) => [index("order_dishes_order_id_idx").on(table.orderId)],
+  (table) => [
+    index("order_dishes_order_id_idx").on(table.orderId),
+    index("order_dishes_status_idx").on(table.status),
+    index("order_dishes_is_removed_idx").on(table.isRemoved),
+  ],
 );
 
 export type IOrderDish = typeof orderDishes.$inferSelect;

@@ -104,28 +104,43 @@ export class DishesMenusService {
   }): Promise<DishesMenuEntity[]> {
     const { worker } = options;
 
-    const conditions: SQL[] = [
-      // Exclude removed menus
-      eq(dishesMenus.isRemoved, false),
-    ];
-
-    if (worker.role === "SYSTEM_ADMIN" || worker.role === "CHIEF_ADMIN") {
-      // Fetch all menus
-    } else if (worker.role === "OWNER") {
-      // Fetch all menus of the owner
-      conditions.push(eq(dishesMenus.ownerId, worker.id));
-    } else if (worker.role === "ADMIN") {
-      // Fetch all menus of the restaurants of the admin
-      conditions.push(
-        inArray(
-          dishesMenus.ownerId,
-          worker.workersToRestaurants.map(({ restaurantId }) => restaurantId),
-        ),
-      );
-    }
-
     const fetchedMenus = await this.pg.query.dishesMenus.findMany({
-      ...(conditions.length > 0 && { where: and(...conditions) }),
+      // ...(conditions.length > 0 && { where: and(...conditions) }),
+      where: (dishesMenus, { and, exists, eq, inArray }) => {
+        const conditions: SQL[] = [
+          // Exclude removed menus
+          eq(dishesMenus.isRemoved, false),
+        ];
+
+        if (worker.role === "SYSTEM_ADMIN" || worker.role === "CHIEF_ADMIN") {
+          // Fetch all menus
+        } else if (worker.role === "OWNER") {
+          // Fetch all menus of the owner
+          conditions.push(eq(dishesMenus.ownerId, worker.id));
+        } else if (worker.role === "ADMIN") {
+          // Fetch all menus of the restaurants of the admin
+          conditions.push(
+            exists(
+              this.pg
+                .select({ restaurantId: dishesMenusToRestaurants.restaurantId })
+                .from(dishesMenusToRestaurants)
+                .where(
+                  and(
+                    eq(dishesMenusToRestaurants.dishesMenuId, dishesMenus.id),
+                    inArray(
+                      dishesMenusToRestaurants.restaurantId,
+                      worker.workersToRestaurants.map(
+                        ({ restaurantId }) => restaurantId,
+                      ),
+                    ),
+                  ),
+                ),
+            ),
+          );
+        }
+
+        return and(...conditions);
+      },
       with: {
         dishesMenusToRestaurants: {
           columns: {},

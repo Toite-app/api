@@ -101,6 +101,8 @@ export const orders = pgTable(
     index("orders_is_archived_idx").on(table.isArchived),
     index("orders_is_removed_idx").on(table.isRemoved),
     index("order_id_and_created_at_idx").on(table.id, table.createdAt),
+    index("orders_status_idx").on(table.status),
+    index("orders_delayed_to_idx").on(table.delayedTo),
   ],
 );
 

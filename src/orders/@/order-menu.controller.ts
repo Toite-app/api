@@ -1,6 +1,6 @@
 import { Controller } from "@core/decorators/controller.decorator";
 import { CursorParams, ICursor } from "@core/decorators/cursor.decorator";
-import SearchParam from "@core/decorators/search.decorator";
+import SearchQuery from "@core/decorators/search.decorator";
 import { Serializable } from "@core/decorators/serializable.decorator";
 import { Get, Param } from "@nestjs/common";
 import { ApiOkResponse, ApiOperation } from "@nestjs/swagger";
@@ -27,7 +27,7 @@ export class OrderMenuController {
   async getDishes(
     @Param("orderId") orderId: string,
     @CursorParams() cursor: ICursor,
-    @SearchParam() search?: string,
+    @SearchQuery() search?: string,
   ): Promise<OrderMenuDishesCursorEntity> {
     const data = await this.orderMenuService.getDishes(orderId, {
       cursor,
