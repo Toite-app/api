@@ -4,14 +4,18 @@ import { Inject, Injectable } from "@nestjs/common";
 import { schema } from "@postgress-db/drizzle.module";
 import {
   discounts,
-  discountsToRestaurants,
+  discountsConnections,
 } from "@postgress-db/schema/discounts";
 import { and, eq, exists, inArray, SQL } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { PG_CONNECTION } from "src/constants";
 import { CreateDiscountDto } from "src/discounts/dto/create-discount.dto";
 import { UpdateDiscountDto } from "src/discounts/dto/update-discount.dto";
-import { DiscountEntity } from "src/discounts/entities/discount.entity";
+import {
+  DiscountConnectionEntity,
+  DiscountEntity,
+  DiscountFullEntity,
+} from "src/discounts/entities/discount.entity";
 
 @Injectable()
 export class DiscountsService {
@@ -40,40 +44,27 @@ export class DiscountsService {
       conditions.push(
         exists(
           this.pg
-            .select({ id: discountsToRestaurants.restaurantId })
-            .from(discountsToRestaurants)
-            .where(inArray(discountsToRestaurants.restaurantId, restaurantIds)),
+            .select({ id: discountsConnections.restaurantId })
+            .from(discountsConnections)
+            .where(inArray(discountsConnections.restaurantId, restaurantIds)),
         ),
       );
     }
 
     const fetchedDiscounts = await this.pg.query.discounts.findMany({
       ...(conditions.length > 0 ? { where: () => and(...conditions) } : {}),
-      with: {
-        discountsToRestaurants: {
-          with: {
-            restaurant: {
-              columns: {
-                id: true,
-                name: true,
-              },
-            },
-          },
-        },
-      },
       orderBy: (discounts, { desc }) => [desc(discounts.createdAt)],
     });
 
-    return fetchedDiscounts.map(({ discountsToRestaurants, ...discount }) => ({
+    return fetchedDiscounts.map(({ ...discount }) => ({
       ...discount,
-      restaurants: discountsToRestaurants.map(({ restaurant }) => ({
-        restaurantId: restaurant.id,
-        restaurantName: restaurant.name,
-      })),
     }));
   }
 
-  public async findOne(id: string, options: { worker?: RequestWorker }) {
+  public async findOne(
+    id: string,
+    options: { worker?: RequestWorker },
+  ): Promise<DiscountFullEntity | null> {
     const { worker } = options;
 
     worker;
@@ -81,9 +72,29 @@ export class DiscountsService {
     const discount = await this.pg.query.discounts.findFirst({
       where: eq(discounts.id, id),
       with: {
-        discountsToRestaurants: {
+        connections: {
           with: {
-            restaurant: true,
+            dishesMenu: {
+              with: {
+                dishesMenusToRestaurants: {
+                  columns: {},
+                  with: {
+                    restaurant: {
+                      columns: {
+                        id: true,
+                        name: true,
+                      },
+                    },
+                  },
+                },
+                owner: {
+                  columns: {
+                    id: true,
+                    name: true,
+                  },
+                },
+              },
+            },
           },
         },
       },
@@ -93,11 +104,36 @@ export class DiscountsService {
       return null;
     }
 
+    // Group connections by dishesMenuId
+    const groupedConnections = discount.connections.reduce(
+      (acc, connection) => {
+        const key = connection.dishesMenuId;
+        if (!acc[key]) {
+          acc[key] = {
+            dishesMenuId: connection.dishesMenuId,
+            dishesMenu: {
+              ...connection.dishesMenu,
+              restaurants: connection.dishesMenu.dishesMenusToRestaurants.map(
+                ({ restaurant }) => restaurant,
+              ),
+            },
+            restaurantIds: [],
+            dishCategoryIds: [],
+          };
+        }
+        acc[key].restaurantIds.push(connection.restaurantId);
+        acc[key].dishCategoryIds.push(connection.dishCategoryId);
+        return acc;
+      },
+      {} as Record<string, DiscountConnectionEntity>,
+    );
+
     return {
       ...discount,
-      restaurants: discount.discountsToRestaurants.map(({ restaurant }) => ({
-        restaurantId: restaurant.id,
-        restaurantName: restaurant.name,
+      connections: Object.values(groupedConnections).map((connection) => ({
+        ...connection,
+        restaurantIds: [...new Set(connection.restaurantIds)],
+        dishCategoryIds: [...new Set(connection.dishCategoryIds)],
       })),
     };
   }
@@ -106,12 +142,9 @@ export class DiscountsService {
     payload: CreateDiscountDto | UpdateDiscountDto,
     worker: RequestWorker,
   ) {
-    if (!payload.restaurantIds || payload.restaurantIds.length === 0) {
+    if (!payload.menus || payload.menus.length === 0) {
       throw new BadRequestException(
-        "errors.discounts.you-should-provide-at-least-one-restaurant-id",
-        {
-          property: "restaurantIds",
-        },
+        "errors.discounts.you-should-provide-at-least-one-menu",
       );
     }
 
@@ -124,12 +157,13 @@ export class DiscountsService {
           : worker.workersToRestaurants.map((r) => r.restaurantId),
       );
 
-      if (payload.restaurantIds.some((id) => !restaurantIdsSet.has(id))) {
+      const menusRestaurantIds = payload.menus.flatMap(
+        (menu) => menu.restaurantIds,
+      );
+
+      if (menusRestaurantIds.some((id) => !restaurantIdsSet.has(id))) {
         throw new BadRequestException(
           "errors.discounts.you-provided-restaurant-id-that-you-dont-own",
-          {
-            property: "restaurantIds",
-          },
         );
       }
     }
@@ -155,12 +189,27 @@ export class DiscountsService {
           id: discounts.id,
         });
 
-      await tx.insert(discountsToRestaurants).values(
-        payload.restaurantIds.map((id) => ({
-          discountId: discount.id,
-          restaurantId: id,
-        })),
+      const connections = payload.menus.flatMap(
+        ({ dishesMenuId, categoryIds, restaurantIds }) => {
+          return restaurantIds.flatMap((restaurantId) =>
+            categoryIds.map(
+              (categoryId) =>
+                ({
+                  discountId: discount.id,
+                  dishesMenuId,
+                  restaurantId,
+                  dishCategoryId: categoryId,
+                }) as typeof discountsConnections.$inferInsert,
+            ),
+          );
+        },
       );
+
+      // Insert connections
+      await tx
+        .insert(discountsConnections)
+        .values(connections)
+        .onConflictDoNothing();
 
       return discount;
     });
@@ -182,7 +231,7 @@ export class DiscountsService {
       );
     }
 
-    if (payload.restaurantIds) {
+    if (payload.menus) {
       await this.validatePayload(payload, worker);
     }
 
@@ -203,20 +252,28 @@ export class DiscountsService {
           id: discounts.id,
         });
 
-      // If restaurantIds are provided, update restaurant associations
-      if (payload.restaurantIds) {
-        // Delete existing associations
-        await tx
-          .delete(discountsToRestaurants)
-          .where(eq(discountsToRestaurants.discountId, id));
-
-        // Create new associations
-        await tx.insert(discountsToRestaurants).values(
-          payload.restaurantIds.map((restaurantId) => ({
-            discountId: id,
-            restaurantId,
-          })),
+      if (payload.menus) {
+        const connections = payload.menus.flatMap(
+          ({ dishesMenuId, categoryIds, restaurantIds }) => {
+            return restaurantIds.flatMap((restaurantId) =>
+              categoryIds.map(
+                (categoryId) =>
+                  ({
+                    discountId: discount.id,
+                    dishesMenuId,
+                    restaurantId,
+                    dishCategoryId: categoryId,
+                  }) as typeof discountsConnections.$inferInsert,
+              ),
+            );
+          },
         );
+
+        // Insert connections
+        await tx
+          .insert(discountsConnections)
+          .values(connections)
+          .onConflictDoNothing();
       }
 
       return discount;

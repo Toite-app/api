@@ -1,9 +1,12 @@
+import { dishCategories } from "@postgress-db/schema/dish-categories";
+import { dishesMenus } from "@postgress-db/schema/dishes-menus";
 import { dayOfWeekEnum } from "@postgress-db/schema/general";
 import { orderFromEnum, orderTypeEnum } from "@postgress-db/schema/order-enums";
 import { restaurants } from "@postgress-db/schema/restaurants";
 import { relations } from "drizzle-orm";
 import {
   boolean,
+  index,
   integer,
   pgTable,
   primaryKey,
@@ -67,32 +70,48 @@ export const discounts = pgTable("discounts", {
 export type IDiscount = typeof discounts.$inferSelect;
 
 export const discountRelations = relations(discounts, ({ many }) => ({
-  discountsToRestaurants: many(discountsToRestaurants),
+  connections: many(discountsConnections),
 }));
 
-export const discountsToRestaurants = pgTable(
-  "discounts_to_restaurants",
+export const discountsConnections = pgTable(
+  "discount_connections",
   {
     discountId: uuid("discount_id").notNull(),
+    dishesMenuId: uuid("dishes_menu_id").notNull(),
     restaurantId: uuid("restaurant_id").notNull(),
+    dishCategoryId: uuid("dish_category_id").notNull(),
   },
   (t) => [
     primaryKey({
-      columns: [t.discountId, t.restaurantId],
+      columns: [t.discountId, t.dishesMenuId, t.restaurantId, t.dishCategoryId],
     }),
+    index("discount_connections_discount_id_idx").on(t.discountId),
+    index("discount_connections_dishes_menu_id_idx").on(t.dishesMenuId),
+    index("discount_connections_restaurant_id_idx").on(t.restaurantId),
+    index("discount_connections_dish_category_id_idx").on(t.dishCategoryId),
   ],
 );
 
-export const discountToRestaurantRelations = relations(
-  discountsToRestaurants,
+export type IDiscountConnection = typeof discountsConnections.$inferSelect;
+
+export const discountConnectionsRelations = relations(
+  discountsConnections,
   ({ one }) => ({
     discount: one(discounts, {
-      fields: [discountsToRestaurants.discountId],
+      fields: [discountsConnections.discountId],
       references: [discounts.id],
     }),
+    dishesMenu: one(dishesMenus, {
+      fields: [discountsConnections.dishesMenuId],
+      references: [dishesMenus.id],
+    }),
     restaurant: one(restaurants, {
-      fields: [discountsToRestaurants.restaurantId],
+      fields: [discountsConnections.restaurantId],
       references: [restaurants.id],
+    }),
+    dishCategory: one(dishCategories, {
+      fields: [discountsConnections.dishCategoryId],
+      references: [dishCategories.id],
     }),
   }),
 );

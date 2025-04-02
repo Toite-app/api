@@ -1,6 +1,7 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
 import { schema } from "@postgress-db/drizzle.module";
-import { discountsToRestaurants } from "@postgress-db/schema/discounts";
+import { discountsConnections } from "@postgress-db/schema/discounts";
+// import { discountsToRestaurants } from "@postgress-db/schema/discounts";
 import { arrayOverlaps } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { PG_CONNECTION } from "src/constants";
@@ -69,14 +70,14 @@ export class OrderDiscountsService {
           exists(
             this.pg
               .select({
-                restaurantId: discountsToRestaurants.restaurantId,
+                restaurantId: discountsConnections.restaurantId,
               })
-              .from(discountsToRestaurants)
+              .from(discountsConnections)
               .where(
                 and(
-                  eq(discountsToRestaurants.discountId, discounts.id),
+                  eq(discountsConnections.discountId, discounts.id),
                   eq(
-                    discountsToRestaurants.restaurantId,
+                    discountsConnections.restaurantId,
                     String(order.restaurantId),
                   ),
                 ),
