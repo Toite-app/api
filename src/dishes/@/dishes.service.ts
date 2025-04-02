@@ -75,7 +75,7 @@ export class DishesService {
     const result = await this.pg.query.dishes.findMany({
       where,
       with: {
-        dishesToCategories: {
+        dishesToDishCategories: {
           columns: {},
           with: {
             dishCategory: {
@@ -99,7 +99,7 @@ export class DishesService {
 
     return result.map((dish) => ({
       ...dish,
-      categories: dish.dishesToCategories.map((dc) => dc.dishCategory),
+      categories: dish.dishesToDishCategories.map((dc) => dc.dishCategory),
       images: dish.dishesToImages
         .sort((a, b) => a.sortIndex - b.sortIndex)
         .map((di) => ({
@@ -277,9 +277,9 @@ export class DishesService {
           .where(eq(schema.dishesToDishCategories.dishId, id));
 
         await tx.insert(schema.dishesToDishCategories).values(
-          categoryIds.map((id) => ({
+          categoryIds.map((dishCategoryId) => ({
             dishId: id,
-            dishCategoryId: id,
+            dishCategoryId,
           })),
         );
       }
@@ -292,7 +292,7 @@ export class DishesService {
     const result = await this.pg.query.dishes.findFirst({
       where: eq(schema.dishes.id, id),
       with: {
-        dishesToCategories: {
+        dishesToDishCategories: {
           columns: {},
           with: {
             dishCategory: {
@@ -324,7 +324,7 @@ export class DishesService {
           alt: di.alt,
           sortIndex: di.sortIndex,
         })),
-      categories: result.dishesToCategories.map((dc) => dc.dishCategory),
+      categories: result.dishesToDishCategories.map((dc) => dc.dishCategory),
     };
   }
 }

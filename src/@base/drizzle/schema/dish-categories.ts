@@ -1,6 +1,5 @@
 import { dishesToDishCategories } from "@postgress-db/schema/dishes";
 import { dishesMenus } from "@postgress-db/schema/dishes-menus";
-import { dishesToCategories } from "@postgress-db/schema/many-to-many";
 import { relations } from "drizzle-orm";
 import {
   boolean,
@@ -53,7 +52,6 @@ export type IDishCategory = typeof dishCategories.$inferSelect;
 export const dishCategoryRelations = relations(
   dishCategories,
   ({ one, many }) => ({
-    dishesToCategories: many(dishesToCategories),
     menu: one(dishesMenus, {
       fields: [dishCategories.menuId],
       references: [dishesMenus.id],

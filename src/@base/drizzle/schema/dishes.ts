@@ -1,10 +1,7 @@
 import { dishCategories } from "@postgress-db/schema/dish-categories";
 import { dishesMenus } from "@postgress-db/schema/dishes-menus";
 import { currencyEnum } from "@postgress-db/schema/general";
-import {
-  dishesToCategories,
-  dishesToImages,
-} from "@postgress-db/schema/many-to-many";
+import { dishesToImages } from "@postgress-db/schema/many-to-many";
 import { orderDishes } from "@postgress-db/schema/order-dishes";
 import { restaurantWorkshops } from "@postgress-db/schema/restaurant-workshop";
 import { restaurants } from "@postgress-db/schema/restaurants";
@@ -197,7 +194,6 @@ export const dishesToDishCategoriesRelations = relations(
 );
 
 export const dishRelations = relations(dishes, ({ one, many }) => ({
-  dishesToCategories: many(dishesToCategories),
   dishesToImages: many(dishesToImages),
   dishesToWorkshops: many(dishesToWorkshops),
   dishesToRestaurants: many(dishesToRestaurants),
