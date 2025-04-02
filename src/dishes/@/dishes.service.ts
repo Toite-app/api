@@ -22,7 +22,9 @@ import { DishEntity } from "./entities/dish.entity";
 @Injectable()
 export class DishesService {
   constructor(
-    @Inject(PG_CONNECTION) private readonly pg: NodePgDatabase<typeof schema>,
+    // Inject postgres connection
+    @Inject(PG_CONNECTION)
+    private readonly pg: NodePgDatabase<typeof schema>,
   ) {}
 
   public async getTotalCount({
@@ -73,6 +75,17 @@ export class DishesService {
     const result = await this.pg.query.dishes.findMany({
       where,
       with: {
+        dishesToCategories: {
+          columns: {},
+          with: {
+            dishCategory: {
+              columns: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
         dishesToImages: {
           with: {
             imageFile: true,
@@ -86,6 +99,7 @@ export class DishesService {
 
     return result.map((dish) => ({
       ...dish,
+      categories: dish.dishesToCategories.map((dc) => dc.dishCategory),
       images: dish.dishesToImages
         .sort((a, b) => a.sortIndex - b.sortIndex)
         .map((di) => ({
@@ -163,34 +177,64 @@ export class DishesService {
     return true;
   }
 
+  private async validateCategoryIds(menuId: string, categoryIds: string[]) {
+    const categories = await this.pg.query.dishCategories.findMany({
+      where: (dishCategories, { and, inArray }) =>
+        and(
+          eq(dishCategories.menuId, menuId),
+          inArray(dishCategories.id, categoryIds),
+        ),
+    });
+
+    if (categories.length !== categoryIds.length) {
+      throw new BadRequestException("errors.dishes.invalid-category-ids");
+    }
+  }
+
   public async create(
     dto: CreateDishDto,
     options: { worker: RequestWorker },
   ): Promise<DishEntity | undefined> {
+    const { categoryIds, ...payload } = dto;
     const { worker } = options;
 
     // Validate menu id
     await this.validateMenuId(dto.menuId, worker);
+    await this.validateCategoryIds(dto.menuId, categoryIds);
 
-    const [dish] = await this.pg
-      .insert(schema.dishes)
-      .values({
-        ...dto,
-      })
-      .returning();
+    const dish = await this.pg.transaction(async (tx) => {
+      const [dish] = await tx
+        .insert(schema.dishes)
+        .values({
+          ...payload,
+        })
+        .returning({
+          id: schema.dishes.id,
+        });
 
-    if (!dish) {
-      throw new ServerErrorException("Failed to create dish");
-    }
+      if (!dish) {
+        throw new ServerErrorException("Failed to create dish");
+      }
 
-    return { ...dish, images: [] };
+      await tx.insert(schema.dishesToDishCategories).values(
+        categoryIds.map((id) => ({
+          dishId: dish.id,
+          dishCategoryId: id,
+        })),
+      );
+
+      return dish;
+    });
+
+    return this.findById(dish.id);
   }
 
   public async update(
     id: string,
-    payload: UpdateDishDto,
+    dto: UpdateDishDto,
     options: { worker: RequestWorker },
   ): Promise<DishEntity | undefined> {
+    const { categoryIds, ...payload } = dto;
     const { worker } = options;
 
     worker;
@@ -211,16 +255,35 @@ export class DishesService {
       await this.validateMenuId(dish.menuId, worker);
     }
 
+    if (categoryIds && dish.menuId) {
+      await this.validateCategoryIds(dish.menuId, categoryIds);
+    }
+
     if (Object.keys(payload).length === 0) {
       throw new BadRequestException(
         "errors.dishes.you-should-provide-at-least-one-field-to-update",
       );
     }
 
-    await this.pg
-      .update(schema.dishes)
-      .set(payload)
-      .where(eq(schema.dishes.id, id));
+    await this.pg.transaction(async (tx) => {
+      await tx
+        .update(schema.dishes)
+        .set(payload)
+        .where(eq(schema.dishes.id, id));
+
+      if (categoryIds) {
+        await tx
+          .delete(schema.dishesToDishCategories)
+          .where(eq(schema.dishesToDishCategories.dishId, id));
+
+        await tx.insert(schema.dishesToDishCategories).values(
+          categoryIds.map((id) => ({
+            dishId: id,
+            dishCategoryId: id,
+          })),
+        );
+      }
+    });
 
     return this.findById(id);
   }
@@ -229,6 +292,17 @@ export class DishesService {
     const result = await this.pg.query.dishes.findFirst({
       where: eq(schema.dishes.id, id),
       with: {
+        dishesToCategories: {
+          columns: {},
+          with: {
+            dishCategory: {
+              columns: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
         dishesToImages: {
           with: {
             imageFile: true,
@@ -250,6 +324,7 @@ export class DishesService {
           alt: di.alt,
           sortIndex: di.sortIndex,
         })),
+      categories: result.dishesToCategories.map((dc) => dc.dishCategory),
     };
   }
 }

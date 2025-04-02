@@ -7,6 +7,13 @@ import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { PG_CONNECTION } from "src/constants";
 import { TimezonesService } from "src/timezones/timezones.service";
 
+type connectionKey = string;
+type OrderDiscount = {
+  id: string;
+  percent: number;
+  connectionsSet: Set<connectionKey>;
+};
+
 @Injectable()
 export class OrderDiscountsService {
   private readonly logger = new Logger(OrderDiscountsService.name);
@@ -17,12 +24,19 @@ export class OrderDiscountsService {
     private readonly timezonesService: TimezonesService,
   ) {}
 
+  private _getConnectionKey(
+    dishMenuId: string,
+    dishCategoryId: string,
+  ): connectionKey {
+    return `${dishMenuId}:${dishCategoryId}`;
+  }
+
   /**
    * Get discounts for the order
    * @param orderId - Order ID
    * @returns Discounts
    */
-  public async getDiscounts(orderId: string) {
+  public async getDiscounts(orderId: string): Promise<OrderDiscount[]> {
     const order = await this.pg.query.orders.findFirst({
       where: (orders, { eq }) => eq(orders.id, orderId),
       columns: {
@@ -94,10 +108,75 @@ export class OrderDiscountsService {
           ),
         ),
       columns: {
-        name: true,
+        id: true,
+        percent: true,
+      },
+      with: {
+        connections: {
+          where: (connections, { eq }) =>
+            eq(connections.restaurantId, String(order.restaurantId)),
+          columns: {
+            dishesMenuId: true,
+            dishCategoryId: true,
+          },
+        },
       },
     });
 
-    return discounts;
+    return discounts.map(({ id, percent, connections }) => ({
+      id,
+      percent,
+      connectionsSet: new Set(
+        connections.map(({ dishesMenuId, dishCategoryId }) =>
+          this._getConnectionKey(dishesMenuId, dishCategoryId),
+        ),
+      ),
+    }));
+  }
+
+  private getMaxDiscountsMap(discounts: OrderDiscount[]) {
+    const discountsMap = new Map<
+      connectionKey,
+      { id: string; percent: number }
+    >();
+
+    // sort from lower to higher percent
+    discounts
+      .sort((a, b) => a.percent - b.percent)
+      .forEach((discount) => {
+        Array.from(discount.connectionsSet).forEach((connectionKey) => {
+          discountsMap.set(connectionKey, {
+            id: discount.id,
+            percent: discount.percent,
+          });
+        });
+      });
+
+    return discountsMap;
+  }
+
+  public async applyDiscounts(orderId: string) {
+    const discounts = await this.getDiscounts(orderId);
+    const maxDiscounts = this.getMaxDiscountsMap(discounts);
+
+    const orderDishes = await this.pg.query.orderDishes.findMany({
+      where: (orderDishes, { and, eq, gt }) =>
+        and(
+          eq(orderDishes.orderId, orderId),
+          eq(orderDishes.isRemoved, false),
+          gt(orderDishes.quantity, 0),
+        ),
+      columns: {
+        id: true,
+        price: true,
+      },
+      with: {
+        dish: {
+          columns: {
+            menuId: true,
+          },
+        },
+      },
+    });
   }
 }

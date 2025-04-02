@@ -8,10 +8,16 @@ import {
   IsUUID,
   ValidateNested,
 } from "@i18n-class-validator";
-import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+import { ApiProperty, ApiPropertyOptional, PickType } from "@nestjs/swagger";
 import { IDish, ZodWeightMeasureEnum } from "@postgress-db/schema/dishes";
-import { Expose } from "class-transformer";
+import { Expose, Type } from "class-transformer";
+import { DishCategoryEntity } from "src/dish-categories/entities/dish-category.entity";
 import { DishImageEntity } from "src/dishes/@/entities/dish-image.entity";
+
+export class DishDishCategoryEntity extends PickType(DishCategoryEntity, [
+  "id",
+  "name",
+]) {}
 
 export class DishEntity implements IDish {
   @Expose()
@@ -115,11 +121,21 @@ export class DishEntity implements IDish {
 
   @Expose()
   @ValidateNested()
+  @Type(() => DishImageEntity)
   @ApiProperty({
     description: "Images associated with the dish",
     type: [DishImageEntity],
   })
   images: DishImageEntity[];
+
+  @Expose()
+  @ValidateNested()
+  @Type(() => DishDishCategoryEntity)
+  @ApiProperty({
+    description: "Categories associated with the dish",
+    type: [DishDishCategoryEntity],
+  })
+  categories: DishDishCategoryEntity[];
 
   @Expose()
   @IsISO8601()

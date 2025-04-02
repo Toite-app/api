@@ -69,6 +69,6 @@ export class OrderActionsController {
     @Param("id") orderId: string,
     @Worker() worker: RequestWorker,
   ) {
-    return this.orderDiscountsService.getDiscounts(orderId);
+    return this.orderDiscountsService.applyDiscounts(orderId);
   }
 }

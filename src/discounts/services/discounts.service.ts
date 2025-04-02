@@ -146,6 +146,14 @@ export class DiscountsService {
       throw new BadRequestException(
         "errors.discounts.you-should-provide-at-least-one-menu",
       );
+    } else if (payload.menus.some((menu) => menu.restaurantIds.length === 0)) {
+      throw new BadRequestException(
+        "errors.discounts.all-menus-should-have-at-least-one-restaurant",
+      );
+    } else if (payload.menus.some((menu) => menu.categoryIds.length === 0)) {
+      throw new BadRequestException(
+        "errors.discounts.all-menus-should-have-at-least-one-category",
+      );
     }
 
     // If worker is owner, check if they own all provided restaurant ids
@@ -268,6 +276,10 @@ export class DiscountsService {
             );
           },
         );
+
+        await tx
+          .delete(discountsConnections)
+          .where(eq(discountsConnections.discountId, id));
 
         // Insert connections
         await tx
