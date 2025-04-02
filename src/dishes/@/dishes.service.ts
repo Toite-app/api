@@ -11,7 +11,8 @@ import { RequestWorker } from "@core/interfaces/request";
 import { Inject, Injectable } from "@nestjs/common";
 import { DrizzleUtils } from "@postgress-db/drizzle-utils";
 import { schema } from "@postgress-db/drizzle.module";
-import { and, asc, count, desc, eq, sql, SQL } from "drizzle-orm";
+import { dishes } from "@postgress-db/schema/dishes";
+import { and, asc, count, desc, eq, exists, sql, SQL } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { PG_CONNECTION } from "src/constants";
 
@@ -29,8 +30,10 @@ export class DishesService {
 
   public async getTotalCount({
     filters,
+    categoryId,
   }: {
     filters?: IFilters;
+    categoryId?: string | null;
   }): Promise<number> {
     const conditions: SQL[] = [];
 
@@ -46,6 +49,22 @@ export class DishesService {
       );
     }
 
+    if (categoryId) {
+      conditions.push(
+        exists(
+          this.pg
+            .select({ id: schema.dishesToDishCategories.dishId })
+            .from(schema.dishesToDishCategories)
+            .where(
+              and(
+                eq(schema.dishesToDishCategories.dishId, dishes.id),
+                eq(schema.dishesToDishCategories.dishCategoryId, categoryId),
+              ),
+            ),
+        ),
+      );
+    }
+
     if (conditions.length > 0) {
       query.where(and(...conditions));
     }
@@ -57,12 +76,9 @@ export class DishesService {
     pagination?: IPagination;
     sorting?: ISorting;
     filters?: IFilters;
+    categoryId?: string | null;
   }): Promise<DishEntity[]> {
-    const { pagination, sorting, filters } = options ?? {};
-
-    const where = filters
-      ? DrizzleUtils.buildFilterConditions(schema.dishes, filters)
-      : undefined;
+    const { pagination, sorting, filters, categoryId } = options ?? {};
 
     const orderBy = sorting
       ? [
@@ -73,7 +89,36 @@ export class DishesService {
       : undefined;
 
     const result = await this.pg.query.dishes.findMany({
-      where,
+      where: (dishes, { and, eq, exists }) => {
+        const conditions: SQL[] = [];
+
+        if (categoryId) {
+          conditions.push(
+            exists(
+              this.pg
+                .select({ id: schema.dishesToDishCategories.dishId })
+                .from(schema.dishesToDishCategories)
+                .where(
+                  and(
+                    eq(schema.dishesToDishCategories.dishId, dishes.id),
+                    eq(
+                      schema.dishesToDishCategories.dishCategoryId,
+                      categoryId,
+                    ),
+                  ),
+                ),
+            ),
+          );
+        }
+
+        if (filters) {
+          conditions.push(
+            DrizzleUtils.buildFilterConditions(schema.dishes, filters) as SQL,
+          );
+        }
+
+        return and(...conditions);
+      },
       with: {
         dishesToDishCategories: {
           columns: {},
