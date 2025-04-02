@@ -58,6 +58,12 @@ export class DishesController {
     type: String,
     required: false,
   })
+  @ApiQuery({
+    name: "categoryId",
+    description: "Filter out dishes by category id",
+    type: String,
+    required: false,
+  })
   async findMany(
     @SortingParams({
       fields: [
@@ -73,8 +79,8 @@ export class DishesController {
     @PaginationParams() pagination: IPagination,
     @FilterParams() filters?: IFilters,
     @SearchQuery() search?: string,
-    @Query("menuId", new StringValuePipe())
-    menuId?: string,
+    @Query("menuId", new StringValuePipe()) menuId?: string | null,
+    @Query("categoryId", new StringValuePipe()) categoryId?: string | null,
   ): Promise<DishesPaginatedDto> {
     if (typeof search === "string" && search.length > 0 && search !== "null") {
       if (!filters) {
@@ -102,12 +108,14 @@ export class DishesController {
 
     const total = await this.dishesService.getTotalCount({
       filters,
+      categoryId,
     });
 
     const data = await this.dishesService.findMany({
       pagination,
       sorting,
       filters,
+      categoryId,
     });
 
     return {
