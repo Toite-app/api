@@ -12,7 +12,10 @@ import {
 } from "@nestjs/swagger";
 import { EnableAuditLog } from "src/@base/audit-logs/decorators/audit-logs.decorator";
 import { CreateDiscountDto } from "src/discounts/dto/create-discount.dto";
-import { DiscountEntity } from "src/discounts/entities/discount.entity";
+import {
+  DiscountEntity,
+  DiscountFullEntity,
+} from "src/discounts/entities/discount.entity";
 
 import { UpdateDiscountDto } from "./dto/update-discount.dto";
 import { DiscountsService } from "./services/discounts.service";
@@ -38,8 +41,14 @@ export class DiscountsController {
 
   @EnableAuditLog()
   @Get(":id")
+  @Serializable(DiscountFullEntity)
   @ApiOperation({
     summary: "Get a discount by id",
+    description: "Get a discount by id",
+  })
+  @ApiOkResponse({
+    description: "Discount has been successfully fetched",
+    type: DiscountFullEntity,
   })
   async findOne(@Param("id") id: string, @Worker() worker: RequestWorker) {
     return this.discountsService.findOne(id, { worker });

@@ -22,23 +22,44 @@ import {
 } from "@postgress-db/schema/order-enums";
 import { Expose, Type } from "class-transformer";
 import { i18nValidationMessage } from "nestjs-i18n";
+import { DishesMenuEntity } from "src/dishes-menus/entity/dishes-menu.entity";
 
-export class DiscountRestaurantEntity {
+export class DiscountConnectionEntity {
   @IsUUID()
   @Expose()
   @ApiProperty({
-    description: "Unique identifier of the restaurant",
+    description: "Unique identifier of the menu",
     example: "d290f1ee-6c54-4b01-90e6-d701748f0851",
   })
-  restaurantId: string;
+  dishesMenuId: string;
 
-  @IsString()
+  @Expose()
+  @Type(() => DishesMenuEntity)
+  @ApiProperty({
+    description: "Dishes menu that was assigned to the discount",
+    type: DishesMenuEntity,
+  })
+  dishesMenu: DishesMenuEntity;
+
+  @IsArray()
+  @IsUUID(undefined, { each: true })
   @Expose()
   @ApiProperty({
-    description: "Name of the restaurant",
-    example: "Restaurant Name",
+    description: "Restaurant IDs that were assigned to the discount",
+    type: String,
+    isArray: true,
   })
-  restaurantName: string;
+  restaurantIds: string[];
+
+  @IsArray()
+  @IsUUID(undefined, { each: true })
+  @Expose()
+  @ApiProperty({
+    description: "Dish category IDs that were assigned to the discount",
+    type: String,
+    isArray: true,
+  })
+  dishCategoryIds: string[];
 }
 
 export class DiscountEntity implements IDiscount {
@@ -150,25 +171,25 @@ export class DiscountEntity implements IDiscount {
   isEnabled: boolean;
 
   @IsOptional()
-  @Matches(/^([0-1][0-9]|2[0-3]):[0-5][0-9]$/, {
+  @Matches(/^([0-1][0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$/, {
     message: i18nValidationMessage("validation.time.invalid_format"),
   })
   @IsString()
   @Expose()
   @ApiPropertyOptional({
-    description: "Start time in HH:MM format",
+    description: "Start time in HH:MM or HH:MM:SS format",
     example: "14:00",
   })
   startTime: string | null;
 
   @IsOptional()
-  @Matches(/^([0-1][0-9]|2[0-3]):[0-5][0-9]$/, {
+  @Matches(/^([0-1][0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$/, {
     message: i18nValidationMessage("validation.time.invalid_format"),
   })
   @IsString()
   @Expose()
   @ApiPropertyOptional({
-    description: "End time in HH:MM format",
+    description: "End time in HH:MM or HH:MM:SS format",
     example: "18:00",
   })
   endTime: string | null;
@@ -189,15 +210,6 @@ export class DiscountEntity implements IDiscount {
   })
   activeTo: Date;
 
-  @IsArray()
-  @Expose()
-  @Type(() => DiscountRestaurantEntity)
-  @ApiProperty({
-    description: "Restaurants where discount is applicable",
-    type: [DiscountRestaurantEntity],
-  })
-  restaurants: DiscountRestaurantEntity[];
-
   @IsDate()
   @Expose()
   @ApiProperty({
@@ -213,4 +225,15 @@ export class DiscountEntity implements IDiscount {
     example: new Date("2024-01-01T00:00:00.000Z"),
   })
   updatedAt: Date;
+}
+
+export class DiscountFullEntity extends DiscountEntity {
+  @IsArray()
+  @Expose()
+  @Type(() => DiscountConnectionEntity)
+  @ApiProperty({
+    description: "Connections that was assigned to the discount",
+    type: [DiscountConnectionEntity],
+  })
+  connections: DiscountConnectionEntity[];
 }

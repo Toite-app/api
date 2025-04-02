@@ -119,6 +119,7 @@
   },
   "discounts": {
     "you-should-provide-at-least-one-restaurant-id": "You should provide at least one restaurant id",
+    "you-should-provide-at-least-one-menu": "You should provide at least one menu",
     "you-provided-restaurant-id-that-you-dont-own": "You provided restaurant id that you don't own"
   },
   "dishes-menus": {

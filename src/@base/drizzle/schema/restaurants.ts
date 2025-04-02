@@ -1,4 +1,3 @@
-import { discountsToRestaurants } from "@postgress-db/schema/discounts";
 import { dishModifiers } from "@postgress-db/schema/dish-modifiers";
 import { dishesToRestaurants } from "@postgress-db/schema/dishes";
 import { dishesMenusToRestaurants } from "@postgress-db/schema/dishes-menus";
@@ -115,7 +114,6 @@ export const restaurantRelations = relations(restaurants, ({ one, many }) => ({
     references: [workers.id],
   }),
   dishModifiers: many(dishModifiers),
-  discountsToRestaurants: many(discountsToRestaurants),
   dishesMenusToRestaurants: many(dishesMenusToRestaurants),
   workshifts: many(workshifts),
   workshiftPaymentCategories: many(workshiftPaymentCategories),
