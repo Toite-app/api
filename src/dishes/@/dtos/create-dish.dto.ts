@@ -29,4 +29,12 @@ export class CreateDishDto extends IntersectionType(
     example: "d290f1ee-6c54-4b01-90e6-d701748f0851",
   })
   menuId: string;
+
+  @Expose()
+  @IsUUID(undefined, { each: true })
+  @ApiProperty({
+    description: "Unique identifier of the dish category",
+    example: ["d290f1ee-6c54-4b01-90e6-d701748f0851"],
+  })
+  categoryIds: string[];
 }
