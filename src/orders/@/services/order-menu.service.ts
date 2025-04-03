@@ -4,10 +4,12 @@ import { BadRequestException } from "@core/errors/exceptions/bad-request.excepti
 import { NotFoundException } from "@core/errors/exceptions/not-found.exception";
 import { Inject, Injectable } from "@nestjs/common";
 import { schema } from "@postgress-db/drizzle.module";
+import { dishCategories } from "@postgress-db/schema/dish-categories";
 import { dishes, dishesToRestaurants } from "@postgress-db/schema/dishes";
 import { asc } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { PG_CONNECTION } from "src/constants";
+import { DishCategoryEntity } from "src/dish-categories/entities/dish-category.entity";
 import {
   OrderMenuDishEntity,
   OrderMenuDishOrderDishEntity,
@@ -16,8 +18,49 @@ import {
 @Injectable()
 export class OrderMenuService {
   constructor(
-    @Inject(PG_CONNECTION) private readonly pg: NodePgDatabase<typeof schema>,
+    @Inject(PG_CONNECTION)
+    private readonly pg: NodePgDatabase<typeof schema>,
   ) {}
+
+  public async findDishCategories(
+    orderId: string,
+  ): Promise<DishCategoryEntity[]> {
+    const order = await this.pg.query.orders.findFirst({
+      where: (orders, { eq }) => eq(orders.id, orderId),
+      columns: {},
+      with: {
+        restaurant: {
+          columns: {},
+          with: {
+            dishesMenusToRestaurants: {
+              columns: {
+                dishesMenuId: true,
+              },
+            },
+          },
+        },
+      },
+    });
+    const menuIds = (order?.restaurant?.dishesMenusToRestaurants || []).map(
+      ({ dishesMenuId }) => dishesMenuId,
+    );
+
+    if (menuIds.length === 0) {
+      return [];
+    }
+
+    const fetchedCategories = await this.pg.query.dishCategories.findMany({
+      where: (dishCategories, { and, eq, inArray }) => {
+        return and(
+          eq(dishCategories.showForWorkers, true),
+          inArray(dishCategories.menuId, menuIds),
+        );
+      },
+      orderBy: [asc(dishCategories.sortIndex)],
+    });
+
+    return fetchedCategories;
+  }
 
   public async getDishes(
     orderId: string,

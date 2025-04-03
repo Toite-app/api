@@ -5,6 +5,7 @@ import { Serializable } from "@core/decorators/serializable.decorator";
 import { Get, Param } from "@nestjs/common";
 import { ApiOkResponse, ApiOperation } from "@nestjs/swagger";
 import { EnableAuditLog } from "src/@base/audit-logs/decorators/audit-logs.decorator";
+import { DishCategoryEntity } from "src/dish-categories/entities/dish-category.entity";
 import { OrderMenuDishesCursorEntity } from "src/orders/@/entities/order-menu-dishes-cursor.entity";
 import { OrderMenuService } from "src/orders/@/services/order-menu.service";
 
@@ -13,6 +14,23 @@ import { OrderMenuService } from "src/orders/@/services/order-menu.service";
 })
 export class OrderMenuController {
   constructor(private readonly orderMenuService: OrderMenuService) {}
+
+  @EnableAuditLog({ onlyErrors: true })
+  @Serializable(DishCategoryEntity)
+  @Get("categories")
+  @ApiOperation({
+    summary:
+      "Gets list of dish categories that are available for the order dishes",
+  })
+  @ApiOkResponse({
+    description: "List of dish categories",
+    type: DishCategoryEntity,
+  })
+  async getDishCategories(
+    @Param("orderId") orderId: string,
+  ): Promise<DishCategoryEntity[]> {
+    return this.orderMenuService.findDishCategories(orderId);
+  }
 
   @EnableAuditLog({ onlyErrors: true })
   @Serializable(OrderMenuDishesCursorEntity)
