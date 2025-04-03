@@ -63,10 +63,16 @@ export class DiscountConnectionEntity {
   dishCategoryIds: string[];
 }
 
-export class DiscountGuestEntity extends PickType(GuestEntity, [
-  "id",
-  "name",
-]) {}
+export class DiscountGuestEntity extends PickType(GuestEntity, ["id", "name"]) {
+  @IsISO8601()
+  @Expose()
+  @ApiProperty({
+    description: "Date when guest was created to discount",
+    example: new Date("2021-08-01T00:00:00.000Z"),
+    type: Date,
+  })
+  createdAt: Date;
+}
 
 export class DiscountEntity implements IDiscount {
   @IsUUID()

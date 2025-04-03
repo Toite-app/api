@@ -156,6 +156,11 @@ export const discountsToGuests = pgTable(
   {
     discountId: uuid("discount_id").notNull(),
     guestId: uuid("guest_id").notNull(),
+    createdAt: timestamp("created_at", {
+      withTimezone: true,
+    })
+      .notNull()
+      .defaultNow(),
   },
   (t) => [
     primaryKey({ columns: [t.discountId, t.guestId] }),
