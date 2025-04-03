@@ -1,6 +1,9 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
 import { schema } from "@postgress-db/drizzle.module";
-import { discountsConnections } from "@postgress-db/schema/discounts";
+import {
+  discountsConnections,
+  discountsToGuests,
+} from "@postgress-db/schema/discounts";
 // import { discountsToRestaurants } from "@postgress-db/schema/discounts";
 import { arrayOverlaps } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
@@ -42,13 +45,18 @@ export class OrderDiscountsService {
       columns: {
         type: true,
         from: true,
-        guestId: true,
+        discountsGuestId: true,
         restaurantId: true,
       },
       with: {
         restaurant: {
           columns: {
             timezone: true,
+          },
+        },
+        discountsToOrders: {
+          columns: {
+            discountId: true,
           },
         },
       },
@@ -65,48 +73,98 @@ export class OrderDiscountsService {
 
     const currentTime = this.timezonesService.getCurrentTime(timezone);
 
+    const additionalDiscountsIds = order.discountsToOrders.map(
+      ({ discountId }) => discountId,
+    );
+
     const discounts = await this.pg.query.discounts.findMany({
-      where: (discounts, { or, eq, exists, and, isNull, lte, gte }) =>
-        and(
-          // Active from to date
+      where: (
+        discounts,
+        { or, eq, exists, notExists, and, isNull, lte, gte, inArray },
+      ) => {
+        return or(
+          // Additional order discounts should be applied without additional checks
+          // Cause this checks should be performed before creating record
+          additionalDiscountsIds.length > 0
+            ? inArray(discounts.id, additionalDiscountsIds)
+            : undefined,
+          // General search
           and(
-            lte(discounts.activeFrom, new Date()),
-            gte(discounts.activeTo, new Date()),
-          ),
-          // Check that discount is enabled
-          eq(discounts.isEnabled, true),
-          // Check that type and from are in the discount
-          arrayOverlaps(discounts.orderFroms, [order.from]),
-          arrayOverlaps(discounts.orderTypes, [order.type]),
-          // Check that discount is active for the current day of week
-          arrayOverlaps(discounts.daysOfWeek, [currentDayOfWeek]),
-          // Check restaurants assigned to the discount
-          exists(
-            this.pg
-              .select({
-                restaurantId: discountsConnections.restaurantId,
-              })
-              .from(discountsConnections)
-              .where(
-                and(
-                  eq(discountsConnections.discountId, discounts.id),
-                  eq(
-                    discountsConnections.restaurantId,
-                    String(order.restaurantId),
+            // Active from to date
+            and(
+              lte(discounts.activeFrom, new Date()),
+              gte(discounts.activeTo, new Date()),
+            ),
+            // Check that discount is enabled
+            eq(discounts.isEnabled, true),
+            // Check that type and from are in the discount
+            arrayOverlaps(discounts.orderFroms, [order.from]),
+            arrayOverlaps(discounts.orderTypes, [order.type]),
+            // Check that discount is active for the current day of week
+            arrayOverlaps(discounts.daysOfWeek, [currentDayOfWeek]),
+            // Check restaurants assigned to the discount
+            exists(
+              this.pg
+                .select({
+                  restaurantId: discountsConnections.restaurantId,
+                })
+                .from(discountsConnections)
+                .where(
+                  and(
+                    eq(discountsConnections.discountId, discounts.id),
+                    eq(
+                      discountsConnections.restaurantId,
+                      String(order.restaurantId),
+                    ),
                   ),
                 ),
-              ),
-          ),
-          or(
-            // NULL values means that discount is active all the time
-            and(isNull(discounts.startTime), isNull(discounts.endTime)),
-            // Check if current time is between start and end time
-            and(
-              lte(discounts.startTime, currentTime),
-              gte(discounts.endTime, currentTime),
             ),
+            or(
+              // NULL values means that discount is active all the time
+              and(isNull(discounts.startTime), isNull(discounts.endTime)),
+              // Check if current time is between start and end time
+              and(
+                lte(discounts.startTime, currentTime),
+                gte(discounts.endTime, currentTime),
+              ),
+            ),
+            order.discountsGuestId
+              ? // If order have discounts guest id load both: shared and personal discounts
+                or(
+                  exists(
+                    this.pg
+                      .select({
+                        discountId: discountsToGuests.discountId,
+                      })
+                      .from(discountsToGuests)
+                      .where(
+                        and(
+                          eq(discountsToGuests.discountId, discounts.id),
+                          eq(discountsToGuests.guestId, order.discountsGuestId),
+                        ),
+                      ),
+                  ),
+                  notExists(
+                    this.pg
+                      .select({
+                        discountId: discountsToGuests.discountId,
+                      })
+                      .from(discountsToGuests)
+                      .where(eq(discountsToGuests.discountId, discounts.id)),
+                  ),
+                )
+              : // If not only discounts that doesn't have guests assigns
+                notExists(
+                  this.pg
+                    .select({
+                      discountId: discountsToGuests.discountId,
+                    })
+                    .from(discountsToGuests)
+                    .where(eq(discountsToGuests.discountId, discounts.id)),
+                ),
           ),
-        ),
+        );
+      },
       columns: {
         id: true,
         percent: true,
@@ -212,5 +270,10 @@ export class OrderDiscountsService {
         orderDishIdToDiscount.set(id, discount);
       });
     });
+
+    console.log(discounts);
+    console.log(Object.fromEntries(maxDiscounts));
+    console.log(JSON.stringify(orderDishes, null, 2));
+    console.log(Object.fromEntries(orderDishIdToDiscount));
   }
 }
