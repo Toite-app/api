@@ -38,12 +38,12 @@ export const discounts = pgTable("discounts", {
 
   // Advanced conditions //
   promocode: text("promocode"),
-  // TODO: Replace with applyOnlyByPromocode
-  applyByPromocode: boolean("apply_by_promocode").notNull().default(false),
-  // TODO: Replace with applyOnlyAtFirstOrder
-  applyForFirstOrder: boolean("apply_for_first_order").notNull().default(false),
-  // TODO: Remove apply by default flag cause we will use isEnabled to indicate that discount should be applied by default
-  applyByDefault: boolean("apply_by_default").notNull().default(false),
+  applyOnlyByPromocode: boolean("apply_only_by_promocode")
+    .notNull()
+    .default(false),
+  applyOnlyAtFirstOrder: boolean("apply_only_at_first_order")
+    .notNull()
+    .default(false),
 
   // Boolean flags //
   isEnabled: boolean("is_enabled").notNull().default(true),
