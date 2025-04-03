@@ -75,7 +75,9 @@ export class DiscountsService {
       where: eq(discounts.id, id),
       with: {
         discountsToGuests: {
-          columns: {},
+          columns: {
+            createdAt: true,
+          },
           with: {
             guest: {
               columns: {
@@ -148,7 +150,10 @@ export class DiscountsService {
         restaurantIds: [...new Set(connection.restaurantIds)],
         dishCategoryIds: [...new Set(connection.dishCategoryIds)],
       })),
-      guests: discount.discountsToGuests.map(({ guest }) => guest),
+      guests: discount.discountsToGuests.map(({ guest, createdAt }) => ({
+        ...guest,
+        createdAt,
+      })),
     };
   }
 
