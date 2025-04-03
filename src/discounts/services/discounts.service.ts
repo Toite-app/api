@@ -83,6 +83,7 @@ export class DiscountsService {
               columns: {
                 id: true,
                 name: true,
+                phone: true,
               },
             },
           },

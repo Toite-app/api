@@ -63,7 +63,11 @@ export class DiscountConnectionEntity {
   dishCategoryIds: string[];
 }
 
-export class DiscountGuestEntity extends PickType(GuestEntity, ["id", "name"]) {
+export class DiscountGuestEntity extends PickType(GuestEntity, [
+  "id",
+  "name",
+  "phone",
+]) {
   @IsISO8601()
   @Expose()
   @ApiProperty({
