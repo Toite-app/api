@@ -26,8 +26,10 @@ export class RestaurantsService {
     menuId?: string | null;
     ownerId?: string | null;
     search?: string | null;
+    isEnabled?: boolean | null;
+    isClosedForever?: boolean | null;
   }) {
-    const { menuId, ownerId, search } = options;
+    const { menuId, ownerId, search, isEnabled, isClosedForever } = options;
 
     const conditions: SQL<unknown>[] = [];
 
@@ -55,6 +57,14 @@ export class RestaurantsService {
       conditions.push(ilike(schema.restaurants.name, `%${search}%`));
     }
 
+    if (typeof isEnabled === "boolean") {
+      conditions.push(eq(schema.restaurants.isEnabled, isEnabled));
+    }
+
+    if (typeof isClosedForever === "boolean") {
+      conditions.push(eq(schema.restaurants.isClosedForever, isClosedForever));
+    }
+
     return conditions;
   }
 
@@ -66,10 +76,18 @@ export class RestaurantsService {
     menuId?: string | null;
     ownerId?: string | null;
     search?: string | null;
+    isEnabled?: boolean | null;
+    isClosedForever?: boolean | null;
   }): Promise<number> {
-    const { menuId, ownerId, search } = options;
+    const { menuId, ownerId, search, isEnabled, isClosedForever } = options;
 
-    const conditions = this._buildConditions({ menuId, ownerId, search });
+    const conditions = this._buildConditions({
+      menuId,
+      ownerId,
+      search,
+      isEnabled,
+      isClosedForever,
+    });
 
     const dbQuery = this.pg
       .select({
@@ -97,8 +115,18 @@ export class RestaurantsService {
     menuId?: string | null;
     ownerId?: string | null;
     search?: string | null;
+    isEnabled?: boolean | null;
+    isClosedForever?: boolean | null;
   }): Promise<RestaurantEntity[]> {
-    const { pagination, worker, menuId, ownerId, search } = options;
+    const {
+      pagination,
+      worker,
+      menuId,
+      ownerId,
+      search,
+      isEnabled,
+      isClosedForever,
+    } = options;
 
     const conditions: SQL<unknown>[] = [];
 
@@ -122,7 +150,15 @@ export class RestaurantsService {
       }
     }
 
-    conditions.push(...this._buildConditions({ menuId, ownerId, search }));
+    conditions.push(
+      ...this._buildConditions({
+        menuId,
+        ownerId,
+        search,
+        isEnabled,
+        isClosedForever,
+      }),
+    );
 
     return await this.pg.query.restaurants.findMany({
       ...(conditions.length > 0
