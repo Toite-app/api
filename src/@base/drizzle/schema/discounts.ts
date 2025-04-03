@@ -38,8 +38,11 @@ export const discounts = pgTable("discounts", {
 
   // Advanced conditions //
   promocode: text("promocode"),
+  // TODO: Replace with applyOnlyByPromocode
   applyByPromocode: boolean("apply_by_promocode").notNull().default(false),
+  // TODO: Replace with applyOnlyAtFirstOrder
   applyForFirstOrder: boolean("apply_for_first_order").notNull().default(false),
+  // TODO: Remove apply by default flag cause we will use isEnabled to indicate that discount should be applied by default
   applyByDefault: boolean("apply_by_default").notNull().default(false),
 
   // Boolean flags //
@@ -154,7 +157,10 @@ export const discountsToGuests = pgTable(
     discountId: uuid("discount_id").notNull(),
     guestId: uuid("guest_id").notNull(),
   },
-  (t) => [primaryKey({ columns: [t.discountId, t.guestId] })],
+  (t) => [
+    primaryKey({ columns: [t.discountId, t.guestId] }),
+    index("discounts_to_guests_guest_id_idx").on(t.guestId),
+  ],
 );
 
 export type IDiscountToGuest = typeof discountsToGuests.$inferSelect;
