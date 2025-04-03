@@ -94,6 +94,7 @@ export class GuestsService {
         phone: formattedPhone,
         lastVisitAt: new Date(),
         bonusBalance: dto.bonusBalance ?? 0,
+        email: dto.email && dto.email.trim() !== "" ? dto.email : null,
       })
       .returning();
 
@@ -122,7 +123,13 @@ export class GuestsService {
 
     await this.pg
       .update(schema.guests)
-      .set(updateData)
+      .set({
+        ...updateData,
+        email:
+          updateData.email && updateData.email.trim() !== ""
+            ? updateData.email
+            : null,
+      })
       .where(eq(schema.guests.id, id));
 
     const result = await this.pg
