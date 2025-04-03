@@ -8,6 +8,7 @@ import {
 } from "@nestjs/platform-fastify";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import { patchNestJsSwagger } from "nestjs-zod";
+import { SwaggerTheme, SwaggerThemeNameEnum } from "swagger-themes";
 
 import { AppModule } from "./app.module";
 import { AUTH_COOKIES } from "./auth/auth.types";
@@ -37,11 +38,14 @@ async function bootstrap() {
       .build();
 
     const document = SwaggerModule.createDocument(app, config);
+    const theme = new SwaggerTheme();
+    const darkStyle = theme.getBuffer(SwaggerThemeNameEnum.DARK);
 
     SwaggerModule.setup("docs", app, document, {
       customSiteTitle: "Toite API Docs",
       customfavIcon:
         "https://avatars.githubusercontent.com/u/157302718?s=200&v=4",
+      customCss: darkStyle,
       swaggerOptions: {},
     });
   }
