@@ -5,8 +5,12 @@ import { NotFoundException } from "@core/errors/exceptions/not-found.exception";
 import { Inject, Injectable } from "@nestjs/common";
 import { schema } from "@postgress-db/drizzle.module";
 import { dishCategories } from "@postgress-db/schema/dish-categories";
-import { dishes, dishesToRestaurants } from "@postgress-db/schema/dishes";
-import { asc } from "drizzle-orm";
+import {
+  dishes,
+  dishesToDishCategories,
+  dishesToRestaurants,
+} from "@postgress-db/schema/dishes";
+import { asc, SQL } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { PG_CONNECTION } from "src/constants";
 import { DishCategoryEntity } from "src/dish-categories/entities/dish-category.entity";
@@ -67,9 +71,10 @@ export class OrderMenuService {
     opts?: {
       cursor: ICursor;
       search?: string;
+      dishCategoryId?: string;
     },
   ): Promise<OrderMenuDishEntity[]> {
-    const { cursor, search } = opts ?? {};
+    const { cursor, search, dishCategoryId } = opts ?? {};
 
     const order = await this.pg.query.orders.findFirst({
       where: (orders, { eq }) => eq(orders.id, orderId),
@@ -141,12 +146,8 @@ export class OrderMenuService {
     }
 
     const fetchedDishes = await this.pg.query.dishes.findMany({
-      where: (dishes, { and, eq, exists, inArray, ilike }) =>
-        and(
-          // insensetive search
-          search && search !== "null"
-            ? ilike(dishes.name, `%${search}%`)
-            : undefined,
+      where: (dishes, { and, eq, exists, inArray, ilike }) => {
+        const conditions: SQL[] = [
           // From the menu that is assigned to the order restaurant
           inArray(dishes.menuId, menuIds),
           // Select only dishes that was assigned to the order restaurant
@@ -166,7 +167,30 @@ export class OrderMenuService {
                 ),
               ),
           ),
-        ),
+        ];
+
+        if (search && search !== "null") {
+          conditions.push(ilike(dishes.name, `%${search}%`));
+        }
+
+        if (dishCategoryId) {
+          conditions.push(
+            exists(
+              this.pg
+                .select()
+                .from(dishesToDishCategories)
+                .where(
+                  and(
+                    eq(dishesToDishCategories.dishId, dishes.id),
+                    eq(dishesToDishCategories.dishCategoryId, dishCategoryId),
+                  ),
+                ),
+            ),
+          );
+        }
+
+        return and(...conditions);
+      },
       columns: {
         id: true,
         name: true,

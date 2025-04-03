@@ -2,8 +2,9 @@ import { Controller } from "@core/decorators/controller.decorator";
 import { CursorParams, ICursor } from "@core/decorators/cursor.decorator";
 import SearchQuery from "@core/decorators/search.decorator";
 import { Serializable } from "@core/decorators/serializable.decorator";
-import { Get, Param } from "@nestjs/common";
-import { ApiOkResponse, ApiOperation } from "@nestjs/swagger";
+import { StringValuePipe } from "@core/pipes/string.pipe";
+import { Get, Param, Query } from "@nestjs/common";
+import { ApiOkResponse, ApiOperation, ApiQuery } from "@nestjs/swagger";
 import { EnableAuditLog } from "src/@base/audit-logs/decorators/audit-logs.decorator";
 import { DishCategoryEntity } from "src/dish-categories/entities/dish-category.entity";
 import { OrderMenuDishesCursorEntity } from "src/orders/@/entities/order-menu-dishes-cursor.entity";
@@ -42,14 +43,22 @@ export class OrderMenuController {
     description: "Dishes that can be added to the order",
     type: OrderMenuDishesCursorEntity,
   })
+  @ApiQuery({
+    name: "categoryId",
+    type: String,
+    required: false,
+    description: "Filter dishes by category id",
+  })
   async getDishes(
     @Param("orderId") orderId: string,
     @CursorParams() cursor: ICursor,
     @SearchQuery() search?: string,
+    @Query("categoryId", new StringValuePipe()) dishCategoryId?: string,
   ): Promise<OrderMenuDishesCursorEntity> {
     const data = await this.orderMenuService.getDishes(orderId, {
       cursor,
       search,
+      dishCategoryId,
     });
 
     return {
