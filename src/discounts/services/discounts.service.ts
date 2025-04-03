@@ -239,12 +239,14 @@ export class DiscountsService {
         .values(connections)
         .onConflictDoNothing();
 
-      await tx.insert(discountsToGuests).values(
-        payload.guestIds.map((guestId) => ({
-          discountId: discount.id,
-          guestId,
-        })),
-      );
+      if (payload.guestIds && payload.guestIds.length > 0) {
+        await tx.insert(discountsToGuests).values(
+          payload.guestIds.map((guestId) => ({
+            discountId: discount.id,
+            guestId,
+          })),
+        );
+      }
 
       return discount;
     });
@@ -308,17 +310,19 @@ export class DiscountsService {
           .delete(discountsConnections)
           .where(eq(discountsConnections.discountId, id));
 
-        // Insert connections
-        await tx
-          .insert(discountsConnections)
-          .values(connections)
-          .onConflictDoNothing();
-
-        if (payload.guestIds) {
+        if (connections.length > 0) {
+          // Insert connections
           await tx
-            .delete(discountsToGuests)
-            .where(eq(discountsToGuests.discountId, id));
+            .insert(discountsConnections)
+            .values(connections)
+            .onConflictDoNothing();
+        }
 
+        await tx
+          .delete(discountsToGuests)
+          .where(eq(discountsToGuests.discountId, id));
+
+        if (payload.guestIds && payload.guestIds.length > 0) {
           await tx.insert(discountsToGuests).values(
             payload.guestIds.map((guestId) => ({
               discountId: discount.id,
