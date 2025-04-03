@@ -8,6 +8,10 @@ import {
 import { arrayOverlaps } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { PG_CONNECTION } from "src/constants";
+import {
+  OrderDishesRepository,
+  OrderDishUpdatePayload,
+} from "src/orders/@/repositories/order-dishes.repository";
 import { TimezonesService } from "src/timezones/timezones.service";
 
 type connectionKey = string;
@@ -25,6 +29,7 @@ export class OrderDiscountsService {
     // DB Connection
     @Inject(PG_CONNECTION) private readonly pg: NodePgDatabase<typeof schema>,
     private readonly timezonesService: TimezonesService,
+    private readonly orderDishesRepository: OrderDishesRepository,
   ) {}
 
   private _getConnectionKey(
@@ -218,15 +223,17 @@ export class OrderDiscountsService {
     const maxDiscounts = this.getMaxDiscountsMap(discounts);
 
     const orderDishes = await this.pg.query.orderDishes.findMany({
-      where: (orderDishes, { and, eq, gt }) =>
+      where: (orderDishes, { and, eq, gt, isNull }) =>
         and(
           eq(orderDishes.orderId, orderId),
           eq(orderDishes.isRemoved, false),
           gt(orderDishes.quantity, 0),
+          isNull(orderDishes.discountId),
         ),
       columns: {
         id: true,
         price: true,
+        surchargeAmount: true,
       },
       with: {
         dish: {
@@ -243,6 +250,8 @@ export class OrderDiscountsService {
         },
       },
     });
+
+    const orderDishesMap = new Map(orderDishes.map((od) => [od.id, od]));
 
     const orderDishIdToDiscount = new Map<
       string,
@@ -271,9 +280,32 @@ export class OrderDiscountsService {
       });
     });
 
-    console.log(discounts);
-    console.log(Object.fromEntries(maxDiscounts));
-    console.log(JSON.stringify(orderDishes, null, 2));
-    console.log(Object.fromEntries(orderDishIdToDiscount));
+    await this.orderDishesRepository.updateMany(
+      Array.from(orderDishIdToDiscount.entries())
+        .map(([orderDishId, discount]) => {
+          const orderDish = orderDishesMap.get(orderDishId);
+
+          if (!orderDish) {
+            return null;
+          }
+
+          const discountAmount =
+            (Number(orderDish.price) * discount.percent) / 100;
+
+          const surchargeAmount = Number(orderDish?.surchargeAmount ?? 0);
+
+          const finalPrice =
+            Number(orderDish.price) - discountAmount + surchargeAmount;
+
+          return {
+            orderDishId,
+            discountId: discount.id,
+            discountPercent: discount.percent.toString(),
+            discountAmount: discountAmount.toString(),
+            finalPrice: finalPrice.toString(),
+          } satisfies OrderDishUpdatePayload;
+        })
+        .filter((od) => od !== null),
+    );
   }
 }

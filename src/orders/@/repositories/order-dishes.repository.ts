@@ -9,6 +9,10 @@ import { PG_CONNECTION } from "src/constants";
 import { OrderDishSnapshotEntity } from "src/orders/@/entities/order-dish-snapshot.entity";
 import { OrderUpdatersService } from "src/orders/@/services/order-updaters.service";
 
+export type OrderDishUpdatePayload = {
+  orderDishId: string;
+} & Partial<typeof orderDishes.$inferInsert>;
+
 @Injectable()
 export class OrderDishesRepository {
   constructor(
@@ -82,10 +86,11 @@ export class OrderDishesRepository {
    */
   public async update(
     orderDishId: string,
-    payload: Partial<typeof orderDishes.$inferInsert>,
+    payload: Omit<OrderDishUpdatePayload, "orderDishId">,
     opts?: {
       tx?: DrizzleTransaction;
       workerId?: string;
+      _ignoreHandlers?: boolean;
     },
   ) {
     const tx = opts?.tx ?? this.pg;
@@ -98,20 +103,25 @@ export class OrderDishesRepository {
         .where(eq(orderDishes.id, orderDishId))
         .returning();
 
-      // When order dish is ready check for others and set order status
-      if (payload?.status && payload.status === "ready") {
-        await this.orderUpdatersService.checkDishesReadyStatus(
+      if (!opts?._ignoreHandlers) {
+        // When order dish is ready check for others and set order status
+        if (payload?.status && payload.status === "ready") {
+          await this.orderUpdatersService.checkDishesReadyStatus(
+            orderDish.orderId,
+            {
+              tx,
+            },
+          );
+        }
+
+        // Calculate order totals price
+        await this.orderUpdatersService.calculateOrderTotals(
           orderDish.orderId,
           {
             tx,
           },
         );
       }
-
-      // Calculate order totals price
-      await this.orderUpdatersService.calculateOrderTotals(orderDish.orderId, {
-        tx,
-      });
 
       return orderDish;
     });
@@ -126,5 +136,34 @@ export class OrderDishesRepository {
     });
 
     return result;
+  }
+
+  public async updateMany(
+    payload: (OrderDishUpdatePayload | null)[],
+    opts?: {
+      tx?: DrizzleTransaction;
+      workerId?: string;
+    },
+  ) {
+    const tx = opts?.tx ?? this.pg;
+
+    const results = await tx.transaction(async (tx) => {
+      const results = await Promise.all(
+        payload
+          .filter((od) => od !== null)
+          .map((od) => od as OrderDishUpdatePayload)
+          .map(({ orderDishId, ...data }, index) => {
+            return this.update(orderDishId, data, {
+              tx,
+              _ignoreHandlers: index !== payload.length - 1,
+              workerId: opts?.workerId,
+            });
+          }),
+      );
+
+      return results;
+    });
+
+    return results;
   }
 }
