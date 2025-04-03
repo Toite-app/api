@@ -13,7 +13,7 @@ import {
   Min,
   MinLength,
 } from "@i18n-class-validator";
-import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+import { ApiProperty, ApiPropertyOptional, PickType } from "@nestjs/swagger";
 import { IDiscount } from "@postgress-db/schema/discounts";
 import { ZodDayOfWeekEnum } from "@postgress-db/schema/general";
 import {
@@ -23,6 +23,7 @@ import {
 import { Expose, Type } from "class-transformer";
 import { i18nValidationMessage } from "nestjs-i18n";
 import { DishesMenuEntity } from "src/dishes-menus/entity/dishes-menu.entity";
+import { GuestEntity } from "src/guests/entities/guest.entity";
 
 export class DiscountConnectionEntity {
   @IsUUID()
@@ -61,6 +62,11 @@ export class DiscountConnectionEntity {
   })
   dishCategoryIds: string[];
 }
+
+export class DiscountGuestEntity extends PickType(GuestEntity, [
+  "id",
+  "name",
+]) {}
 
 export class DiscountEntity implements IDiscount {
   @IsUUID()
@@ -228,4 +234,13 @@ export class DiscountFullEntity extends DiscountEntity {
     type: [DiscountConnectionEntity],
   })
   connections: DiscountConnectionEntity[];
+
+  @IsArray()
+  @Expose()
+  @Type(() => DiscountGuestEntity)
+  @ApiProperty({
+    description: "Guests that was assigned to the discount",
+    type: [DiscountGuestEntity],
+  })
+  guests: DiscountGuestEntity[];
 }
