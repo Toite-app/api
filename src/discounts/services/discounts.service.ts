@@ -5,6 +5,7 @@ import { schema } from "@postgress-db/drizzle.module";
 import {
   discounts,
   discountsConnections,
+  discountsToGuests,
 } from "@postgress-db/schema/discounts";
 import { and, eq, exists, inArray, SQL } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
@@ -20,7 +21,8 @@ import {
 @Injectable()
 export class DiscountsService {
   constructor(
-    @Inject(PG_CONNECTION) private readonly pg: NodePgDatabase<typeof schema>,
+    @Inject(PG_CONNECTION)
+    private readonly pg: NodePgDatabase<typeof schema>,
   ) {}
 
   public async findMany(options: {
@@ -72,6 +74,17 @@ export class DiscountsService {
     const discount = await this.pg.query.discounts.findFirst({
       where: eq(discounts.id, id),
       with: {
+        discountsToGuests: {
+          columns: {},
+          with: {
+            guest: {
+              columns: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
         connections: {
           with: {
             dishesMenu: {
@@ -135,6 +148,7 @@ export class DiscountsService {
         restaurantIds: [...new Set(connection.restaurantIds)],
         dishCategoryIds: [...new Set(connection.dishCategoryIds)],
       })),
+      guests: discount.discountsToGuests.map(({ guest }) => guest),
     };
   }
 
@@ -219,6 +233,13 @@ export class DiscountsService {
         .values(connections)
         .onConflictDoNothing();
 
+      await tx.insert(discountsToGuests).values(
+        payload.guestIds.map((guestId) => ({
+          discountId: discount.id,
+          guestId,
+        })),
+      );
+
       return discount;
     });
 
@@ -286,6 +307,19 @@ export class DiscountsService {
           .insert(discountsConnections)
           .values(connections)
           .onConflictDoNothing();
+
+        if (payload.guestIds) {
+          await tx
+            .delete(discountsToGuests)
+            .where(eq(discountsToGuests.discountId, id));
+
+          await tx.insert(discountsToGuests).values(
+            payload.guestIds.map((guestId) => ({
+              discountId: discount.id,
+              guestId,
+            })),
+          );
+        }
       }
 
       return discount;
