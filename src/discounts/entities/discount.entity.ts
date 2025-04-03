@@ -144,7 +144,7 @@ export class DiscountEntity implements IDiscount {
     description: "Whether discount applies only to first order",
     example: false,
   })
-  applyForFirstOrder: boolean;
+  applyOnlyAtFirstOrder: boolean;
 
   @IsBoolean()
   @Expose()
@@ -152,15 +152,7 @@ export class DiscountEntity implements IDiscount {
     description: "Whether discount is applied by promocode",
     example: true,
   })
-  applyByPromocode: boolean;
-
-  @IsBoolean()
-  @Expose()
-  @ApiProperty({
-    description: "Whether discount is applied by default",
-    example: true,
-  })
-  applyByDefault: boolean;
+  applyOnlyByPromocode: boolean;
 
   @IsBoolean()
   @Expose()
