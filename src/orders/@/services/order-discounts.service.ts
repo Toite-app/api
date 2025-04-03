@@ -175,8 +175,42 @@ export class OrderDiscountsService {
           columns: {
             menuId: true,
           },
+          with: {
+            dishesToDishCategories: {
+              columns: {
+                dishCategoryId: true,
+              },
+            },
+          },
         },
       },
+    });
+
+    const orderDishIdToDiscount = new Map<
+      string,
+      { id: string; percent: number }
+    >();
+
+    orderDishes.forEach(({ id, dish }) => {
+      const menuId = dish?.menuId;
+      const dishCategoryIds = dish?.dishesToDishCategories.map(
+        ({ dishCategoryId }) => dishCategoryId,
+      );
+
+      if (!menuId || !dishCategoryIds || dishCategoryIds.length === 0) {
+        return;
+      }
+
+      dishCategoryIds.forEach((dishCategoryId) => {
+        const connectionKey = this._getConnectionKey(menuId, dishCategoryId);
+        const discount = maxDiscounts.get(connectionKey);
+
+        if (!discount) {
+          return;
+        }
+
+        orderDishIdToDiscount.set(id, discount);
+      });
     });
   }
 }
