@@ -1,7 +1,9 @@
 import { dishCategories } from "@postgress-db/schema/dish-categories";
 import { dishesMenus } from "@postgress-db/schema/dishes-menus";
 import { dayOfWeekEnum } from "@postgress-db/schema/general";
+import { guests } from "@postgress-db/schema/guests";
 import { orderFromEnum, orderTypeEnum } from "@postgress-db/schema/order-enums";
+import { orders } from "@postgress-db/schema/orders";
 import { restaurants } from "@postgress-db/schema/restaurants";
 import { relations } from "drizzle-orm";
 import {
@@ -71,6 +73,8 @@ export type IDiscount = typeof discounts.$inferSelect;
 
 export const discountRelations = relations(discounts, ({ many }) => ({
   connections: many(discountsConnections),
+  discountsToOrders: many(discountsToOrders),
+  discountsToGuests: many(discountsToGuests),
 }));
 
 export const discountsConnections = pgTable(
@@ -112,6 +116,59 @@ export const discountConnectionsRelations = relations(
     dishCategory: one(dishCategories, {
       fields: [discountsConnections.dishCategoryId],
       references: [dishCategories.id],
+    }),
+  }),
+);
+
+export const discountsToOrders = pgTable(
+  "discounts_to_orders",
+  {
+    discountId: uuid("discount_id").notNull(),
+    orderId: uuid("order_id").notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.discountId, t.orderId] }),
+    index("discounts_to_orders_order_id_idx").on(t.orderId),
+  ],
+);
+
+export type IDiscountToOrder = typeof discountsToOrders.$inferSelect;
+
+export const discountToOrderRelations = relations(
+  discountsToOrders,
+  ({ one }) => ({
+    discount: one(discounts, {
+      fields: [discountsToOrders.discountId],
+      references: [discounts.id],
+    }),
+    order: one(orders, {
+      fields: [discountsToOrders.orderId],
+      references: [orders.id],
+    }),
+  }),
+);
+
+export const discountsToGuests = pgTable(
+  "discounts_to_guests",
+  {
+    discountId: uuid("discount_id").notNull(),
+    guestId: uuid("guest_id").notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.discountId, t.guestId] })],
+);
+
+export type IDiscountToGuest = typeof discountsToGuests.$inferSelect;
+
+export const discountToGuestRelations = relations(
+  discountsToGuests,
+  ({ one }) => ({
+    discount: one(discounts, {
+      fields: [discountsToGuests.discountId],
+      references: [discounts.id],
+    }),
+    guest: one(guests, {
+      fields: [discountsToGuests.guestId],
+      references: [guests.id],
     }),
   }),
 );

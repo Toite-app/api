@@ -1,3 +1,4 @@
+import { discountsToGuests } from "@postgress-db/schema/discounts";
 import { orders } from "@postgress-db/schema/orders";
 import { relations } from "drizzle-orm";
 import { integer, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
@@ -29,4 +30,5 @@ export type IGuest = typeof guests.$inferSelect;
 
 export const guestRelations = relations(guests, ({ many }) => ({
   orders: many(orders),
+  discountsToGuests: many(discountsToGuests),
 }));

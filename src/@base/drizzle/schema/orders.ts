@@ -1,3 +1,4 @@
+import { discountsToOrders } from "@postgress-db/schema/discounts";
 import { currencyEnum } from "@postgress-db/schema/general";
 import { guests } from "@postgress-db/schema/guests";
 import { orderDeliveries } from "@postgress-db/schema/order-deliveries";
@@ -37,6 +38,7 @@ export const orders = pgTable(
 
     // Links //
     guestId: uuid("guest_id"),
+    discountsGuestId: uuid("discounts_guest_id"),
     restaurantId: uuid("restaurant_id"),
     paymentMethodId: uuid("payment_method_id"),
 
@@ -74,6 +76,7 @@ export const orders = pgTable(
     total: decimal("total", { precision: 10, scale: 2 }).notNull().default("0"),
 
     // Booleans flags //
+    applyDiscounts: boolean("apply_discounts").notNull().default(false),
     isHiddenForGuest: boolean("is_hidden_for_guest").notNull().default(false),
     isRemoved: boolean("is_removed").notNull().default(false),
     isArchived: boolean("is_archived").notNull().default(false),
@@ -128,4 +131,5 @@ export const orderRelations = relations(orders, ({ one, many }) => ({
   orderDishes: many(orderDishes),
   prechecks: many(orderPrechecks),
   historyRecords: many(orderHistoryRecords),
+  discountsToOrders: many(discountsToOrders),
 }));

@@ -42,6 +42,14 @@ export class OrderEntity implements IOrder {
 
   @IsUUID()
   @IsOptional()
+  @ApiPropertyOptional({
+    description: "Discounts guest identifier",
+    example: "d290f1ee-6c54-4b01-90e6-d701748f0851",
+  })
+  discountsGuestId: string | null;
+
+  @IsUUID()
+  @IsOptional()
   @Expose()
   @ApiPropertyOptional({
     description: "Restaurant identifier",
@@ -198,6 +206,13 @@ export class OrderEntity implements IOrder {
     example: "95.00",
   })
   total: string;
+
+  @IsBoolean()
+  @ApiProperty({
+    description: "Is discounts applied",
+    example: false,
+  })
+  applyDiscounts: boolean;
 
   @IsBoolean()
   @Expose()
