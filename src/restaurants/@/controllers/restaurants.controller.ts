@@ -67,17 +67,38 @@ export class RestaurantsController {
     type: String,
     required: false,
   })
+  @ApiQuery({
+    name: "isEnabled",
+    description: "Filter out restaurants by isEnabled",
+    type: Boolean,
+    required: false,
+  })
+  @ApiQuery({
+    name: "isClosedForever",
+    description: "Filter out restaurants by isClosedForever",
+    type: Boolean,
+    required: false,
+  })
   async findAll(
     @PaginationParams() pagination: IPagination,
     @Worker() worker: RequestWorker,
     @Query("search", new StringValuePipe()) search?: string | null,
     @Query("menuId", new StringValuePipe()) menuId?: string | null,
     @Query("ownerId", new StringValuePipe()) ownerId?: string | null,
+    @Query("isEnabled", new StringValuePipe()) isEnabled?: string | null,
+    @Query("isClosedForever", new StringValuePipe())
+    isClosedForever?: string | null,
   ) {
     const total = await this.restaurantsService.getTotalCount({
       menuId,
       ownerId,
       search,
+      ...(typeof isEnabled === "string" && {
+        isEnabled: isEnabled === "true",
+      }),
+      ...(typeof isClosedForever === "string" && {
+        isClosedForever: isClosedForever === "true",
+      }),
     });
 
     const data = await this.restaurantsService.findMany({
@@ -86,6 +107,12 @@ export class RestaurantsController {
       menuId,
       ownerId,
       search,
+      ...(typeof isEnabled === "string" && {
+        isEnabled: isEnabled === "true",
+      }),
+      ...(typeof isClosedForever === "string" && {
+        isClosedForever: isClosedForever === "true",
+      }),
     });
 
     return {
