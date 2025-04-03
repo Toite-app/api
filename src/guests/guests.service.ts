@@ -14,6 +14,7 @@ import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { isValidPhoneNumber, parsePhoneNumber } from "libphonenumber-js";
 import { PG_CONNECTION } from "src/constants";
 import { CreateGuestDto } from "src/guests/dtos/create-guest.dto";
+import { FindOrCreateGuestDto } from "src/guests/dtos/find-or-create.dto";
 import { UpdateGuestDto } from "src/guests/dtos/update-guest.dto";
 import { GuestEntity } from "src/guests/entities/guest.entity";
 
@@ -161,5 +162,20 @@ export class GuestsService {
       .limit(1);
 
     return result?.[0];
+  }
+
+  public async findOrCreate(
+    dto: FindOrCreateGuestDto,
+  ): Promise<GuestEntity | undefined> {
+    const guest = await this.findByPhoneNumber(dto.phone);
+
+    if (guest) {
+      return guest;
+    }
+
+    return this.create({
+      name: "-",
+      phone: dto.phone,
+    });
   }
 }
