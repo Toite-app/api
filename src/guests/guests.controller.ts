@@ -19,6 +19,7 @@ import {
   ApiUnauthorizedResponse,
 } from "@nestjs/swagger";
 import { EnableAuditLog } from "src/@base/audit-logs/decorators/audit-logs.decorator";
+import { FindOrCreateGuestDto } from "src/guests/dtos/find-or-create.dto";
 
 import { CreateGuestDto } from "./dtos/create-guest.dto";
 import { UpdateGuestDto } from "./dtos/update-guest.dto";
@@ -85,6 +86,24 @@ export class GuestsController {
 
     if (!guest) {
       throw new BadRequestException("errors.guests.failed-to-create-guest");
+    }
+
+    return guest;
+  }
+
+  @EnableAuditLog()
+  @Post("find-or-create")
+  @Serializable(GuestEntity)
+  @ApiOperation({ summary: "Finds a guest or creates a new one" })
+  @ApiOkResponse({
+    description: "Guest has been successfully fetched",
+    type: GuestEntity,
+  })
+  async findOrCreate(@Body() data: FindOrCreateGuestDto): Promise<GuestEntity> {
+    const guest = await this.guestsService.findOrCreate(data);
+
+    if (!guest) {
+      throw new BadRequestException();
     }
 
     return guest;
