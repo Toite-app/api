@@ -4,6 +4,7 @@ import {
   discountsConnections,
   discountsToGuests,
 } from "@postgress-db/schema/discounts";
+import { IOrderDish } from "@postgress-db/schema/order-dishes";
 // import { discountsToRestaurants } from "@postgress-db/schema/discounts";
 import { arrayOverlaps } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
@@ -197,7 +198,12 @@ export class OrderDiscountsService {
     }));
   }
 
-  private getMaxDiscountsMap(discounts: OrderDiscount[]) {
+  /**
+   * Get max discounts map
+   * @param discounts
+   * @returns
+   */
+  private _getMaxDiscountsMap(discounts: OrderDiscount[]) {
     const discountsMap = new Map<
       connectionKey,
       { id: string; percent: number }
@@ -218,9 +224,49 @@ export class OrderDiscountsService {
     return discountsMap;
   }
 
+  /**
+   * Get order dishes discounts map
+   * @param orderDishes
+   * @param maxDiscounts
+   * @returns
+   */
+  private _getOrderDishesDiscountsMap(
+    orderDishes: Array<
+      Pick<IOrderDish, "id"> & {
+        menuId: string;
+        categoryIds: string[];
+      }
+    >,
+    maxDiscounts: Map<connectionKey, { id: string; percent: number }>,
+  ) {
+    const orderDishIdToDiscount = new Map<
+      string,
+      { id: string; percent: number }
+    >();
+
+    orderDishes.forEach(({ id, menuId, categoryIds }) => {
+      categoryIds.forEach((categoryId) => {
+        const connectionKey = this._getConnectionKey(menuId, categoryId);
+        const discount = maxDiscounts.get(connectionKey);
+
+        if (!discount) {
+          return;
+        }
+
+        orderDishIdToDiscount.set(id, discount);
+      });
+    });
+
+    return orderDishIdToDiscount;
+  }
+
+  /**
+   * Apply discounts to the order dishes
+   * @param orderId - Order ID
+   */
   public async applyDiscounts(orderId: string) {
     const discounts = await this.getDiscounts(orderId);
-    const maxDiscounts = this.getMaxDiscountsMap(discounts);
+    const maxDiscounts = this._getMaxDiscountsMap(discounts);
 
     const orderDishes = await this.pg.query.orderDishes.findMany({
       where: (orderDishes, { and, eq, gt, isNull }) =>
@@ -251,58 +297,32 @@ export class OrderDiscountsService {
       },
     });
 
-    const orderDishesMap = new Map(orderDishes.map((od) => [od.id, od]));
-
-    const orderDishIdToDiscount = new Map<
-      string,
-      { id: string; percent: number }
-    >();
-
-    orderDishes.forEach(({ id, dish }) => {
-      const menuId = dish?.menuId;
-      const dishCategoryIds = dish?.dishesToDishCategories.map(
-        ({ dishCategoryId }) => dishCategoryId,
-      );
-
-      if (!menuId || !dishCategoryIds || dishCategoryIds.length === 0) {
-        return;
-      }
-
-      dishCategoryIds.forEach((dishCategoryId) => {
-        const connectionKey = this._getConnectionKey(menuId, dishCategoryId);
-        const discount = maxDiscounts.get(connectionKey);
-
-        if (!discount) {
-          return;
-        }
-
-        orderDishIdToDiscount.set(id, discount);
-      });
-    });
+    const orderDishIdToDiscount = this._getOrderDishesDiscountsMap(
+      orderDishes.map((od) => ({
+        ...od,
+        menuId: String(od.dish?.menuId),
+        categoryIds: (od.dish?.dishesToDishCategories || []).map(
+          ({ dishCategoryId }) => dishCategoryId,
+        ),
+      })),
+      maxDiscounts,
+    );
 
     await this.orderDishesRepository.updateMany(
-      Array.from(orderDishIdToDiscount.entries())
-        .map(([orderDishId, discount]) => {
-          const orderDish = orderDishesMap.get(orderDishId);
+      orderDishes
+        .map(({ id, price, surchargeAmount }) => {
+          const discount = orderDishIdToDiscount.get(id);
 
-          if (!orderDish) {
+          if (!discount) {
             return null;
           }
 
-          const discountAmount =
-            (Number(orderDish.price) * discount.percent) / 100;
-
-          const surchargeAmount = Number(orderDish?.surchargeAmount ?? 0);
-
-          const finalPrice =
-            Number(orderDish.price) - discountAmount + surchargeAmount;
-
           return {
-            orderDishId,
+            orderDishId: id,
             discountId: discount.id,
             discountPercent: discount.percent.toString(),
-            discountAmount: discountAmount.toString(),
-            finalPrice: finalPrice.toString(),
+            price,
+            surchargeAmount,
           } satisfies OrderDishUpdatePayload;
         })
         .filter((od) => od !== null),
