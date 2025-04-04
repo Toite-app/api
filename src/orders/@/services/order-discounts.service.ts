@@ -1,3 +1,4 @@
+import { RequestWorker } from "@core/interfaces/request";
 import { Inject, Injectable, Logger } from "@nestjs/common";
 import { schema } from "@postgress-db/drizzle.module";
 import {
@@ -5,8 +6,10 @@ import {
   discountsToGuests,
 } from "@postgress-db/schema/discounts";
 import { IOrderDish } from "@postgress-db/schema/order-dishes";
+import { orderHistoryRecords } from "@postgress-db/schema/order-history";
+import { orders } from "@postgress-db/schema/orders";
 // import { discountsToRestaurants } from "@postgress-db/schema/discounts";
-import { arrayOverlaps } from "drizzle-orm";
+import { arrayOverlaps, eq } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { PG_CONNECTION } from "src/constants";
 import {
@@ -264,9 +267,23 @@ export class OrderDiscountsService {
    * Apply discounts to the order dishes
    * @param orderId - Order ID
    */
-  public async applyDiscounts(orderId: string) {
+  public async applyDiscounts(
+    orderId: string,
+    opts?: { worker?: RequestWorker },
+  ) {
     const discounts = await this.getDiscounts(orderId);
     const maxDiscounts = this._getMaxDiscountsMap(discounts);
+
+    const order = await this.pg.query.orders.findFirst({
+      where: (orders, { eq }) => eq(orders.id, orderId),
+      columns: {
+        applyDiscounts: true,
+      },
+    });
+
+    if (!order) {
+      throw new Error("Order not found");
+    }
 
     const orderDishes = await this.pg.query.orderDishes.findMany({
       where: (orderDishes, { and, eq, gt, isNull }) =>
@@ -308,24 +325,45 @@ export class OrderDiscountsService {
       maxDiscounts,
     );
 
-    await this.orderDishesRepository.updateMany(
-      orderDishes
-        .map(({ id, price, surchargeAmount }) => {
-          const discount = orderDishIdToDiscount.get(id);
+    await this.pg.transaction(async (tx) => {
+      await this.orderDishesRepository.updateMany(
+        orderDishes
+          .map(({ id, price, surchargeAmount }) => {
+            const discount = orderDishIdToDiscount.get(id);
 
-          if (!discount) {
-            return null;
-          }
+            if (!discount) {
+              return null;
+            }
 
-          return {
-            orderDishId: id,
-            discountId: discount.id,
-            discountPercent: discount.percent.toString(),
-            price,
-            surchargeAmount,
-          } satisfies OrderDishUpdatePayload;
-        })
-        .filter((od) => od !== null),
-    );
+            return {
+              orderDishId: id,
+              discountId: discount.id,
+              discountPercent: discount.percent.toString(),
+              price,
+              surchargeAmount,
+            } satisfies OrderDishUpdatePayload;
+          })
+          .filter((od) => od !== null),
+        {
+          tx,
+          workerId: opts?.worker?.id,
+        },
+      );
+
+      if (!order.applyDiscounts) {
+        await tx
+          .update(orders)
+          .set({
+            applyDiscounts: true,
+          })
+          .where(eq(orders.id, orderId));
+
+        await tx.insert(orderHistoryRecords).values({
+          orderId,
+          type: "discounts_enabled",
+          ...(opts?.worker?.id && { workerId: opts.worker.id }),
+        });
+      }
+    });
   }
 }

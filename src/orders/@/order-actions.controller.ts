@@ -8,7 +8,6 @@ import { OrderAvailableActionsEntity } from "src/orders/@/entities/order-availab
 import { OrderPrecheckEntity } from "src/orders/@/entities/order-precheck.entity";
 import { OrderActionsService } from "src/orders/@/services/order-actions.service";
 import { OrderDiscountsService } from "src/orders/@/services/order-discounts.service";
-import { OrdersService } from "src/orders/@/services/orders.service";
 
 @Controller("orders/:id/actions", {
   tags: ["orders"],
@@ -69,6 +68,8 @@ export class OrderActionsController {
     @Param("id") orderId: string,
     @Worker() worker: RequestWorker,
   ) {
-    return this.orderDiscountsService.applyDiscounts(orderId);
+    return this.orderDiscountsService.applyDiscounts(orderId, {
+      worker,
+    });
   }
 }
