@@ -51,6 +51,7 @@ async function bootstrap() {
   }
 
   await app.listen(env.PORT, "0.0.0.0");
+  console.log("Run on port", env.PORT);
 }
 
 // Only patch Swagger in development
