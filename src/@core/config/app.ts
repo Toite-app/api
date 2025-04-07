@@ -29,10 +29,11 @@ export const configApp = async (app: NestFastifyApplication) => {
   // Enable CORS
   app.enableCors({
     origin: [
-      "http://localhost:3000",
-      "http://localhost:3035",
-      "http://127.0.0.1:3000",
-      "http://127.0.0.1:3035",
+      "*",
+      // "http://localhost:3000",
+      // "http://localhost:3035",
+      // "http://127.0.0.1:3000",
+      // "http://127.0.0.1:3035",
     ],
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     preflightContinue: false,
