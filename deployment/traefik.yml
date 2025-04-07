@@ -1,0 +1,21 @@
+api:
+  dashboard: true # Enable the dashboard
+  insecure: true # disable in production
+
+entryPoints:
+  web:
+    address: ":80"
+  websecure:
+    address: ":443"
+
+providers:
+  docker:
+    exposedByDefault: false # Don't expose all containers by default
+
+certificatesResolvers:
+  letsencrypt:
+    acme:
+      email: "contact@yefro.dev"
+      storage: /data/acme.json
+      httpChallenge:
+        entryPoint: web

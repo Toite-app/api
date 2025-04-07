@@ -83,7 +83,11 @@ export interface PgTransactionConfig {
         const connectionString = configService.get<string>("POSTGRESQL_URL");
         const pool = new Pool({
           connectionString,
-          ssl: env.NODE_ENV === "production" ? true : false,
+          ssl:
+            env.NODE_ENV === "production" &&
+            String(connectionString).indexOf("sslmode=required") !== -1
+              ? true
+              : false,
         });
 
         return drizzle(pool, {
