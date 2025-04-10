@@ -58,7 +58,7 @@
     "@vvo/tzdb": "^6.157.0",
     "argon2": "^0.41.1",
     "axios": "^1.8.4",
-    "bullmq": "^5.40.0",
+    "bullmq": "^5.44.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
     "cookie": "^1.0.2",
