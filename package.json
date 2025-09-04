@@ -72,7 +72,7 @@
     "ioredis": "^5.4.2",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.13.0",
-    "multer": "^1.4.5-lts.1",
+    "multer": "^2.0.1",
     "nestjs-form-data": "^1.9.92",
     "nestjs-i18n": "^10.5.1",
     "nestjs-zod": "^4.2.0",
