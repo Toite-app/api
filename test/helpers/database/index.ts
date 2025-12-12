@@ -41,6 +41,11 @@ export class DatabaseHelper {
   public static pg = drizzle(
     new Pool({
       connectionString: process.env.POSTGRESQL_URL,
+      ssl:
+        process.env.NODE_ENV === "production" &&
+        String(process.env.POSTGRESQL_URL).indexOf("sslmode=required") !== -1
+          ? true
+          : false,
     }),
     { schema },
   );

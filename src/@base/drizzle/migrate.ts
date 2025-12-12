@@ -9,6 +9,11 @@ dotenv.config();
 export async function startMigration() {
   const pool = new Pool({
     connectionString: env.POSTGRESQL_URL,
+    ssl:
+      env.NODE_ENV === "production" &&
+      String(env.POSTGRESQL_URL).indexOf("sslmode=required") !== -1
+        ? true
+        : false,
   });
 
   const db = drizzle(pool);
