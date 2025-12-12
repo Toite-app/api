@@ -11,5 +11,10 @@ export default {
   dialect: "postgresql",
   dbCredentials: {
     url: String(process.env.POSTGRESQL_URL),
+    ssl:
+      process.env.NODE_ENV === "production" &&
+      String(process.env.POSTGRESQL_URL).indexOf("sslmode=required") !== -1
+        ? true
+        : false,
   },
 } satisfies Config;

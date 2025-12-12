@@ -67,6 +67,11 @@ const connectionString = `postgresql://${process.env.POSTGRES_USER}:${process.en
 
 const pool = new Pool({
   connectionString,
+  ssl:
+    process.env.NODE_ENV === "production" &&
+    String(process.env.POSTGRESQL_URL).indexOf("sslmode=required") !== -1
+      ? true
+      : false,
 });
 
 const db = drizzle(pool, {
