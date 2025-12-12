@@ -67,6 +67,7 @@ export class SessionsService {
       workerId: worker.id,
       ip,
       httpAgent,
+      refreshedAt: new Date(),
     });
 
     return signed;
