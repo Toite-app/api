@@ -38,6 +38,7 @@ import {
   RestaurantWithCuisine,
 } from "./mocks/restaurants";
 import { mockSystemAdmin, mockWorkers } from "./mocks/workers";
+import { mockWorkshiftPaymentCategories } from "./mocks/workshifts";
 import { chunker, log, logError, withTiming } from "./utils";
 
 // Set deterministic faker seed for reproducible data
@@ -120,6 +121,17 @@ async function main(): Promise<void> {
         restaurantId,
         count: SEED_CONFIG.dishModifiersPerRestaurant,
       }),
+    );
+
+    const allWorkshiftPaymentCategories = restaurantIds.flatMap(
+      (restaurantId) =>
+        mockWorkshiftPaymentCategories({
+          restaurantId,
+          minPerType: SEED_CONFIG.workshiftPaymentCategories.perTypeMin,
+          maxPerType: SEED_CONFIG.workshiftPaymentCategories.perTypeMax,
+          maxChildrenPerParent:
+            SEED_CONFIG.workshiftPaymentCategories.maxChildrenPerParent,
+        }),
     );
 
     // Build restaurant -> modifiers map (for order dish modifiers)
@@ -363,6 +375,10 @@ async function main(): Promise<void> {
           insertChunked(schema.restaurantWorkshops, allWorkshops),
           insertChunked(schema.paymentMethods, paymentMethods),
           insertChunked(schema.dishModifiers, allDishModifiers),
+          insertChunked(
+            schema.workshiftPaymentCategories,
+            allWorkshiftPaymentCategories,
+          ),
           insertChunked(schema.workersToRestaurants, workersToRestaurants),
         ]);
       },
