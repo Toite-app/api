@@ -1,5 +1,6 @@
 import { faker } from "@faker-js/faker";
 import argon2 from "argon2";
+import { WorkshiftPaymentType } from "src/@base/drizzle/schema/workshift-enums";
 
 import { SEED_CONFIG } from "./config";
 import { CuisineType } from "./data/cuisines";
@@ -38,7 +39,11 @@ import {
   RestaurantWithCuisine,
 } from "./mocks/restaurants";
 import { mockSystemAdmin, mockWorkers } from "./mocks/workers";
-import { mockWorkshiftPaymentCategories } from "./mocks/workshifts";
+import {
+  mockWorkshiftPaymentCategories,
+  mockWorkshiftPayments,
+  mockWorkshifts,
+} from "./mocks/workshifts";
 import { chunker, log, logError, withTiming } from "./utils";
 
 // Set deterministic faker seed for reproducible data
@@ -255,6 +260,72 @@ async function main(): Promise<void> {
       restaurantId: faker.helpers.arrayElement(restaurantIds),
     }));
 
+    // Build restaurant -> workers map (CASHIER and ADMIN only)
+    const restaurantWorkersMap = new Map<string, string[]>();
+    for (const wtr of workersToRestaurants) {
+      const worker = regularWorkers.find((w) => w.id === wtr.workerId);
+      if (!worker) continue;
+      // Only CASHIER and ADMIN can manage workshifts
+      if (worker.role !== "CASHIER" && worker.role !== "ADMIN") continue;
+
+      const existing = restaurantWorkersMap.get(wtr.restaurantId) ?? [];
+      restaurantWorkersMap.set(wtr.restaurantId, [...existing, wtr.workerId]);
+    }
+
+    // Build restaurant -> payment categories map (leaf categories only)
+    const restaurantPaymentCategoriesMap = new Map<
+      string,
+      Map<WorkshiftPaymentType, string[]>
+    >();
+    for (const category of allWorkshiftPaymentCategories) {
+      // Skip parent categories (only use leaf categories)
+      const hasChildren = allWorkshiftPaymentCategories.some(
+        (c) => c.parentId === category.id,
+      );
+      if (hasChildren) continue;
+
+      if (!restaurantPaymentCategoriesMap.has(category.restaurantId)) {
+        restaurantPaymentCategoriesMap.set(category.restaurantId, new Map());
+      }
+      const typeMap = restaurantPaymentCategoriesMap.get(
+        category.restaurantId,
+      )!;
+      const existing =
+        typeMap.get(category.type! as WorkshiftPaymentType) ?? [];
+      typeMap.set(category.type! as WorkshiftPaymentType, [
+        ...existing,
+        category.id!,
+      ]);
+    }
+
+    // Generate workshifts
+    const allWorkshifts = mockWorkshifts({
+      restaurants: restaurants.map((r) => ({
+        id: r.id!,
+        currency: r.currency!,
+      })),
+      historyDays: SEED_CONFIG.workshifts.historyDays,
+      restaurantWorkersMap,
+    });
+
+    // Generate workshift payments
+    const allWorkshiftPayments = mockWorkshiftPayments({
+      workshifts: allWorkshifts.map((w) => ({
+        id: w.id!,
+        restaurantId: w.restaurantId,
+        status: w.status!,
+        openedAt: w.openedAt ?? null,
+        closedAt: w.closedAt ?? null,
+      })),
+      restaurantCategoriesMap: restaurantPaymentCategoriesMap,
+      restaurantWorkersMap,
+      minPaymentsPerType:
+        SEED_CONFIG.workshifts.paymentsPerWorkshiftPerType.min,
+      maxPaymentsPerType:
+        SEED_CONFIG.workshifts.paymentsPerWorkshiftPerType.max,
+      removalRate: SEED_CONFIG.workshifts.paymentRemovalRate,
+    });
+
     // Build restaurant data for orders
     const restaurantPaymentMap = new Map<string, string[]>();
     for (const pm of paymentMethods) {
@@ -430,6 +501,17 @@ async function main(): Promise<void> {
             allModifierAssignments,
           );
         }
+      },
+    );
+
+    // ============================================================
+    // PHASE 6: Insert workshifts and payments
+    // ============================================================
+    await withTiming(
+      `Phase 6: Workshifts (${allWorkshifts.length} workshifts, ${allWorkshiftPayments.length} payments)`,
+      async () => {
+        await insertChunked(schema.workshifts, allWorkshifts);
+        await insertChunked(schema.workshiftPayments, allWorkshiftPayments);
       },
     );
   });

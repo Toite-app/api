@@ -59,3 +59,10 @@ export const CHILD_CATEGORY_SPECIFIERS = [
   "Large",
   "Regular",
 ];
+
+// Realistic payment amount ranges by type (in base currency units)
+export const PAYMENT_AMOUNT_RANGES = {
+  [WorkshiftPaymentType.INCOME]: { min: 50, max: 500 },
+  [WorkshiftPaymentType.EXPENSE]: { min: 10, max: 150 },
+  [WorkshiftPaymentType.CASHLESS]: { min: 100, max: 800 },
+} as const;

@@ -13,6 +13,14 @@ export const SEED_CONFIG = {
     perTypeMax: 5, // maximum categories per type
     maxChildrenPerParent: 3, // max child categories for a parent
   },
+  workshifts: {
+    historyDays: 7, // how many days of workshift history to generate
+    paymentsPerWorkshiftPerType: {
+      min: 3,
+      max: 10,
+    },
+    paymentRemovalRate: 0.05,
+  },
   orders: {
     justCreated: 1_000,
     justCreatedWithDishes: 1_000,
