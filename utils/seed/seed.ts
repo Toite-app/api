@@ -20,6 +20,7 @@ import {
   mockDishWorkshops,
   mockMenuToRestaurants,
 } from "./mocks/dishes";
+import { mockGuests, toGuestInfoArray } from "./mocks/guests";
 import {
   DishWithPrice as DishWithPriceType,
   mockJustCreatedOrders,
@@ -91,6 +92,10 @@ async function main(): Promise<void> {
 
     const allWorkers = [systemAdmin, ...restaurantOwners, ...regularWorkers];
     const ownerIds = restaurantOwners.map((o) => o.id!);
+
+    // Generate guests
+    const allGuests = mockGuests({ count: SEED_CONFIG.guests });
+    const guestInfoArray = toGuestInfoArray(allGuests);
 
     // Generate restaurants (now with cuisine types)
     const restaurants: RestaurantWithCuisine[] = mockRestaurants({
@@ -170,11 +175,12 @@ async function main(): Promise<void> {
     for (const category of allDishCategories) {
       const menuId = category.menuId;
       const categoryId = category.id;
-      if (!categoryId) continue;
+      const categoryName = category.name;
+      if (!categoryId || !categoryName) continue;
       if (!menuCategoriesMap.has(menuId)) {
         menuCategoriesMap.set(menuId, new Map());
       }
-      menuCategoriesMap.get(menuId)!.set(category.name, categoryId);
+      menuCategoriesMap.get(menuId)!.set(categoryName, categoryId);
     }
 
     // Generate menu -> restaurant assignments
@@ -269,10 +275,11 @@ async function main(): Promise<void> {
       ]);
     }
 
-    // Generate orders (now with modifiers)
+    // Generate orders (with guests)
     const justCreatedOrders = mockJustCreatedOrders({
       count: SEED_CONFIG.orders.justCreated,
       restaurants: restaurantsWithPayments,
+      guests: guestInfoArray,
     });
 
     const ordersWithDishes = mockOrdersWithDishes({
@@ -280,6 +287,7 @@ async function main(): Promise<void> {
       restaurants: restaurantsWithPayments,
       restaurantDishesMap,
       restaurantModifiersMap,
+      guests: guestInfoArray,
     });
 
     const sentToKitchenOrders = mockSentToKitchenOrders({
@@ -287,6 +295,7 @@ async function main(): Promise<void> {
       restaurants: restaurantsWithPayments,
       restaurantDishesMap,
       restaurantModifiersMap,
+      guests: guestInfoArray,
     });
 
     // Extract order dishes and modifier assignments
@@ -332,12 +341,16 @@ async function main(): Promise<void> {
     const dishesForDb = allDishes.map(({ categoryName: _, ...d }) => d);
 
     // ============================================================
-    // PHASE 1: Insert workers and restaurants
+    // PHASE 1: Insert workers, guests, and restaurants
     // ============================================================
-    await withTiming("Phase 1: Workers + Restaurants", async () => {
-      await insertChunked(schema.workers, allWorkers);
-      await insertChunked(schema.restaurants, restaurantsForDb);
-    });
+    await withTiming(
+      `Phase 1: Workers + Guests (${allGuests.length}) + Restaurants`,
+      async () => {
+        await insertChunked(schema.workers, allWorkers);
+        await insertChunked(schema.guests, allGuests);
+        await insertChunked(schema.restaurants, restaurantsForDb);
+      },
+    );
 
     // ============================================================
     // PHASE 2: Insert restaurant info (parallel)

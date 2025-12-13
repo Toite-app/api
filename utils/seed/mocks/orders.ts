@@ -4,6 +4,8 @@ import { v4 as uuidv4 } from "uuid";
 import { ORDER_NOTES } from "../data/kitchen-terms";
 import { schema } from "../db";
 
+import { GuestInfo } from "./guests";
+
 export type Order = typeof schema.orders.$inferInsert;
 export type OrderDish = typeof schema.orderDishes.$inferInsert;
 export type OrderHistoryRecord = typeof schema.orderHistoryRecords.$inferInsert;
@@ -72,15 +74,39 @@ function generateModifierAssignments(
   }));
 }
 
+// Generate guest info for an order (~50% get a guest assigned)
+function generateGuestForOrder(guests: GuestInfo[]): {
+  guestId: string | null;
+  guestName: string;
+  guestPhone: string | null;
+} {
+  // ~50% of orders have a guest assigned
+  if (guests.length === 0 || faker.number.float({ min: 0, max: 1 }) > 0.5) {
+    return {
+      guestId: null,
+      guestName: faker.person.firstName(),
+      guestPhone: null,
+    };
+  }
+
+  const guest = faker.helpers.arrayElement(guests);
+  return {
+    guestId: guest.id,
+    guestName: guest.name,
+    guestPhone: guest.phone,
+  };
+}
+
 export interface MockJustCreatedOrdersOptions {
   count: number;
   restaurants: RestaurantWithPaymentMethods[];
+  guests: GuestInfo[];
 }
 
 export function mockJustCreatedOrders(
   opts: MockJustCreatedOrdersOptions,
 ): Order[] {
-  const { count, restaurants } = opts;
+  const { count, restaurants, guests } = opts;
 
   return Array.from({ length: count }, () => {
     const restaurant = faker.helpers.arrayElement(restaurants);
@@ -92,6 +118,8 @@ export function mockJustCreatedOrders(
       "takeaway",
       "delivery",
     ] as OrderType[]);
+
+    const { guestId, guestName, guestPhone } = generateGuestForOrder(guests);
 
     return {
       id: uuidv4(),
@@ -105,7 +133,9 @@ export function mockJustCreatedOrders(
       ] as OrderFrom[]),
       status: "pending" as OrderStatus,
       type,
-      guestName: faker.person.firstName(),
+      guestId,
+      guestName,
+      guestPhone,
       note: generateOrderNote(),
       paymentMethodId: faker.helpers.arrayElement(restaurant.paymentMethodIds),
       guestsAmount: faker.number.int({ min: 1, max: 10 }),
@@ -122,6 +152,7 @@ export interface MockOrdersWithDishesOptions {
   restaurants: RestaurantWithPaymentMethods[];
   restaurantDishesMap: Map<string, DishWithPrice[]>; // restaurantId -> dishes
   restaurantModifiersMap: Map<string, string[]>; // restaurantId -> modifierIds
+  guests: GuestInfo[];
 }
 
 export interface OrderWithDishes extends Order {
@@ -132,8 +163,13 @@ export interface OrderWithDishes extends Order {
 export function mockOrdersWithDishes(
   opts: MockOrdersWithDishesOptions,
 ): OrderWithDishes[] {
-  const { count, restaurants, restaurantDishesMap, restaurantModifiersMap } =
-    opts;
+  const {
+    count,
+    restaurants,
+    restaurantDishesMap,
+    restaurantModifiersMap,
+    guests,
+  } = opts;
 
   return Array.from({ length: count }, () => {
     const restaurant = faker.helpers.arrayElement(restaurants);
@@ -188,6 +224,8 @@ export function mockOrdersWithDishes(
       0,
     );
 
+    const { guestId, guestName, guestPhone } = generateGuestForOrder(guests);
+
     const order: Order = {
       id: orderId,
       number: orderNumber.toString(),
@@ -200,7 +238,9 @@ export function mockOrdersWithDishes(
       ] as OrderFrom[]),
       status: "pending" as OrderStatus,
       type,
-      guestName: faker.person.firstName(),
+      guestId,
+      guestName,
+      guestPhone,
       note: generateOrderNote(),
       paymentMethodId: faker.helpers.arrayElement(restaurant.paymentMethodIds),
       guestsAmount: faker.number.int({ min: 1, max: 10 }),

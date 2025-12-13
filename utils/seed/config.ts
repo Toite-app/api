@@ -2,6 +2,7 @@ export const SEED_CONFIG = {
   restaurants: 20,
   restaurantOwners: 2,
   workers: 100,
+  guests: 2000,
   dishMenusPerOwner: 2,
   dishesPerMenu: 20,
   categoriesPerMenu: 10, // max categories per menu (capped by cuisine's available categories)
