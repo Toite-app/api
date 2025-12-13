@@ -11,7 +11,10 @@ import db, {
 } from "./db";
 import {
   DishMenuWithCuisine,
+  DishWithCategory,
+  mockDishCategories,
   mockDishes,
+  mockDishesToCategories,
   mockDishMenus,
   mockDishPrices,
   mockDishWorkshops,
@@ -153,6 +156,27 @@ async function main(): Promise<void> {
       ownerCuisineMap,
     });
 
+    // Generate categories for each menu
+    const allDishCategories = dishMenus.flatMap((menu) =>
+      mockDishCategories({
+        menuId: menu.id!,
+        cuisineType: menu.cuisineType,
+        maxCategories: SEED_CONFIG.categoriesPerMenu,
+      }),
+    );
+
+    // Build menuCategoriesMap: menuId -> (categoryName -> categoryId)
+    const menuCategoriesMap = new Map<string, Map<string, string>>();
+    for (const category of allDishCategories) {
+      const menuId = category.menuId;
+      const categoryId = category.id;
+      if (!categoryId) continue;
+      if (!menuCategoriesMap.has(menuId)) {
+        menuCategoriesMap.set(menuId, new Map());
+      }
+      menuCategoriesMap.get(menuId)!.set(category.name, categoryId);
+    }
+
     // Generate menu -> restaurant assignments
     const menuToRestaurants = mockMenuToRestaurants({
       menus: dishMenus,
@@ -169,14 +193,20 @@ async function main(): Promise<void> {
       ]);
     }
 
-    // Generate dishes (now cuisine-aware via menu)
-    const allDishes = dishMenus.flatMap((menu) =>
+    // Generate dishes (now cuisine-aware via menu, with category names)
+    const allDishes: DishWithCategory[] = dishMenus.flatMap((menu) =>
       mockDishes({
         menuId: menu.id!,
         count: SEED_CONFIG.dishesPerMenu,
         cuisineType: menu.cuisineType,
       }),
     );
+
+    // Generate dish -> category assignments
+    const dishesToCategories = mockDishesToCategories({
+      dishes: allDishes,
+      menuCategoriesMap,
+    });
 
     // Generate dish prices (dishes -> restaurants)
     const dishPrices = mockDishPrices({
@@ -293,11 +323,13 @@ async function main(): Promise<void> {
       ...sentToKitchenHistoryRecords,
     ];
 
-    // Strip cuisineType before inserting (it's not in the DB schema)
+    // Strip extra fields before inserting (not in DB schema)
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const restaurantsForDb = restaurants.map(({ cuisineType: _, ...r }) => r);
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const dishMenusForDb = dishMenus.map(({ cuisineType: _, ...m }) => m);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const dishesForDb = allDishes.map(({ categoryName: _, ...d }) => d);
 
     // ============================================================
     // PHASE 1: Insert workers and restaurants
@@ -324,23 +356,28 @@ async function main(): Promise<void> {
     );
 
     // ============================================================
-    // PHASE 3: Insert menus and dishes
+    // PHASE 3: Insert menus, categories, and dishes
     // ============================================================
-    await withTiming("Phase 3: Menus + Dishes", async () => {
-      await insertChunked(schema.dishesMenus, dishMenusForDb);
-      await insertChunked(schema.dishesMenusToRestaurants, menuToRestaurants);
-      await insertChunked(schema.dishes, allDishes);
-    });
+    await withTiming(
+      `Phase 3: Menus + Categories (${allDishCategories.length}) + Dishes`,
+      async () => {
+        await insertChunked(schema.dishesMenus, dishMenusForDb);
+        await insertChunked(schema.dishesMenusToRestaurants, menuToRestaurants);
+        await insertChunked(schema.dishCategories, allDishCategories);
+        await insertChunked(schema.dishes, dishesForDb);
+      },
+    );
 
     // ============================================================
     // PHASE 4: Insert dish relationships
     // ============================================================
     await withTiming(
-      "Phase 4: Dish relationships (prices, workshops)",
+      `Phase 4: Dish relationships (prices, workshops, categories: ${dishesToCategories.length})`,
       async () => {
         await Promise.all([
           insertChunked(schema.dishesToRestaurants, dishPrices),
           insertChunked(schema.dishesToWorkshops, dishWorkshops),
+          insertChunked(schema.dishesToDishCategories, dishesToCategories),
         ]);
       },
     );

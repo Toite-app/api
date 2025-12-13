@@ -16,10 +16,18 @@ export type DishToRestaurant = typeof schema.dishesToRestaurants.$inferInsert;
 export type DishToWorkshop = typeof schema.dishesToWorkshops.$inferInsert;
 export type DishMenuToRestaurant =
   typeof schema.dishesMenusToRestaurants.$inferInsert;
+export type DishCategory = typeof schema.dishCategories.$inferInsert;
+export type DishToDishCategory =
+  typeof schema.dishesToDishCategories.$inferInsert;
 
 // Extended menu type with cuisine info for downstream use
 export interface DishMenuWithCuisine extends DishMenu {
   cuisineType: CuisineType;
+}
+
+// Extended dish type that tracks its category name and menu
+export interface DishWithCategory extends Dish {
+  categoryName: string;
 }
 
 export interface MockDishMenusOptions {
@@ -58,13 +66,39 @@ export function mockDishMenus(
   });
 }
 
+export interface MockDishCategoriesOptions {
+  menuId: string;
+  cuisineType: CuisineType;
+  maxCategories: number;
+}
+
+export function mockDishCategories(
+  opts: MockDishCategoriesOptions,
+): DishCategory[] {
+  const { menuId, cuisineType, maxCategories } = opts;
+
+  // Get categories for this cuisine
+  const availableCategories = getMenuCategoriesForCuisine(cuisineType);
+
+  // Limit to maxCategories
+  const categoriesToCreate = availableCategories.slice(0, maxCategories);
+
+  return categoriesToCreate.map((name) => ({
+    id: uuidv4(),
+    menuId,
+    name,
+    showForWorkers: true,
+    showForGuests: true,
+  }));
+}
+
 export interface MockDishesOptions {
   menuId: string;
   count: number;
   cuisineType: CuisineType;
 }
 
-export function mockDishes(opts: MockDishesOptions): Dish[] {
+export function mockDishes(opts: MockDishesOptions): DishWithCategory[] {
   const { menuId, count, cuisineType } = opts;
 
   // Get dishes for this cuisine
@@ -104,7 +138,36 @@ export function mockDishes(opts: MockDishesOptions): Dish[] {
       probability: 0.3, // 30% chance of having a note
     }),
     menuId,
+    categoryName: dishData.category, // Preserve category name for linking
   }));
+}
+
+export interface MockDishesToCategoriesOptions {
+  dishes: DishWithCategory[];
+  menuCategoriesMap: Map<string, Map<string, string>>; // menuId -> (categoryName -> categoryId)
+}
+
+export function mockDishesToCategories(
+  opts: MockDishesToCategoriesOptions,
+): DishToDishCategory[] {
+  const { dishes, menuCategoriesMap } = opts;
+
+  return dishes.flatMap((dish) => {
+    if (!dish.menuId) return [];
+
+    const categoryMap = menuCategoriesMap.get(dish.menuId);
+    if (!categoryMap) return [];
+
+    const categoryId = categoryMap.get(dish.categoryName);
+    if (!categoryId) return [];
+
+    return [
+      {
+        dishId: dish.id!,
+        dishCategoryId: categoryId,
+      },
+    ];
+  });
 }
 
 export interface MockDishPricesOptions {

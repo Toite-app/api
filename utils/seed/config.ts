@@ -4,6 +4,7 @@ export const SEED_CONFIG = {
   workers: 100,
   dishMenusPerOwner: 2,
   dishesPerMenu: 20,
+  categoriesPerMenu: 10, // max categories per menu (capped by cuisine's available categories)
   workshopsPerRestaurant: 5,
   dishModifiersPerRestaurant: 10,
   orders: {
