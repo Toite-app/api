@@ -1,5 +1,5 @@
-import dotenv from "dotenv";
 import { drizzle, NodePgDatabase } from "drizzle-orm/node-postgres";
+import { migrate } from "drizzle-orm/node-postgres/migrator";
 import { Pool } from "pg";
 import * as discounts from "src/@base/drizzle/schema/discounts";
 import * as dishCategories from "src/@base/drizzle/schema/dish-categories";
@@ -26,9 +26,7 @@ import * as workshiftPaymentCategories from "src/@base/drizzle/schema/workshift-
 import * as workshiftPayments from "src/@base/drizzle/schema/workshift-payments";
 import * as workshifts from "src/@base/drizzle/schema/workshifts";
 
-dotenv.config({
-  path: "utils/seed/.env",
-});
+import { log, logError } from "./utils";
 
 export const schema = {
   ...general,
@@ -59,23 +57,59 @@ export const schema = {
 
 export type Schema = typeof schema;
 export type DrizzleDatabase = NodePgDatabase<Schema>;
-export type DrizzleTransaction = Parameters<
-  Parameters<DrizzleDatabase["transaction"]>[0]
->[0];
 
-const connectionString = `postgresql://${process.env.POSTGRES_USER}:${process.env.POSTGRES_PASSWORD}@localhost:${process.env.POSTGRES_PORT}/${process.env.POSTGRES_DB}`;
+// Validate environment
+const POSTGRESQL_URL = process.env.POSTGRESQL_URL;
+if (!POSTGRESQL_URL) {
+  logError("POSTGRESQL_URL environment variable is required");
+  process.exit(1);
+}
 
-const pool = new Pool({
-  connectionString,
-  ssl:
-    process.env.NODE_ENV === "production" &&
-    String(process.env.POSTGRESQL_URL).indexOf("sslmode=required") !== -1
-      ? true
-      : false,
+// Create connection pool
+export const pool = new Pool({
+  connectionString: POSTGRESQL_URL,
+  ssl: false, // Never SSL per user choice
+  max: 10, // Pool size for parallel inserts
 });
 
-const db = drizzle(pool, {
-  schema,
-});
+// Create drizzle instance
+const db = drizzle(pool, { schema });
 
 export default db;
+
+// Run database migrations
+export async function runMigrations(): Promise<void> {
+  log("Running migrations...");
+
+  try {
+    await migrate(db, {
+      migrationsFolder: "./src/@base/drizzle/migrations",
+    });
+    log("Migrations complete");
+  } catch (error) {
+    logError(`Migration failed: ${error}`);
+    throw error;
+  }
+}
+
+// Check if database is empty (by checking workers table)
+export async function ensureDatabaseEmpty(): Promise<void> {
+  log("Checking database is empty...");
+
+  const result = await db
+    .select({ id: schema.workers.id })
+    .from(schema.workers)
+    .limit(1);
+
+  if (result.length > 0) {
+    logError("Database is not empty. Aborting.");
+    process.exit(1);
+  }
+
+  log("Database is empty, proceeding...");
+}
+
+// Cleanup and close pool
+export async function closePool(): Promise<void> {
+  await pool.end();
+}

@@ -1,17 +1,19 @@
 import { faker } from "@faker-js/faker";
-import argon2 from "argon2";
-import { schema } from "utils/seed/db";
 import { v4 as uuidv4 } from "uuid";
 
+import { schema } from "../db";
+
 export type Worker = typeof schema.workers.$inferInsert;
+export type WorkerRole = Worker["role"];
 
-export default async function mockWorkers(opts: {
-  role?: Worker["role"];
+export interface MockWorkersOptions {
   count: number;
-}) {
-  const { count, role } = opts;
+  role?: WorkerRole;
+  passwordHash: string;
+}
 
-  const passwordHash = await argon2.hash("123456");
+export function mockWorkers(opts: MockWorkersOptions): Worker[] {
+  const { count, role, passwordHash } = opts;
 
   return Array.from({ length: count }, () => {
     const firstName = faker.person.firstName();
@@ -31,15 +33,29 @@ export default async function mockWorkers(opts: {
       hiredAt: new Date(),
       isBlocked: false,
       onlineAt: new Date(),
-      role: faker.helpers.arrayElement([
-        "KITCHENER",
-        "CASHIER",
-        "COURIER",
-        "DISPATCHER",
-        "WAITER",
-        "ADMIN",
-      ] as Worker["role"][]),
-      ...(role ? { role } : {}),
+      role:
+        role ??
+        faker.helpers.arrayElement([
+          "KITCHENER",
+          "CASHIER",
+          "COURIER",
+          "DISPATCHER",
+          "WAITER",
+          "ADMIN",
+        ] as WorkerRole[]),
     } satisfies Worker;
   });
+}
+
+export function mockSystemAdmin(passwordHash: string): Worker {
+  return {
+    id: uuidv4(),
+    login: "admin",
+    name: "System Administrator",
+    passwordHash,
+    hiredAt: new Date(),
+    isBlocked: false,
+    onlineAt: new Date(),
+    role: "SYSTEM_ADMIN",
+  };
 }
