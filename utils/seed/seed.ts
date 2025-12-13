@@ -10,6 +10,7 @@ import db, {
   runMigrations,
   schema,
 } from "./db";
+import { buildDiscountLookupMap, mockDiscounts } from "./mocks/discounts";
 import {
   DishMenuWithCuisine,
   DishWithCategory,
@@ -340,7 +341,14 @@ async function main(): Promise<void> {
         paymentMethodIds: restaurantPaymentMap.get(r.id!) ?? [],
       }));
 
-    // Build restaurant -> dishes map for orders
+    // Build dish -> categoryIds map from dishesToCategories
+    const dishCategoryIdsMap = new Map<string, string[]>();
+    for (const dtc of dishesToCategories) {
+      const existing = dishCategoryIdsMap.get(dtc.dishId) ?? [];
+      dishCategoryIdsMap.set(dtc.dishId, [...existing, dtc.dishCategoryId]);
+    }
+
+    // Build restaurant -> dishes map for orders (with menuId and categoryIds for discounts)
     const restaurantDishesMap = new Map<string, DishWithPriceType[]>();
     for (const dp of dishPrices) {
       const dish = allDishes.find((d) => d.id === dp.dishId);
@@ -354,11 +362,29 @@ async function main(): Promise<void> {
           name: dish.name!,
           price: dp.price!,
           restaurantId: dp.restaurantId,
+          menuId: dish.menuId ?? "",
+          categoryIds: dishCategoryIdsMap.get(dish.id!) ?? [],
         },
       ]);
     }
 
-    // Generate orders (with guests)
+    // Generate discounts
+    const discountsWithConnections = mockDiscounts({
+      restaurantIds,
+      menuToRestaurantsMap,
+      menuCategoriesMap,
+    });
+
+    // Extract discounts and connections for DB insertion
+    const allDiscounts = discountsWithConnections.map((d) => d.discount);
+    const allDiscountConnections = discountsWithConnections.flatMap(
+      (d) => d.connections,
+    );
+
+    // Build discount lookup map for order dish calculation
+    const discountMap = buildDiscountLookupMap(discountsWithConnections);
+
+    // Generate orders (with guests and discounts)
     const justCreatedOrders = mockJustCreatedOrders({
       count: SEED_CONFIG.orders.justCreated,
       restaurants: restaurantsWithPayments,
@@ -371,6 +397,7 @@ async function main(): Promise<void> {
       restaurantDishesMap,
       restaurantModifiersMap,
       guests: guestInfoArray,
+      discountMap,
     });
 
     const sentToKitchenOrders = mockSentToKitchenOrders({
@@ -379,6 +406,7 @@ async function main(): Promise<void> {
       restaurantDishesMap,
       restaurantModifiersMap,
       guests: guestInfoArray,
+      discountMap,
     });
 
     // Extract order dishes and modifier assignments
@@ -479,6 +507,24 @@ async function main(): Promise<void> {
           insertChunked(schema.dishesToWorkshops, dishWorkshops),
           insertChunked(schema.dishesToDishCategories, dishesToCategories),
         ]);
+      },
+    );
+
+    // ============================================================
+    // PHASE 4.5: Insert discounts
+    // ============================================================
+    await withTiming(
+      `Phase 4.5: Discounts (${allDiscounts.length} discounts, ${allDiscountConnections.length} connections)`,
+      async () => {
+        if (allDiscounts.length > 0) {
+          await insertChunked(schema.discounts, allDiscounts);
+        }
+        if (allDiscountConnections.length > 0) {
+          await insertChunked(
+            schema.discountsConnections,
+            allDiscountConnections,
+          );
+        }
       },
     );
 

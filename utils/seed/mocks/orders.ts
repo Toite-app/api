@@ -1,9 +1,15 @@
 import { faker } from "@faker-js/faker";
 import { v4 as uuidv4 } from "uuid";
 
+import { SEED_CONFIG } from "../config";
 import { ORDER_NOTES } from "../data/kitchen-terms";
 import { schema } from "../db";
 
+import {
+  DiscountConnectionKey,
+  DiscountInfo,
+  getDiscountForDish,
+} from "./discounts";
 import { GuestInfo } from "./guests";
 
 export type Order = typeof schema.orders.$inferInsert;
@@ -28,6 +34,8 @@ export interface DishWithPrice {
   name: string;
   price: string;
   restaurantId: string;
+  menuId: string;
+  categoryIds: string[];
 }
 
 let orderNumber = 0;
@@ -153,6 +161,7 @@ export interface MockOrdersWithDishesOptions {
   restaurantDishesMap: Map<string, DishWithPrice[]>; // restaurantId -> dishes
   restaurantModifiersMap: Map<string, string[]>; // restaurantId -> modifierIds
   guests: GuestInfo[];
+  discountMap?: Map<DiscountConnectionKey, DiscountInfo>; // discount lookup map
 }
 
 export interface OrderWithDishes extends Order {
@@ -169,6 +178,7 @@ export function mockOrdersWithDishes(
     restaurantDishesMap,
     restaurantModifiersMap,
     guests,
+    discountMap,
   } = opts;
 
   return Array.from({ length: count }, () => {
@@ -186,6 +196,13 @@ export function mockOrdersWithDishes(
     const availableDishes = restaurantDishesMap.get(restaurant.id) ?? [];
     const restaurantModifiers = restaurantModifiersMap.get(restaurant.id) ?? [];
 
+    // Determine if this order should have discounts applied
+    const shouldApplyDiscounts =
+      discountMap &&
+      discountMap.size > 0 &&
+      faker.number.float({ min: 0, max: 1 }) <
+        SEED_CONFIG.discounts.applyToOrdersRate;
+
     // Select 3-11 random dishes for the order
     const selectedDishes = faker.helpers.arrayElements(availableDishes, {
       min: 3,
@@ -198,6 +215,29 @@ export function mockOrdersWithDishes(
     for (const dish of selectedDishes) {
       const orderDishId = uuidv4();
       const quantity = faker.number.int({ min: 1, max: 10 });
+      const price = Number(dish.price);
+
+      // Calculate discount if applicable
+      let discountId: string | null = null;
+      let discountPercent = 0;
+      let discountAmount = 0;
+      let finalPrice = price;
+
+      if (shouldApplyDiscounts && discountMap) {
+        const discount = getDiscountForDish(
+          discountMap,
+          dish.menuId,
+          dish.categoryIds,
+          restaurant.id,
+        );
+
+        if (discount) {
+          discountId = discount.id;
+          discountPercent = discount.percent;
+          discountAmount = (price * discountPercent) / 100;
+          finalPrice = price - discountAmount;
+        }
+      }
 
       orderDishes.push({
         id: orderDishId,
@@ -206,8 +246,11 @@ export function mockOrdersWithDishes(
         name: dish.name,
         status: "pending" as const,
         quantity,
-        price: dish.price,
-        finalPrice: dish.price,
+        price: price.toFixed(2),
+        discountId,
+        discountPercent: discountPercent.toFixed(2),
+        discountAmount: discountAmount.toFixed(2),
+        finalPrice: finalPrice.toFixed(2),
       });
 
       // Generate modifier assignments for this order dish
@@ -221,6 +264,16 @@ export function mockOrdersWithDishes(
     // Calculate totals
     const subtotal = orderDishes.reduce(
       (sum, od) => sum + Number(od.price) * od.quantity,
+      0,
+    );
+
+    const totalDiscountAmount = orderDishes.reduce(
+      (sum, od) => sum + Number(od.discountAmount) * od.quantity,
+      0,
+    );
+
+    const total = orderDishes.reduce(
+      (sum, od) => sum + Number(od.finalPrice) * od.quantity,
       0,
     );
 
@@ -245,7 +298,9 @@ export function mockOrdersWithDishes(
       paymentMethodId: faker.helpers.arrayElement(restaurant.paymentMethodIds),
       guestsAmount: faker.number.int({ min: 1, max: 10 }),
       subtotal: subtotal.toFixed(2),
-      total: subtotal.toFixed(2),
+      discountAmount: totalDiscountAmount.toFixed(2),
+      total: total.toFixed(2),
+      applyDiscounts: shouldApplyDiscounts ?? false,
       ...((type === "banquet" || type === "hall") && {
         tableNumber: faker.number.int({ min: 1, max: 100 }).toString(),
       }),

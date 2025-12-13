@@ -26,6 +26,12 @@ export const SEED_CONFIG = {
     justCreatedWithDishes: 1_000,
     sentToKitchen: 1_000,
   },
+  discounts: {
+    maxPerRestaurant: 5, // 0 to 5 discounts per restaurant
+    minPercent: 5, // minimum discount percent
+    maxPercent: 30, // maximum discount percent
+    applyToOrdersRate: 0.5, // 50% of orders with dishes get discounts applied
+  },
 } as const;
 
 export type SeedConfig = typeof SEED_CONFIG;
