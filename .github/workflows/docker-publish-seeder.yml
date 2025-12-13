@@ -1,0 +1,47 @@
+name: Build and Push Seeder Image
+
+on:
+  workflow_dispatch:
+
+env:
+  SEEDER_IMAGE_NAME: ${{ vars.DOCKERHUB_USERNAME }}/seeder
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-push:
+    name: Build and Push Seeder Image
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435 # v3.11.1
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3.6.0
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Extract metadata for seeder
+        id: meta-seeder
+        uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051
+        with:
+          images: docker.io/${{ env.SEEDER_IMAGE_NAME }}
+          tags: |
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=sha,prefix=,format=short
+
+      - name: Build and push seeder image
+        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83
+        with:
+          context: .
+          file: ./utils/seed/Dockerfile
+          push: true
+          tags: ${{ steps.meta-seeder.outputs.tags }}
+          labels: ${{ steps.meta-seeder.outputs.labels }}
+          provenance: false
