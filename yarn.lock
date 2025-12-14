@@ -1667,6 +1667,11 @@
   resolved "https://registry.yarnpkg.com/@lukeed/ms/-/ms-2.0.2.tgz#07f09e59a74c52f4d88c6db5c1054e819538e2a8"
   integrity sha512-9I2Zn6+NJLfaGoz9jN3lpwDgAYvfGeNYdbAIjJOqzs4Tpc+VU3Jqq4IofSUBKajiDS8k9fZIg18/z13mpk1bsA==
 
+"@microsoft/tsdoc@^0.15.0":
+  version "0.15.1"
+  resolved "https://registry.yarnpkg.com/@microsoft/tsdoc/-/tsdoc-0.15.1.tgz#d4f6937353bc4568292654efb0a0e0532adbcba2"
+  integrity sha512-4aErSrCR/On/e5G2hDP0wjooqDdauzEbIq8hIkIe5pXV0rtWJZvdCEKL0ykZxex+IxIwBp0eGeV48hQN07dXtw==
+
 "@mongodb-js/saslprep@^1.1.9":
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/@mongodb-js/saslprep/-/saslprep-1.2.0.tgz#4373d7a87660ea44a0a7a461ff6d8bc832733a4b"
@@ -1898,10 +1903,10 @@
     "@types/jsonwebtoken" "9.0.5"
     jsonwebtoken "9.0.2"
 
-"@nestjs/mapped-types@2.0.4":
-  version "2.0.4"
-  resolved "https://registry.yarnpkg.com/@nestjs/mapped-types/-/mapped-types-2.0.4.tgz#97280b06bf85d34ea9bad1e847e5e3cbaca8f04f"
-  integrity sha512-xl+gUSp0B+ln1VSNoUftlglk8dfpUes3DHGxKZ5knuBxS5g2H/8p9/DSBOYWUfO5f4u9s6ffBPZ71WO+tbe5SA==
+"@nestjs/mapped-types@2.0.5":
+  version "2.0.5"
+  resolved "https://registry.yarnpkg.com/@nestjs/mapped-types/-/mapped-types-2.0.5.tgz#485d6b44e19779c98d04e52bd1d2bcc7001df0ea"
+  integrity sha512-bSJv4pd6EY99NX9CjBIyn4TVDoSit82DUZlL4I3bqNfy5Gt+gXTa86i3I/i0iIV9P4hntcGM5GyO+FhZAhxtyg==
 
 "@nestjs/mongoose@^10.0.4":
   version "10.0.4"
@@ -1946,15 +1951,16 @@
     pluralize "8.0.0"
 
 "@nestjs/swagger@^7.2.0":
-  version "7.2.0"
-  resolved "https://registry.yarnpkg.com/@nestjs/swagger/-/swagger-7.2.0.tgz#a449ab0a2319eca8e695cf3892f4e63bbd8a916d"
-  integrity sha512-W7WPq561/79w27ZEgViXS7c5hqPwT7QXhsLsSeu2jeBROUhMM825QKDFKbMmtb643IW5dznJ4PjherlZZgtMvg==
+  version "7.4.2"
+  resolved "https://registry.yarnpkg.com/@nestjs/swagger/-/swagger-7.4.2.tgz#3b72eb8a6d1366e8e211f9a90681283bb18817e9"
+  integrity sha512-Mu6TEn1M/owIvAx2B4DUQObQXqo2028R2s9rSZ/hJEgBK95+doTwS0DjmVA2wTeZTyVtXOoN7CsoM5pONBzvKQ==
   dependencies:
-    "@nestjs/mapped-types" "2.0.4"
+    "@microsoft/tsdoc" "^0.15.0"
+    "@nestjs/mapped-types" "2.0.5"
     js-yaml "4.1.0"
     lodash "4.17.21"
-    path-to-regexp "3.2.0"
-    swagger-ui-dist "5.11.0"
+    path-to-regexp "3.3.0"
+    swagger-ui-dist "5.17.14"
 
 "@nestjs/testing@^10.0.0":
   version "10.3.0"
@@ -7435,11 +7441,6 @@ path-scurry@^1.11.1:
     lru-cache "^10.2.0"
     minipass "^5.0.0 || ^6.0.2 || ^7.0.0"
 
-path-to-regexp@3.2.0:
-  version "3.2.0"
-  resolved "https://registry.yarnpkg.com/path-to-regexp/-/path-to-regexp-3.2.0.tgz#fa7877ecbc495c601907562222453c43cc204a5f"
-  integrity sha512-jczvQbCUS7XmS7o+y1aEO9OBVFeZBQ1MDSEqmO7xSoPgOPoowY/SxLpZ6Vh97/8qHZOteiCKb7gkG9gA2ZUxJA==
-
 path-to-regexp@3.3.0:
   version "3.3.0"
   resolved "https://registry.yarnpkg.com/path-to-regexp/-/path-to-regexp-3.3.0.tgz#f7f31d32e8518c2660862b644414b6d5c63a611b"
@@ -8538,10 +8539,10 @@ swagger-themes@^1.4.3:
   resolved "https://registry.yarnpkg.com/swagger-themes/-/swagger-themes-1.4.3.tgz#b2a0abddffe9a41ccc7e40f0cf9ea8a4b1b50a48"
   integrity sha512-1G0CqJC1IBbNxkAOyJoREd9hfwXH1R6+3GOFxLhQho2w2i+AbaJqkF4mTJhkce4yhaEMUXvv4KKu1YO/qpe6nQ==
 
-swagger-ui-dist@5.11.0:
-  version "5.11.0"
-  resolved "https://registry.yarnpkg.com/swagger-ui-dist/-/swagger-ui-dist-5.11.0.tgz#9bcfd75278b1fa9c36fe52f206f8fc611470547c"
-  integrity sha512-j0PIATqQSEFGOLmiJOJZj1X1Jt6bFIur3JpY7+ghliUnfZs0fpWDdHEkn9q7QUlBtKbkn6TepvSxTqnE8l3s0A==
+swagger-ui-dist@5.17.14:
+  version "5.17.14"
+  resolved "https://registry.yarnpkg.com/swagger-ui-dist/-/swagger-ui-dist-5.17.14.tgz#e2c222e5bf9e15ccf80ec4bc08b4aaac09792fd6"
+  integrity sha512-CVbSfaLpstV65OnSjbXfVd6Sta3q3F7Cj/yYuvHMp1P90LztOLs6PfUnKEVAeiIVQt9u2SaPwv0LiH/OyMjHRw==
 
 symbol-observable@4.0.0:
   version "4.0.0"
