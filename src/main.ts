@@ -31,6 +31,10 @@ async function bootstrap() {
         type: "apiKey",
       })
       .setContact("Yefrosynii", "https://www.yefro.dev/", "contact@yefro.dev")
+      .setLicense(
+        "MIT License",
+        "https://github.com/Toite-app/backend/blob/main/LICENSE",
+      )
       .addTag("workers", "Get data about workers and manage them")
       .addTag("auth", "Part of authentification for workers part of the system")
       .addTag("restaurants", "Get data about restaurants and manage them")
@@ -39,7 +43,7 @@ async function bootstrap() {
 
     const document = SwaggerModule.createDocument(app, config);
     const theme = new SwaggerTheme();
-    const darkStyle = theme.getBuffer(SwaggerThemeNameEnum.DARK);
+    const darkStyle = theme.getBuffer(SwaggerThemeNameEnum.CLASSIC);
 
     SwaggerModule.setup("docs", app, document, {
       customSiteTitle: "Toite API Docs",

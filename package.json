@@ -2,9 +2,24 @@
   "name": "toite-instance-api",
   "version": "0.0.1",
   "description": "API for Toite Instance",
-  "author": "Yefrosynii Kolenko <yefrosynii@gmail.com>",
-  "private": true,
-  "license": "UNLICENSED",
+  "author": "Yefrosynii Kolenko <contact@yefro.dev>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Toite-app/backend.git"
+  },
+  "homepage": "https://github.com/Toite-app/backend#readme",
+  "bugs": {
+    "url": "https://github.com/Toite-app/backend/issues"
+  },
+  "keywords": [
+    "toite",
+    "nestjs",
+    "api",
+    "backend",
+    "restaurant",
+    "management"
+  ],
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
